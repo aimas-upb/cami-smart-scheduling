@@ -1,0 +1,8 @@
+package solver;
+	dialect "java"
+
+import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScoreHolder;
+    
+//TODOs
+
+global HardSoftScoreHolder scoreHolder;
