@@ -2,7 +2,156 @@ package solver;
 	dialect "java"
 
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScoreHolder;
-    
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityDomain;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityCategory;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod
+import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimeslotsPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.Timeslot;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.Difficulty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDays;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.DaysPatterns;
+import java.util.List;
+
 //TODOs
 
 global HardSoftScoreHolder scoreHolder;
+
+// HARD CONSTRAINTS
+
+// the activity must be planned in the permittedTimeslot
+rule "startFrom"
+	when
+		$activity : Activity(
+			$activityType : activityType, 
+			$activityPeriod : activityPeriod, 
+			$activityPeriod.timeslot.timeslot[0].hour < $activityType.permittedTimeslot.timeslot[0].hour, 
+			$activityPeriod.timeslot.timeslot[0].minutes < $activityType.permittedTimeslot.timeslot[0].minutes
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, $activityPeriod.getTimeslot().getTimeslot()[0].getHour() - 
+		$activityType.getPermittedTimeslot().getTimeslot()[0].getHour() + 
+		$activityPeriod.getTimeslot().getTimeslot()[0].getMinutes() - $activityType.getPermittedTimeslot().getTimeslot()[0].getMinutes());
+end
+
+rule "tillThen"
+	when
+		$activity : Activity(
+			$activityType : activityType, 
+			$activityPeriod : activityPeriod, 
+			$adjustedPeriod : AdjustActivityPeriod.setPeriod($activityPeriod, $activityType.duration), 
+			$adjustedPeriod.timeslot.timeslot[1].hour > $activityType.permittedTimeslot.timeslot[1].hour,
+			$adjustedPeriod.timeslot.timeslot[1].minutes > $activityType.permittedTimeslot.timeslot[1].minutes,
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, 
+		$activityType.getPermittedTimeslot().getTimeslot()[1].getHour() - $adjustedPeriod.getTimeslot().getTimeslot()[1].getHour() 
+		+ $activityType.getPermittedTimeslot().getTimeslot()[1].getMinutes() - $adjustedPeriod.getTimeslot().getTimeslot()[1].getMinutes());
+end
+
+// the activity must not be planned in the excludedTimeslots
+rule "excludedTimeslots"
+	when
+		$excludedTimeslotsPenalty : ExcludedTimeslotPenalty($excludedActivityType : activityType, excludedActivityPeriods != null)
+		Activity(activityType.code == $excludedActivityType.code, $activityPeriod : activityPeriod)
+	then
+		List excludedPeriods = $excludedTimeslotsPenalty.getExcludedActivityPeriods();
+		for (int i = 0; i < excludedPeriods.size(); i++) {
+			ActivityPeriod excludedActivityPeriod = excludedPeriods.get(i);
+			if ($activityPeriod.getTimeslot().getTimeslot()[0].getHour() >= excludedActivityPeriod.getTimeslot().getTimeslot()[0].getHour()
+				&& $activityPeriod.getTimeslot().getTimeslot()[0].getMinutes() >= excludedActivityPeriod.getTimeslot().getTimeslot()[0].getMinutes()
+				&& $activityPeriod.getTimeslot().getTimeslot()[1].getHour() <= excludedActivityPeriod.getTimeslot().getTimeslot()[1].getHour()
+				&& $activityPeriod.getTimeslot().getTimeslot()[1].getMinutes() <= excludedActivityPeriod.getTimeslot().getTimeslot()[1].getMinutes()
+				&& $activityPeriod.getWeekDay() == excludedActivityPeriod.getWeekDay()) {
+
+				scoreHolder.addHardConstraintMatch(kcontext, -10);
+			}
+		}
+end
+
+// the activity must be planned after another specified activity
+rule "activityPeriodPenaltyAfter"
+	when
+		$realtiveActivityPenalty : RelativeActivityPenalty(
+			relativeType == RelativeType.AFTER,
+			$firstActivityType : firstActivityType,
+			$secondActivityType : secondActivityType
+		)
+		$firstActivity : Activity(activityType.code == $firstActivityType.code, activityPeriod != null, $firstActivityPeriod : activityPeriod)
+		$secondActivity : Activity(activityType.code == $secondActivityType.code, activityPeriod != null, 
+			activityPeriod.timeslot.timeslot[1].hour > $firstActivityPeriod.timeslot.timeslot[0].hour, 
+			activityPeriod.timeslot.timeslot[1].minutes > $firstActivityPeriod.timeslot.timeslot[0].minutes, 
+			activityPeriod.weekDay == $firstActivityPeriod.weekDay
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, -15);
+end
+
+rule "activityPeriodPenaltyBefore"
+	when
+		$realtiveActivityPenalty : RelativeActivityPenalty(
+			relativeType == RelativeType.BEFORE,
+			$firstActivityType : firstActivityType,
+			$secondActivityType : secondActivityType
+		)
+		$firstActivity : Activity(activityType.code == $firstActivityType.code, activityPeriod != null, $firstActivityPeriod : activityPeriod)
+		$secondActivity : Activity(activityType.code == $secondActivityType.code, activityPeriod != null, 
+			activityPeriod.timeslot.timeslot[0].hour < $firstActivityPeriod.timeslot.timeslot[1].hour, 
+			activityPeriod.timeslot.timeslot[0].minutes < $firstActivityPeriod.timeslot.timeslot[1].minutes, 
+			activityPeriod.weekDay == $firstActivityPeriod.weekDay
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, -15);
+end
+
+rule "instancesPerWeek"
+	when
+		$activityType : ActivityType($instancesPerWeek : instancesPerWeek)
+		$activity : Activity(activityType.code == $activityType.code, $activityPeriod : activityPeriod);
+	then
+		int dayCount = 0;
+		String pattern = "";
+		for (int i = 0; i < 7; i++) {
+			WeekDays day = WeekDays.values()[i];
+			if ($activityPeriod.getWeekDay().getDay() == day) {
+				dayCount++;
+				pattern += i;
+			}
+		}
+
+		boolean respectPattern = false;
+		for (String currPattern: DaysPatterns.getPatterns().get(instancesPerWeek)) {
+			if (pattern.equals(currPattern)) {
+				respectPattern = true;
+			}
+		}
+
+		if (dayCount < $instancesPerWeek) {
+			scoreHolder.addHardConstraintMatch(kcontext, (dayCount - $instancesPerWeek) * 10);
+		} else if (!respectPattern) {
+			scoreHolder.addHardConstraintMatch(kcontext, (dayCount - $instancesPerWeek) * 5);
+		}
+end
+
+rule "instancesPerDay"
+	when
+		$activityType : ActivityType($instancesPerDay : instancesPerDay)
+		$total : Number(intValue != instancesPerDay)
+			from accumulate(
+				$activity : Activity(activityType.code == $activityType.code, $activityPeriod : activityPeriod);
+				init( int total = 0;),
+				action(//complete it),
+				result(total)
+			)
+	then
+		// score penalty
+end
+
+// SOFT CONSTRAINTS
