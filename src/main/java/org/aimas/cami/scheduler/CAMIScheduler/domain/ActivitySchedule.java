@@ -16,6 +16,11 @@ import org.optaplanner.persistence.xstream.api.score.buildin.hardsoft.HardSoftSc
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @PlanningSolution
 @XStreamAlias("ActivitySchedule")
 public class ActivitySchedule extends AbstractPersistable {
@@ -26,6 +31,7 @@ public class ActivitySchedule extends AbstractPersistable {
 	private List<ActivityCategory> activityCategoryList;
 	private List<ActivityType> activityTypeList;
 	private List<Timeslot> timeslotList;
+	private List<ExcludedTimeslotsPenalty> excludedTimeslotsList;
 	private List<WeekDay> weekdayList;
 
 	@XStreamConverter(HardSoftScoreXStreamConverter.class)
@@ -45,12 +51,13 @@ public class ActivitySchedule extends AbstractPersistable {
 		this.activityList = activityList;
 	}
 
-	public List<ActivityDomain> getActivityCategoryList() {
+	@ProblemFactCollectionProperty
+	public List<ActivityDomain> getActivityDomainList() {
 		return activityDomainList;
 	}
 
-	public void setActivityCategoryList(List<ActivityDomain> activityCategoryList) {
-		this.activityDomainList = activityCategoryList;
+	public void setActivityDomainList(List<ActivityDomain> activityDomainList) {
+		this.activityDomainList = activityDomainList;
 	}
 
 	@ValueRangeProvider(id = "periodRange")
@@ -64,12 +71,12 @@ public class ActivitySchedule extends AbstractPersistable {
 	}
 
 	@ProblemFactCollectionProperty
-	public List<ActivityCategory> getActivitySubcategoryList() {
+	public List<ActivityCategory> getActivityCategoryList() {
 		return activityCategoryList;
 	}
 
-	public void setActivitySubcategoryList(List<ActivityCategory> activitySubcategoryList) {
-		this.activityCategoryList = activitySubcategoryList;
+	public void setActivitySubcategoryList(List<ActivityCategory> activityCategoryategoryList) {
+		this.activityCategoryList = activityCategoryategoryList;
 	}
 
 	@ProblemFactCollectionProperty
@@ -112,6 +119,15 @@ public class ActivitySchedule extends AbstractPersistable {
 
 	public void setScore(HardSoftScore score) {
 		this.score = score;
+	}
+
+	@ProblemFactCollectionProperty
+	public List<ExcludedTimeslotsPenalty> getExcludedTimeslotsList() {
+		return excludedTimeslotsList;
+	}
+
+	public void setExcludedTimeslotsList(List<ExcludedTimeslotsPenalty> excludedTimeslotsList) {
+		this.excludedTimeslotsList = excludedTimeslotsList;
 	}
 
 	// ************************************************************************

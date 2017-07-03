@@ -4,18 +4,21 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("ActivityPeriod")
 public class ActivityPeriod extends AbstractPersistable {
 
 	private Timeslot timeslot;
 	private WeekDay weekDay;
 
-	public Timeslot getTimeslot() {
-		return timeslot;
-	}
-
-	public void setTimeslot(Timeslot timeslot) {
+	public ActivityPeriod(Timeslot timeslot, WeekDay weekDay) {
+		super();
 		this.timeslot = timeslot;
+		this.weekDay = weekDay;
 	}
 
 	public WeekDay getWeekDay() {
@@ -24,6 +27,14 @@ public class ActivityPeriod extends AbstractPersistable {
 
 	public void setWeekDay(WeekDay weekDay) {
 		this.weekDay = weekDay;
+	}
+
+	public Timeslot getTimeslot() {
+		return timeslot;
+	}
+
+	public void setTimeslot(Timeslot timeslot) {
+		this.timeslot = timeslot;
 	}
 
 	@Override
