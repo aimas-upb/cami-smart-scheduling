@@ -12,12 +12,7 @@
   </scoreDirectorFactory>
 
   <termination>
-    <!--
-      Official benchmark secondsSpentLimit allowed on:
-      ge0ffrey's main pc: 429
-      ge0ffrey's old pc: 1152
-    -->
-    <secondsSpentLimit>429</secondsSpentLimit>
+    <secondsSpentLimit>600</secondsSpentLimit>
     <!--<bestScoreLimit>-0hard/-999999soft</bestScoreLimit>-->
   </termination>
   <constructionHeuristic>

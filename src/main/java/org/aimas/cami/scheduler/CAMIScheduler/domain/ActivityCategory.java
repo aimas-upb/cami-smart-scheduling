@@ -3,6 +3,11 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("ActivityCategory")
 public class ActivityCategory extends AbstractPersistable {
 
