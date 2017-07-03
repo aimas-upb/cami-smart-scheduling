@@ -3,19 +3,15 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("WeekDay")
-public class WeekDay extends AbstractPersistable{
+public class WeekDay extends AbstractPersistable {
 
-	private WeekDays weekDays;
 	private int dayIndex;
-
-	public WeekDays getWeekDays() {
-		return weekDays;
-	}
-
-	public void setWeekDays(WeekDays weekDays) {
-		this.weekDays = weekDays;
-	}
 
 	public WeekDays getDay() {
 		return WeekDays.values()[dayIndex];
