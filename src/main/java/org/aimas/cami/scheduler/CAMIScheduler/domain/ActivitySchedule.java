@@ -16,6 +16,11 @@ import org.optaplanner.persistence.xstream.api.score.buildin.hardsoft.HardSoftSc
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @PlanningSolution
 @XStreamAlias("ActivitySchedule")
 public class ActivitySchedule extends AbstractPersistable {

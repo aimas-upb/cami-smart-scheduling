@@ -4,11 +4,16 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("RelativeActivityPenalty")
 public class RelativeActivityPenalty extends AbstractPersistable {
 
 	private RelativeType relativeType;
-	private ActivityType firstActivity, secondActivity;
+	private ActivityType firstActivityType, secondActivityType;
 
 	public RelativeType getRelativeType() {
 		return relativeType;
@@ -18,26 +23,26 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 		this.relativeType = relativeType;
 	}
 
-	public ActivityType getFirstActivity() {
-		return firstActivity;
+	public ActivityType getFirstActivityType() {
+		return firstActivityType;
 	}
 
-	public void setFirstActivity(ActivityType firstActivity) {
-		this.firstActivity = firstActivity;
+	public void setFirstActivityType(ActivityType firstActivityType) {
+		this.firstActivityType = firstActivityType;
 	}
 
-	public ActivityType getSecondActivity() {
-		return secondActivity;
+	public ActivityType getSecondActivityType() {
+		return secondActivityType;
 	}
 
-	public void setSecondActivity(ActivityType secondActivity) {
-		this.secondActivity = secondActivity;
+	public void setSecondActivityType(ActivityType secondActivityType) {
+		this.secondActivityType = secondActivityType;
 	}
 
 	@Override
 	public String toString() {
-		return "RelativeActivityPenalty [relativeType=" + relativeType + ", firstActivity=" + firstActivity
-				+ ", secondActivity=" + secondActivity + "]";
+		return "RelativeActivityPenalty [relativeType=" + relativeType + ", firstActivityType=" + firstActivityType
+				+ ", secondActivityType=" + secondActivityType + "]";
 	}
 
 }

@@ -3,18 +3,21 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("ActivityType")
 public class ActivityType extends AbstractPersistable {
 
 	private String code;
 	private int index;
-	private int duration; // expressed in seconds(minutes?)
-	private Difficulty difficulty; // EASY, HARD, MEDIUM(?)
+	private int duration; // expressed in minutes
+	private Difficulty difficulty; // EASY, HARD, MEDIUM
 	private int calories; // expressed in kcal
-	private int timesPerDay, timesPerWeek;
+	private int instancesPerDay, instancesPerWeek;
 	private Timeslot imposedTimeslot, permittedTimeslot;
-	private LeadingActivity previousActivity;
-	private FollowingActivity followingActivity;
 	private ActivityCategory activityCategory;
 	private String description;
 
@@ -24,22 +27,6 @@ public class ActivityType extends AbstractPersistable {
 
 	public void setActivityCategory(ActivityCategory activityCategory) {
 		this.activityCategory = activityCategory;
-	}
-
-	public LeadingActivity getPreviousActivity() {
-		return previousActivity;
-	}
-
-	public void setPreviousActivity(LeadingActivity previousActivity) {
-		this.previousActivity = previousActivity;
-	}
-
-	public FollowingActivity getFollowingActivity() {
-		return followingActivity;
-	}
-
-	public void setFollowingActivity(FollowingActivity followingActivity) {
-		this.followingActivity = followingActivity;
 	}
 
 	public String getCode() {
@@ -64,22 +51,6 @@ public class ActivityType extends AbstractPersistable {
 		return duration;
 	}
 
-	public int getTimesPerDay() {
-		return timesPerDay;
-	}
-
-	public void setTimesPerDay(int timesPerDay) {
-		this.timesPerDay = timesPerDay;
-	}
-
-	public int getTimesPerWeek() {
-		return timesPerWeek;
-	}
-
-	public void setTimesPerWeek(int timesPerWeek) {
-		this.timesPerWeek = timesPerWeek;
-	}
-
 	public void setDuration(int duration) {
 		this.duration = duration;
 	}
@@ -102,6 +73,38 @@ public class ActivityType extends AbstractPersistable {
 
 	public void setCalories(int calories) {
 		this.calories = calories;
+	}
+
+	public int getInstancesPerDay() {
+		return instancesPerDay;
+	}
+
+	public void setInstancesPerDay(int instancesPerDay) {
+		this.instancesPerDay = instancesPerDay;
+	}
+
+	public int getInstancesPerWeek() {
+		return instancesPerWeek;
+	}
+
+	public void setInstancesPerWeek(int instancesPerWeek) {
+		this.instancesPerWeek = instancesPerWeek;
+	}
+
+	public Timeslot getImposedTimeslot() {
+		return imposedTimeslot;
+	}
+
+	public void setImposedTimeslot(Timeslot imposedTimeslot) {
+		this.imposedTimeslot = imposedTimeslot;
+	}
+
+	public Timeslot getPermittedTimeslot() {
+		return permittedTimeslot;
+	}
+
+	public void setPermittedTimeslot(Timeslot permittedTimeslot) {
+		this.permittedTimeslot = permittedTimeslot;
 	}
 
 	public String getDescription() {
