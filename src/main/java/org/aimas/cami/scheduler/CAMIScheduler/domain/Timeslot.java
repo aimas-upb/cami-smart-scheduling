@@ -5,19 +5,27 @@ import java.util.Arrays;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("Timeslot")
 public class Timeslot extends AbstractPersistable {
-	
-	// min left, max right;
-	// if right-left = duration, then the interval is fixed
-	// else is variable
-	private int[] timeslot = new int[2];
 
-	public int[] getTimeslot() {
+	// min left, max right;
+	private Time[] timeslot = new Time[2];
+
+	public Timeslot(Time[] timeslot) {
+		super();
+		this.timeslot = timeslot;
+	}
+
+	public Time[] getTimeslot() {
 		return timeslot;
 	}
 
-	public void setTimeslot(int[] timeslot) {
+	public void setTimeslot(Time[] timeslot) {
 		this.timeslot = timeslot;
 	}
 

@@ -21,6 +21,6 @@ import org.slf4j.LoggerFactory;
 
 public class LoggingMain {
 
-    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
+	protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
 }

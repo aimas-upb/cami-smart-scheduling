@@ -5,10 +5,15 @@ import java.io.IOException;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractTxtSolutionExporter;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 public class CAMITaskSchedulerExporter extends AbstractTxtSolutionExporter<ActivitySchedule> {
 
 	private static final String OUTPUT_FILE_SUFFIX = "sol";
-	
+
 	public static void main(String[] args) {
 		new CAMITaskSchedulerExporter().convertAll();
 	}
