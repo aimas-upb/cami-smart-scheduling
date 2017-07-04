@@ -22,8 +22,12 @@ import javax.swing.WindowConstants;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
-//import org.optaplanner.examples.common.swingui.SolutionPanel;
-//import org.optaplanner.examples.common.swingui.SolverAndPersistenceFrame;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionBusiness;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractSolutionExporter;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractSolutionImporter;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
+import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolutionPanel;
+import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolverAndPersistenceFrame;
 import org.optaplanner.swing.impl.SwingUncaughtExceptionHandler;
 import org.optaplanner.swing.impl.SwingUtils;
 import org.slf4j.Logger;
@@ -41,8 +45,8 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
      * For example, NurseRosteringPanel is incompatible with Mac.
      */
     public static void prepareSwingEnvironment() {
-        //SwingUncaughtExceptionHandler.register();
-        //SwingUtils.fixateLookAndFeel();
+        SwingUncaughtExceptionHandler.register();
+        SwingUtils.fixateLookAndFeel();
     }
 
     protected final String name;
@@ -50,7 +54,6 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
     protected final String solverConfig;
     protected final String iconResource;
 
-    // not sure if needed
     protected SolverAndPersistenceFrame<Solution_> solverAndPersistenceFrame;
     protected SolutionBusiness<Solution_> solutionBusiness;
 
@@ -100,7 +103,7 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
         return solverFactory.buildSolver();
     }
 
-    //protected abstract SolutionPanel<Solution_> createSolutionPanel();
+    protected abstract SolutionPanel<Solution_> createSolutionPanel();
 
     protected abstract SolutionDao createSolutionDao();
 

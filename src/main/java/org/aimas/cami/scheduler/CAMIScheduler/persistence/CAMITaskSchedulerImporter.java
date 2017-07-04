@@ -5,8 +5,13 @@ import java.io.IOException;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractTxtSolutionImporter;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 public class CAMITaskSchedulerImporter extends AbstractTxtSolutionImporter<ActivitySchedule> {
-	
+
 	public static void main(String[] args) {
 		new CAMITaskSchedulerImporter().convertAll();
 	}

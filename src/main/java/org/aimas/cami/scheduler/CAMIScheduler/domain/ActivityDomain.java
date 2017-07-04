@@ -5,6 +5,11 @@ import java.util.List;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("ActivityDomain")
 public class ActivityDomain extends AbstractPersistable {
 
