@@ -263,7 +263,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
         JPanel solvePanel = new JPanel(new CardLayout());
         solveAction = new SolveAction();
-        solveAction.setEnabled(true);
+        solveAction.setEnabled(false);
         solveButton = new JButton(solveAction);
         terminateSolvingEarlyAction = new TerminateSolvingEarlyAction();
         terminateSolvingEarlyAction.setEnabled(false);
