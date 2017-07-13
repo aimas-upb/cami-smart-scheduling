@@ -3,8 +3,6 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain.solver;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Timeslot;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 import org.optaplanner.core.impl.domain.variable.listener.VariableListener;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
@@ -20,10 +18,18 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 		RelativeActivity relativeActivity = activity.getRelativeActivity();
 		ActivityPeriod activityPeriod = activity.getActivityPeriod();
 
-		scoreDirector.beforeVariableChanged(relativeActivity, "relativeActivityPeriod");
-		relativeActivity.setRelativeActivityPeriod(
-				AdjustActivityPeriod.setPeriod(activityPeriod, relativeActivity.getOffset()));
-		scoreDirector.afterVariableChanged(relativeActivity, "relativeActivityPeriod");
+		if (relativeActivity != null && activityPeriod != null) {
+			/*
+			 * if (relativeActivity.getRelativeActivityPeriod() == null) {
+			 * scoreDirector.beforeEntityAdded(relativeActivity);
+			 * scoreDirector.afterEntityAdded(relativeActivity); }
+			 */
+			scoreDirector.beforeVariableChanged(relativeActivity, "relativeActivityPeriod");
+			relativeActivity.setRelativeActivityPeriod(
+					AdjustActivityPeriod.setRelativeActivityPeriod(activityPeriod, relativeActivity.getOffset(),
+							activity.getActivityDuration(), relativeActivity.getActivityDuration()));
+			scoreDirector.afterVariableChanged(relativeActivity, "relativeActivityPeriod");
+		}
 	}
 
 	@Override
