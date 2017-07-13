@@ -17,7 +17,8 @@ public class ActivityType extends AbstractPersistable {
 	private Difficulty difficulty; // EASY, HARD, MEDIUM
 	private int calories; // expressed in kcal
 	private int instancesPerDay, instancesPerWeek;
-	private Timeslot imposedTimeslot, permittedTimeslot;
+	private Time imposedTime;
+	private TimeInterval permittedInterval;
 	private ActivityCategory activityCategory;
 	private String description;
 
@@ -46,8 +47,6 @@ public class ActivityType extends AbstractPersistable {
 	}
 
 	public int getDuration() {
-		if (duration == 0)
-			return Integer.MIN_VALUE;
 		return duration;
 	}
 
@@ -66,8 +65,6 @@ public class ActivityType extends AbstractPersistable {
 	}
 
 	public int getCalories() {
-		if (calories == 0)
-			return Integer.MIN_VALUE;
 		return calories;
 	}
 
@@ -91,20 +88,20 @@ public class ActivityType extends AbstractPersistable {
 		this.instancesPerWeek = instancesPerWeek;
 	}
 
-	public Timeslot getImposedTimeslot() {
-		return imposedTimeslot;
+	public Time getImposedTime() {
+		return imposedTime;
 	}
 
-	public void setImposedTimeslot(Timeslot imposedTimeslot) {
-		this.imposedTimeslot = imposedTimeslot;
+	public void setImposedTime(Time imposedTimeslot) {
+		this.imposedTime = imposedTimeslot;
 	}
 
-	public Timeslot getPermittedTimeslot() {
-		return permittedTimeslot;
+	public TimeInterval getPermittedInterval() {
+		return permittedInterval;
 	}
 
-	public void setPermittedTimeslot(Timeslot permittedTimeslot) {
-		this.permittedTimeslot = permittedTimeslot;
+	public void setPermittedInterval(TimeInterval permittedInterval) {
+		this.permittedInterval = permittedInterval;
 	}
 
 	public String getDescription() {

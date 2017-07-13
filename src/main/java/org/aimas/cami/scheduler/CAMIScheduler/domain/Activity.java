@@ -2,11 +2,13 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamInclude;
 
 /**
  * 
@@ -15,7 +17,10 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  */
 @PlanningEntity(movableEntitySelectionFilter = MovableActivitySelectionFilter.class)
 @XStreamAlias("Activity")
-public abstract class Activity extends AbstractPersistable {
+@XStreamInclude({
+	RelativeActivity.class
+})
+public class Activity extends AbstractPersistable {
 
 	// planning variable
 	// a planning variable is initially uninitialized(unspecified in the XML)
@@ -36,7 +41,8 @@ public abstract class Activity extends AbstractPersistable {
 
 	// (optional) it can be set to null
 	// by specifying @PlanningVariable(..., nullable = true)
-	@PlanningVariable(valueRangeProviderRefs = { "periodRange" })
+	@PlanningVariable(valueRangeProviderRefs = { "activityPeriodRange" }, 
+			strengthWeightFactoryClass = TimeWeightFactory.class)
 	public ActivityPeriod getActivityPeriod() {
 		return activityPeriod;
 	}
@@ -96,9 +102,27 @@ public abstract class Activity extends AbstractPersistable {
 	 * 
 	 * } return null; }
 	 */
+	
+	public ActivityPeriod getActivityEndPeriod() {
+		if (activityPeriod == null) {
+			return null;
+		}
+		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, activityType.getDuration());
+	}
+	
+	public Time getActivityEndPeriodTime() {
+		if (activityPeriod == null) {
+			return null;
+		}
+		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, activityType.getDuration()).getTime();
+	}
 
 	public ActivityCategory getActivityCategory() {
 		return activityType.getActivityCategory();
+	}
+
+	public int getActivityDuration() {
+		return activityType.getDuration();
 	}
 
 	public int getInstancesPerDay() {
@@ -109,25 +133,33 @@ public abstract class Activity extends AbstractPersistable {
 		return activityType.getInstancesPerWeek();
 	}
 
-	public Timeslot getImposedTimeslot() {
-		return activityType.getImposedTimeslot();
+	public Time getImposedTime() {
+		return activityType.getImposedTime();
 	}
 
-	public Timeslot getPermittedTimeslot() {
-		return activityType.getPermittedTimeslot();
+	public TimeInterval getPermittedInterval() {
+		return activityType.getPermittedInterval();
 	}
 
-	public Timeslot getActivityPeriodTimeslot() {
-		return activityPeriod.getTimeslot();
+	public Time getActivityPeriodTime() {
+		if (activityPeriod == null)
+			return null;
+		return activityPeriod.getTime();
 	}
 
 	public WeekDay getActivityPeriodWeekday() {
+		if (activityPeriod == null)
+			return null;
 		return activityPeriod.getWeekDay();
 	}
 
 	@Override
 	public String toString() {
 		return "Activity [activityType=" + activityType + ", activityPeriod=" + activityPeriod + "]";
+	}
+	
+	public String getLabel() {
+		return activityType.getCode();
 	}
 
 }

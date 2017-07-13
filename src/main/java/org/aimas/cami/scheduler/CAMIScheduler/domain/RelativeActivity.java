@@ -13,8 +13,10 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  *
  */
 @PlanningEntity
-@XStreamAlias("FollowingActivity")
+@XStreamAlias("RelativeActivity")
 public class RelativeActivity extends Activity {
+
+	// private Activity staticActivity;
 
 	// shadow variable (it depends on a planning variable)
 	// if the planning variable changes, then the shadow variable adjusts
@@ -22,6 +24,13 @@ public class RelativeActivity extends Activity {
 	private ActivityPeriod relativeActivityPeriod;
 
 	private int offset; // in minutes
+
+	/*
+	 * public Activity getStaticActivity() { return staticActivity; }
+	 * 
+	 * public void setStaticActivity(Activity staticActivity) {
+	 * this.staticActivity = staticActivity; }
+	 */
 
 	public int getOffset() {
 		return offset;
@@ -43,7 +52,8 @@ public class RelativeActivity extends Activity {
 
 	@Override
 	public String toString() {
-		return "RelativeActivity [relativeActivityPeriod=" + relativeActivityPeriod + ", offset=" + offset + "]";
+		return "RelativeActivity [getActivityType()=" + getActivityType() + ", relativeActivityPeriod=" + relativeActivityPeriod
+				+ ", offset=" + offset + "]";
 	}
 
 }
