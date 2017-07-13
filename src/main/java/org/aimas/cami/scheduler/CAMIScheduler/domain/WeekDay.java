@@ -30,4 +30,8 @@ public class WeekDay extends AbstractPersistable {
 		return "WeekDay [day=" + WeekDays.values()[dayIndex] + "]";
 	}
 
+	public String getLabel() {
+		return WeekDays.values()[dayIndex].toString();
+	}
+
 }

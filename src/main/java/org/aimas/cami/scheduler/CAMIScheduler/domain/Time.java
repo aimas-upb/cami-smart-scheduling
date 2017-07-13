@@ -37,4 +37,17 @@ public class Time extends AbstractPersistable {
 		this.minutes = minutes;
 	}
 
+	@Override
+	public String toString() {
+		return "Time [hour=" + hour + ", minutes=" + minutes + "]";
+	}
+
+	public String getLabel() {
+		String hour = "";
+		String minutes = "";
+		hour = this.hour < 10 ? ("0" + this.hour) : (this.hour + "");
+		minutes = this.minutes < 10 ? ("0" + this.minutes) : (this.minutes + "");
+		return hour + ":" + minutes;
+	}
+
 }
