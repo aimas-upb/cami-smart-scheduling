@@ -56,11 +56,45 @@ public class ActivityPeriodMove extends AbstractMove<ActivitySchedule> {
 	@Override
 	protected void doMoveOnGenuineVariables(ScoreDirector<ActivitySchedule> scoreDirector) {
 		// take care to not move immovable entities
-		// if this activity has set timesPerDay / timesPerWeek, then make a move in this direction, too
+		// if this activity has set timesPerDay / timesPerWeek, then make a move
+		// in this direction, too
 		// or create another AbstractMove
 		scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-		activity.setActivityPeriod(AdjustActivityPeriod.setPeriod(activity.getActivityPeriod(), duration));
+		activity.setActivityPeriod(AdjustActivityPeriod.getAdjustedPeriod(activity.getActivityPeriod(), duration));
 		scoreDirector.afterVariableChanged(activity, "activityPeriod");
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((activity == null) ? 0 : activity.hashCode());
+		result = prime * result + duration;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof ActivityPeriodMove))
+			return false;
+		ActivityPeriodMove other = (ActivityPeriodMove) obj;
+		if (activity == null) {
+			if (other.activity != null)
+				return false;
+		} else if (!activity.equals(other.activity))
+			return false;
+		if (duration != other.duration)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "ActivityPeriodMove [activity=" + activity + ", duration=" + duration + "]";
 	}
 
 }
