@@ -166,10 +166,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activityType1.setDuration(30);
 		activityType1.setId(typeId++);
 		activityType1.setInstancesPerWeek(1);
-		//activityType1.setImposedTime(new Time(23, 0));
+		// activityType1.setImposedTime(new Time(23, 0));
 
 		activitySchedule.getActivityTypeList().add(activityType1);
-		
+
 		Activity activity1 = new Activity();
 
 		activity1.setActivityType(activityType1);
@@ -178,6 +178,29 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		// activity.setRelativeActivity(relativeActivity);
 
 		activityList.add(activity1);
+
+		String[] ex = { "Chess", "FIFA Kinect", "Wing Chun", "Ninjutsu", "Aikido", "Kenpo" };
+
+		for (int i = 0; i < 6; i++) {
+			ActivityType activityType2 = new ActivityType();
+
+			activityType2.setActivityCategory(activitySchedule.getActivityCategoryList().get(0));
+			activityType2.setCode(ex[i]);
+			activityType2.setDuration(30);
+			activityType2.setId(typeId++);
+			activityType2.setInstancesPerWeek(1);
+			activityType2.setPermittedInterval(new TimeInterval(new Time(8, 0), new Time(9, 0)));
+
+			activitySchedule.getActivityTypeList().add(activityType2);
+			
+			Activity activity = new Activity();
+
+			activity.setActivityType(activityType2);
+			activity.setId(id++);
+			activity.setImmovable(false);
+			
+			activityList.add(activity);
+		}
 
 		activitySchedule.setActivityList(activityList);
 	}
@@ -225,7 +248,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 	private void createExcludedTimeslotsList(ActivitySchedule activitySchedule) {
 		List<ExcludedTimePeriodsPenalty> excludedTimePeriodsPenaltyList = new ArrayList<>();
-		
+
 		ExcludedTimePeriodsPenalty etpp = new ExcludedTimePeriodsPenalty();
 
 		etpp.setActivityType(activitySchedule.getActivityTypeList().get(1));
@@ -236,10 +259,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		pi.setStartPeriod(new ActivityPeriod(new Time(15, 0), wd));
 		pi.setEndPeriod(new ActivityPeriod(new Time(18, 0), wd));
 		List<PeriodInterval> excludedActivityPeriods = new ArrayList<>();
-		
+
 		excludedActivityPeriods.add(pi);
 		etpp.setExcludedActivityPeriods(excludedActivityPeriods);
-		
+
 		excludedTimePeriodsPenaltyList.add(etpp);
 
 		activitySchedule.setExcludedTimePeriodsList(excludedTimePeriodsPenaltyList);
