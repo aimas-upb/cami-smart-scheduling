@@ -116,8 +116,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		for (Activity activity : activitySchedule.getActivityList()) {
 			Color color = determinePlanningEntityColor(activity, activity.getActivityType());
 			String toolTip = determinePlanningEntityTooltip(activity);
-			System.out.println("Got Something:" + activity.getActivityType().getCode() + " "
-					+ activity.getActivityPeriodTime() + " " + activity.getActivityEndPeriod());
+			/*System.out.println("Got Something:" + activity.getActivityType().getCode() + " "
+					+ activity.getActivityPeriodTime() + " " + activity.getActivityEndPeriod());*/
 
 			if (activity.getActivityPeriodTime() != null)
 				schedulePanel.addCell(activity.getActivityPeriodWeekday(),
