@@ -2,6 +2,7 @@ package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
 public class StaticPenaltyScoresDrools {
 
+	public static final int periodConflictPenalty = -999;
 	public static final int imposedTimePenalty = -100;
 	public static final int excludedTimeslotsSameDayPenalty = -10;
 	public static final int excludedTimeslotsBetweenDaysPenalty = -25;
