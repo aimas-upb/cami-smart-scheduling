@@ -10,7 +10,7 @@
   </scoreDirectorFactory>
 
   <termination>
-    <secondsSpentLimit>3</secondsSpentLimit>
+    <secondsSpentLimit>120</secondsSpentLimit>
     <!--<bestScoreLimit>-0hard/-999999soft</bestScoreLimit>-->
   </termination>
   <constructionHeuristic>
@@ -77,11 +77,19 @@
       <!--<acceptedCountLimit>900</acceptedCountLimit>-->
     <!--</forager>-->
     <acceptor>
-      <lateAcceptanceSize>600</lateAcceptanceSize>
+      <lateAcceptanceSize>100</lateAcceptanceSize>
     </acceptor>
     <forager>
       <acceptedCountLimit>4</acceptedCountLimit>
     </forager>
+    <!--
+    <acceptor>
+      <entityTabuRatio>0.2</entityTabuRatio>
+    </acceptor>
+    <forager>
+      <acceptedCountLimit>2000</acceptedCountLimit>
+    </forager>
+    -->
     <!--
     <acceptor>
     	<entityTabuSize>10</entityTabuSize>
