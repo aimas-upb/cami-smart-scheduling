@@ -30,6 +30,8 @@ import org.optaplanner.swing.impl.SwingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.LoggerContext;
+
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
@@ -42,8 +44,8 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
      * For example, NurseRosteringPanel is incompatible with Mac.
      */
     public static void prepareSwingEnvironment() {
-    	//LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-    	//loggerContext.stop();
+    	LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+    	loggerContext.stop();
         SwingUncaughtExceptionHandler.register();
         SwingUtils.fixateLookAndFeel();
     }
