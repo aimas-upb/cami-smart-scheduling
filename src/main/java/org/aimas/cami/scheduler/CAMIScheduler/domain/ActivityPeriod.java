@@ -16,6 +16,10 @@ public class ActivityPeriod extends AbstractPersistable implements Labeled {
 	private Time time;
 	private WeekDay weekDay;
 
+	public ActivityPeriod() {
+
+	}
+
 	public ActivityPeriod(Time time, WeekDay weekDay) {
 		super();
 		this.time = time;
@@ -45,6 +49,10 @@ public class ActivityPeriod extends AbstractPersistable implements Labeled {
 
 	public int getPeriodMinutes() {
 		return time.getMinutes();
+	}
+
+	public Integer getWeekDayIndex() {
+		return weekDay == null ? null : weekDay.getDayIndex();
 	}
 
 	@Override

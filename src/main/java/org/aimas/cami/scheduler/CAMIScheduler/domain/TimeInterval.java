@@ -14,6 +14,10 @@ public class TimeInterval extends AbstractPersistable {
 
 	private Time minStart, maxEnd;
 
+	public TimeInterval() {
+
+	}
+
 	public TimeInterval(Time minStart, Time maxEnd) {
 		super();
 		this.minStart = minStart;

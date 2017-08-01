@@ -1,6 +1,9 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
+import java.util.List;
+
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
@@ -17,8 +20,8 @@ public class ActivityType extends AbstractPersistable {
 	private Difficulty difficulty; // EASY, HARD, MEDIUM
 	private int calories; // expressed in kcal
 	private int instancesPerDay, instancesPerWeek;
-	private Time imposedTime;
-	private TimeInterval permittedInterval;
+	private ActivityPeriod imposedTime;
+	private List<TimeInterval> permittedIntervals;
 	private ActivityCategory activityCategory;
 	private String description;
 
@@ -55,8 +58,6 @@ public class ActivityType extends AbstractPersistable {
 	}
 
 	public Difficulty getDifficulty() {
-		if (difficulty == null)
-			return Difficulty.NODIFFICULTY;
 		return difficulty;
 	}
 
@@ -88,20 +89,20 @@ public class ActivityType extends AbstractPersistable {
 		this.instancesPerWeek = instancesPerWeek;
 	}
 
-	public Time getImposedTime() {
+	public ActivityPeriod getImposedPeriod() {
 		return imposedTime;
 	}
 
-	public void setImposedTime(Time imposedTimeslot) {
+	public void setImposedPeriod(ActivityPeriod imposedTimeslot) {
 		this.imposedTime = imposedTimeslot;
 	}
 
-	public TimeInterval getPermittedInterval() {
-		return permittedInterval;
+	public List<TimeInterval> getPermittedInterval() {
+		return permittedIntervals;
 	}
 
-	public void setPermittedInterval(TimeInterval permittedInterval) {
-		this.permittedInterval = permittedInterval;
+	public void setPermittedInterval(List<TimeInterval> permittedInterval) {
+		this.permittedIntervals = permittedInterval;
 	}
 
 	public String getDescription() {

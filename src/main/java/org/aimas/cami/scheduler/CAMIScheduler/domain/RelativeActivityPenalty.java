@@ -1,5 +1,7 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
+import java.util.List;
+
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -14,6 +16,9 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 
 	private RelativeType relativeType;
 	private ActivityType firstActivityType, secondActivityType;
+	
+	// useful for activities that are relative to an activity OR another, preset
+	private List<ActivityType> disjunctiveActivities;
 
 	public RelativeType getRelativeType() {
 		return relativeType;
@@ -37,6 +42,14 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 
 	public void setSecondActivityType(ActivityType secondActivityType) {
 		this.secondActivityType = secondActivityType;
+	}
+
+	public List<ActivityType> getDisjunctiveActivities() {
+		return disjunctiveActivities;
+	}
+
+	public void setDisjunctiveActivities(List<ActivityType> disjunctiveActivities) {
+		this.disjunctiveActivities = disjunctiveActivities;
 	}
 
 	@Override
