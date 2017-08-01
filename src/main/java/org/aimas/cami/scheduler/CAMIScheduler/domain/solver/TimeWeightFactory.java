@@ -4,7 +4,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.optaplanner.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
@@ -43,15 +43,16 @@ public class TimeWeightFactory implements SelectionSorterWeightFactory<ActivityS
 		int penalty = 0;
 		for (ExcludedTimePeriodsPenalty etp : solution.getExcludedTimePeriodsList()) {
 			for (PeriodInterval excludedPeriod : etp.getExcludedActivityPeriods()) {
-				Time leftExcludedTimeslot = excludedPeriod.getStartPeriod().getTime();
-				Time rightExcludedTimeslot = excludedPeriod.getEndPeriod().getTime();
-				if (activityPeriod.getTime().getHour() >= leftExcludedTimeslot.getHour()
-						&& activityPeriod.getTime().getMinutes() >= leftExcludedTimeslot.getMinutes()
-						&& activityPeriod.getTime().getHour() <= rightExcludedTimeslot.getHour()
-						&& activityPeriod.getTime().getMinutes() <= rightExcludedTimeslot.getMinutes()
-						&& (activityPeriod.getWeekDay() == excludedPeriod.getStartPeriod().getWeekDay()
-								|| activityPeriod.getWeekDay() == excludedPeriod.getEndPeriod().getWeekDay())) {
-					penalty++;
+				if ((excludedPeriod.getStartPeriod().getWeekDay() == null
+						&& excludedPeriod.getEndPeriod().getWeekDay() == null)
+						|| (activityPeriod.getWeekDay() == excludedPeriod.getStartPeriod().getWeekDay()
+								&& activityPeriod.getWeekDay() == excludedPeriod.getEndPeriod().getWeekDay())) {
+
+					if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
+							false, false)) {
+						penalty++;
+					}
+
 				}
 			}
 		}
