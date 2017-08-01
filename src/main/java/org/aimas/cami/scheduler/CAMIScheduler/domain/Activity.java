@@ -1,11 +1,13 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import java.util.List;
+
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
+import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamInclude;
@@ -23,17 +25,10 @@ import com.thoughtworks.xstream.annotations.XStreamInclude;
 public class Activity extends AbstractPersistable {
 
 	// planning variable
-	// a planning variable is initially uninitialized(unspecified in the XML)
-	// it can be initialized in the XML by specifying a reference to a period
 	// set "immovable" to true, so its period can't be modified
-	private ActivityPeriod activityPeriod;
+	protected ActivityPeriod activityPeriod;
 
 	private ActivityType activityType;
-
-	// RelativeActivity class is used to update the period of an 
-	// activity relative(RelativeActivity.class) to a "normal" activity(Activity.class)
-	// the update is made in RelativeActivityPeriodUpdateListener.class
-	private RelativeActivity relativeActivity;
 
 	// if an activity is immovable or not
 	private boolean immovable;
@@ -51,27 +46,12 @@ public class Activity extends AbstractPersistable {
 		this.activityPeriod = activityPeriod;
 	}
 
-	/*
-	 * public void setStartActivityPeriod(int hour, int minutes) { Time[]
-	 * timeslot = { new Time(hour, minutes), null };
-	 * 
-	 * activityPeriod.setTimeslot(new Timeslot(timeslot)); }
-	 */
-
 	public ActivityType getActivityType() {
 		return activityType;
 	}
 
 	public void setActivityType(ActivityType activityType) {
 		this.activityType = activityType;
-	}
-
-	public RelativeActivity getRelativeActivity() {
-		return relativeActivity;
-	}
-
-	public void setRelativeActivity(RelativeActivity relativeActivity) {
-		this.relativeActivity = relativeActivity;
 	}
 
 	public boolean isImmovable() {
@@ -91,17 +71,6 @@ public class Activity extends AbstractPersistable {
 	}
 
 	// other useful methods
-
-	/*
-	 * public ActivityPeriod getAdjustedActivityPeriod() { if
-	 * (activityType.getPermittedTimeslot() != null &&
-	 * activityPeriod.getTimeslot() == null) { return
-	 * AdjustActivityPeriod.SetActivityPeriodInPermittedTimeslot(activityPeriod,
-	 * activityType.getPermittedTimeslot(), activityType.getDuration()); } else
-	 * {
-	 * 
-	 * } return null; }
-	 */
 	
 	public ActivityPeriod getActivityEndPeriod() {
 		if (activityPeriod == null) {
@@ -133,11 +102,11 @@ public class Activity extends AbstractPersistable {
 		return activityType.getInstancesPerWeek();
 	}
 
-	public Time getImposedTime() {
-		return activityType.getImposedTime();
+	public ActivityPeriod getImposedPeriod() {
+		return activityType.getImposedPeriod();
 	}
 
-	public TimeInterval getPermittedInterval() {
+	public List<TimeInterval> getPermittedInterval() {
 		return activityType.getPermittedInterval();
 	}
 
