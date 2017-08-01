@@ -20,17 +20,17 @@ import org.optaplanner.core.impl.score.director.ScoreDirector;
 public class ActivityPeriodMove extends AbstractMove<ActivitySchedule> {
 
 	private final Activity activity;
-	private final int duration;
+	private final int offset;
 
 	public ActivityPeriodMove(Activity activity, int duration) {
 		super();
 		this.activity = activity;
-		this.duration = duration;
+		this.offset = duration;
 	}
 
 	@Override
 	public boolean isMoveDoable(ScoreDirector<ActivitySchedule> scoreDirector) {
-		if (duration == 0 || activity.getActivityPeriod() == null)
+		if (offset == 0 || activity.getActivityPeriod() == null)
 			return false;
 		return true;
 	}
@@ -47,7 +47,7 @@ public class ActivityPeriodMove extends AbstractMove<ActivitySchedule> {
 
 	@Override
 	protected AbstractMove<ActivitySchedule> createUndoMove(ScoreDirector<ActivitySchedule> scoreDirector) {
-		return new ActivityPeriodMove(activity, -duration);
+		return new ActivityPeriodMove(activity, -offset);
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class ActivityPeriodMove extends AbstractMove<ActivitySchedule> {
 		// in this direction, too
 		// or create another AbstractMove
 		scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-		activity.setActivityPeriod(AdjustActivityPeriod.getAdjustedPeriod(activity.getActivityPeriod(), duration));
+		activity.setActivityPeriod(AdjustActivityPeriod.getAdjustedPeriod(activity.getActivityPeriod(), offset));
 		scoreDirector.afterVariableChanged(activity, "activityPeriod");
 	}
 
@@ -69,7 +69,7 @@ public class ActivityPeriodMove extends AbstractMove<ActivitySchedule> {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((activity == null) ? 0 : activity.hashCode());
-		result = prime * result + duration;
+		result = prime * result + offset;
 		return result;
 	}
 
@@ -87,14 +87,14 @@ public class ActivityPeriodMove extends AbstractMove<ActivitySchedule> {
 				return false;
 		} else if (!activity.equals(other.activity))
 			return false;
-		if (duration != other.duration)
+		if (offset != other.offset)
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "ActivityPeriodMove [activity=" + activity + ", duration=" + duration + "]";
+		return "ActivityPeriodMove [activity=" + activity + ", duration=" + offset + "]";
 	}
 
 }
