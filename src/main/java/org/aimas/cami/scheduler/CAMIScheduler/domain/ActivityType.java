@@ -97,12 +97,12 @@ public class ActivityType extends AbstractPersistable {
 		this.imposedTime = imposedTimeslot;
 	}
 
-	public List<TimeInterval> getPermittedInterval() {
+	public List<TimeInterval> getPermittedIntervals() {
 		return permittedIntervals;
 	}
 
-	public void setPermittedInterval(List<TimeInterval> permittedInterval) {
-		this.permittedIntervals = permittedInterval;
+	public void setPermittedIntervals(List<TimeInterval> permittedIntervals) {
+		this.permittedIntervals = permittedIntervals;
 	}
 
 	public String getDescription() {

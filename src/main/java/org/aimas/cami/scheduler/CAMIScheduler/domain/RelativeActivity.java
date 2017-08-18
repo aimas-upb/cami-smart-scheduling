@@ -11,7 +11,6 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Bogdan
  *
  */
-@PlanningEntity
 @XStreamAlias("RelativeActivity")
 public class RelativeActivity extends Activity {
 

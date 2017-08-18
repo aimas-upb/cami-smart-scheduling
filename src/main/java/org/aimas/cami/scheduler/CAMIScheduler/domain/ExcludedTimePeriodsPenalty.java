@@ -35,4 +35,10 @@ public class ExcludedTimePeriodsPenalty extends AbstractPersistable {
 		this.excludedActivityPeriods = excludedActivityPeriods;
 	}
 
+	@Override
+	public String toString() {
+		return "ExcludedTimePeriodsPenalty [activityType=" + activityType + ", excludedActivityPeriods="
+				+ excludedActivityPeriods + "]";
+	}
+
 }
