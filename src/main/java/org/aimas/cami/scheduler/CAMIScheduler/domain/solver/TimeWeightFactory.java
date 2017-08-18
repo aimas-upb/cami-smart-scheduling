@@ -27,13 +27,12 @@ public class TimeWeightFactory implements SelectionSorterWeightFactory<ActivityS
 		}
 
 		@Override
-		public int compareTo(TimeslotWeight weight) {
+		public int compareTo(TimeslotWeight other) {
 			// bigger penalty -> weaker
-			return new CompareToBuilder().append(weight.penalty, this.penalty)
-					.append(period.getWeekDay().getDayIndex(), weight.period.getWeekDay().getDayIndex())
-					.append(period.getTime().getHour(), weight.period.getTime().getHour())
-					.append(period.getTime().getMinutes(), weight.period.getTime().getMinutes())
-					.append(period.getId(), weight.period.getId()).toComparison();
+			return new CompareToBuilder().append(other.penalty, this.penalty)
+					.append(period.getWeekDay().getDayIndex(), other.period.getWeekDay().getDayIndex())
+					.append(period.getTime(), other.period.getTime())
+					.append(period.getId(), other.period.getId()).toComparison();
 		}
 
 	}
@@ -45,8 +44,10 @@ public class TimeWeightFactory implements SelectionSorterWeightFactory<ActivityS
 			for (PeriodInterval excludedPeriod : etp.getExcludedActivityPeriods()) {
 				if ((excludedPeriod.getStartPeriod().getWeekDay() == null
 						&& excludedPeriod.getEndPeriod().getWeekDay() == null)
-						|| (activityPeriod.getWeekDay() == excludedPeriod.getStartPeriod().getWeekDay()
-								&& activityPeriod.getWeekDay() == excludedPeriod.getEndPeriod().getWeekDay())) {
+						|| (activityPeriod.getWeekDay().getDayIndex() == excludedPeriod.getStartPeriod().getWeekDay()
+								.getDayIndex()
+								&& activityPeriod.getWeekDay().getDayIndex() == excludedPeriod.getEndPeriod()
+										.getWeekDay().getDayIndex())) {
 
 					if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
 							false, false)) {
