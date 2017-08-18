@@ -3,6 +3,7 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
+import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
@@ -19,9 +20,7 @@ import com.thoughtworks.xstream.annotations.XStreamInclude;
  */
 @PlanningEntity(movableEntitySelectionFilter = MovableActivitySelectionFilter.class)
 @XStreamAlias("Activity")
-@XStreamInclude({
-	RelativeActivity.class
-})
+@XStreamInclude({ RelativeActivity.class })
 public class Activity extends AbstractPersistable {
 
 	// planning variable
@@ -30,14 +29,16 @@ public class Activity extends AbstractPersistable {
 
 	private ActivityType activityType;
 
+	private Postpone postpone;
+
 	// if an activity is immovable or not
 	private boolean immovable;
 	private int index;
 
 	// (optional) it can be set to null
 	// by specifying @PlanningVariable(..., nullable = true)
-	@PlanningVariable(valueRangeProviderRefs = { "activityPeriodRange" }, 
-			strengthWeightFactoryClass = TimeWeightFactory.class)
+	@PlanningVariable(valueRangeProviderRefs = {
+			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class)
 	public ActivityPeriod getActivityPeriod() {
 		return activityPeriod;
 	}
@@ -71,14 +72,22 @@ public class Activity extends AbstractPersistable {
 	}
 
 	// other useful methods
-	
+
+	public Postpone getPostpone() {
+		return postpone;
+	}
+
+	public void setPostpone(Postpone postpone) {
+		this.postpone = postpone;
+	}
+
 	public ActivityPeriod getActivityEndPeriod() {
 		if (activityPeriod == null) {
 			return null;
 		}
 		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, activityType.getDuration());
 	}
-	
+
 	public Time getActivityEndPeriodTime() {
 		if (activityPeriod == null) {
 			return null;
@@ -107,7 +116,7 @@ public class Activity extends AbstractPersistable {
 	}
 
 	public List<TimeInterval> getPermittedInterval() {
-		return activityType.getPermittedInterval();
+		return activityType.getPermittedIntervals();
 	}
 
 	public Time getActivityPeriodTime() {
@@ -126,7 +135,7 @@ public class Activity extends AbstractPersistable {
 	public String toString() {
 		return "Activity [activityType=" + activityType + ", activityPeriod=" + activityPeriod + "]";
 	}
-	
+
 	public String getLabel() {
 		return activityType.getCode();
 	}
