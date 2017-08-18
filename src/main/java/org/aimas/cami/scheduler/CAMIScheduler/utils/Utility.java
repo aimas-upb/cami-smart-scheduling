@@ -15,6 +15,10 @@ import org.drools.core.spi.KnowledgeHelper;
  *
  */
 public class Utility {
+	
+	public static void main(String[] args) {
+		System.out.println(fullOverlap(new Time(19, 05), new Time(19, 35), new Time(7, 0), new Time(10, 0)));
+	}
 
 	public static void help(final KnowledgeHelper drools, final String message) {
 		System.out.println(message);
@@ -25,10 +29,9 @@ public class Utility {
 		System.out.println("\nrule triggered: " + drools.getRule().getName());
 	}
 
-	public static Integer getNumberOfMinutesInPermittedInterval(TimeInterval permittedInterval) {
+	public static Integer getNumberOfMinutesInPermittedInterval(Time left, Time right) {
 
-		return (permittedInterval.getMaxEnd().getHour() - permittedInterval.getMinStart().getHour()) * 60
-				+ permittedInterval.getMaxEnd().getMinutes() - permittedInterval.getMinStart().getMinutes();
+		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
 	}
 
 	public static Set<Character> stringToCharacterSet(String s) {
@@ -37,6 +40,60 @@ public class Utility {
 			set.add(c);
 		}
 		return set;
+	}
+
+	/**
+	 * Check if the start of activity A is <= the end of activity B
+	 * 
+	 * @param startA
+	 *            start of activity A
+	 * @param endB
+	 *            end of activity B
+	 * @return true if start A is before end B, else false.
+	 */
+	public static boolean before(Time startA, Time endB) {
+		if (startA.getHour() < endB.getHour())
+			return true;
+		else if (startA.getHour() == endB.getHour())
+			if (startA.getMinutes() <= endB.getMinutes())
+				return true;
+		return false;
+	}
+
+	/**
+	 * Check if the start of activity B is <= the end of activity A
+	 * 
+	 * @param startB
+	 *            start of activity B
+	 * @param endA
+	 *            end of activity A
+	 * @return true if end A is after start B, else false.
+	 */
+	public static boolean after(Time startB, Time endA) {
+		if (startB.getHour() < endA.getHour())
+			return true;
+		else if (startB.getHour() == endA.getHour())
+			if (startB.getMinutes() <= endA.getMinutes())
+				return true;
+		return false;
+	}
+
+	public static boolean exclusiveBefore(Time startA, Time endB) {
+		if (startA.getHour() < endB.getHour())
+			return true;
+		else if (startA.getHour() == endB.getHour())
+			if (startA.getMinutes() < endB.getMinutes())
+				return true;
+		return false;
+	}
+
+	public static boolean fullOverlap(Time startA, Time endA, Time startB, Time endB) {
+
+		if (before(startB, startA) && before(endA, endB))
+			return true;
+
+		return false;
+
 	}
 
 	public static Boolean checkTimeslots(ActivityPeriod activityPeriod, PeriodInterval excludedPeriodInterval,
@@ -81,12 +138,10 @@ public class Utility {
 			}
 
 		} else {
-			if (activityStartTime.getHour() >= excludedStartTime.getHour()
-					&& activityStartTime.getHour() < excludedEndTime.getHour()) {
 
+			if (before(activityStartTime, excludedEndTime) && after(excludedStartTime, activityEndTime))
 				return true;
 
-			}
 		}
 
 		return false;
