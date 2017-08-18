@@ -10,6 +10,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityRelativeToActivityCategory;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
@@ -19,152 +20,94 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDays;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.StaticPenaltyScoresDrools;
-import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
-import org.aimas.cami.scheduler.CAMIScheduler.utils.DaysPatterns;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.WeekSpreadConstraints;
+import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
+import org.aimas.cami.scheduler.CAMIScheduler.postpone.PostponeType;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.RelativeActivityMap;
 
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod.getAdjustedPeriod;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.helper;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.help;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.stringToCharacterSet;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.checkTimeslots;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.getNumberOfMinutesInPermittedInterval;
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.before;
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.after;
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.exclusiveBefore;
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.fullOverlap;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.HashMap;
 
 global HardSoftScoreHolder scoreHolder;
-/*
-rule "a"
-	when
-		$activity1 : Activity(activityPeriod != null, $activityPeriod1 : activityPeriod, $id : id)
-	then
-		if ($activity1.getActivityType().getCode().equals("Hair cutting appointment"))
-			System.out.println($activity1.getActivityType().getCode());
-end
-*/
 
 // HARD CONSTRAINTS
+
 // a rule for activity periods conflict
 rule "periodConflict"
 	when
-		$activity1 : Activity(activityPeriod != null, $activityPeriod1 : activityPeriod, $id : id)
-		$activity2 : Activity(activityPeriod != null, $activityPeriod2 : activityPeriod, $activityPeriod1.weekDay.dayIndex == activityPeriod.weekDay.dayIndex, this != $activity1, $id < id)
+		$activity1 : Activity(
+			activityPeriod != null, 
+			$activityPeriod1 : activityPeriod, 
+			$id : id
+		)
+
+		$activity2 : Activity(
+			activityPeriod != null, 
+			$activityPeriod2 : activityPeriod, 
+			$activityPeriod1.weekDay.dayIndex == activityPeriod.weekDay.dayIndex, 
+			this != $activity1, 
+			$id < id
+		)
 	then
 		//helper(drools);
 
-		if ($activityPeriod1.getPeriodHour() == $activityPeriod2.getPeriodHour() && 
-			$activityPeriod1.getPeriodMinutes() == $activityPeriod2.getPeriodMinutes()) {
+		if (before($activityPeriod1.getTime(), $activity2.getActivityEndPeriod().getTime()) && 
+			after($activityPeriod2.getTime(), $activity1.getActivityEndPeriod().getTime()))
 
 			scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.periodConflictPenalty);
-
-		} else if (($activityPeriod1.getPeriodHour() > $activityPeriod2.getPeriodHour() && 
-				$activityPeriod1.getPeriodHour() < $activity2.getActivityEndPeriod().getPeriodHour()) || 
-				($activityPeriod1.getPeriodHour() < $activityPeriod2.getPeriodHour() && 
-				$activity1.getActivityEndPeriod().getPeriodHour() > $activityPeriod2.getPeriodHour())) {
-
-			scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.periodConflictPenalty);
-
-		} else if ($activityPeriod1.getPeriodHour() == $activityPeriod2.getPeriodHour()) {
-
-			if ($activityPeriod1.getPeriodMinutes() < ($activityPeriod2.getPeriodMinutes() + $activity2.getActivityDuration()) || 
-				$activityPeriod2.getPeriodMinutes() < ($activityPeriod1.getPeriodMinutes() + $activity1.getActivityDuration()))
-
-				scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.periodConflictPenalty);
-
-		} else if ($activityPeriod1.getPeriodHour() == $activity2.getActivityEndPeriod().getPeriodHour()) {
-
-			if ($activityPeriod1.getPeriodMinutes() < $activity2.getActivityEndPeriod().getPeriodMinutes())
-				scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.periodConflictPenalty);
-
-		} else if ($activity1.getActivityEndPeriod().getPeriodHour() == $activityPeriod2.getPeriodHour()) {
-
-			if ($activityPeriod2.getPeriodMinutes() < $activity1.getActivityEndPeriod().getPeriodMinutes())
-				scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.periodConflictPenalty);
-		}
 end
 
-// the activity must be planned in the permitted interval
-rule "startFrom"
+rule "overlapPermittedInterval"
 	when
 		$activity : Activity(
-			activityType.permittedInterval != null, 
+			activityType.permittedIntervals != null, 
 			$activityType : activityType, 
 			$activityPeriod : activityPeriod, 
 			$activityPeriod != null
 		)
 	then
-		//help(drools, "startFrom");
 		int score = 0;
+		for (TimeInterval permittedInterval : $activityType.getPermittedIntervals()) {
+			if (!fullOverlap($activityPeriod.getTime(), $activity.getActivityEndPeriod().getTime(), permittedInterval.getMinStart(), permittedInterval.getMaxEnd())) {
 
-		for (TimeInterval permittedInterval : $activityType.getPermittedInterval()) {
+				score += -10;
 
-			if ($activityPeriod.getPeriodHour() < permittedInterval.getMinStart().getHour()) {
-
-				score += ($activityPeriod.getPeriodHour() - 
-				permittedInterval.getMinStart().getHour()) * 60 + $activityPeriod.getPeriodMinutes() - 
-				permittedInterval.getMinStart().getMinutes();
-
-			} else if ($activityPeriod.getPeriodHour() == permittedInterval.getMinStart().getHour()) {
-
-				if ($activityPeriod.getPeriodMinutes() < permittedInterval.getMinStart().getMinutes()) {
-					score += $activityPeriod.getPeriodMinutes() - permittedInterval.getMinStart().getMinutes();
-				}
-	
-			} else if ($activityPeriod.getPeriodHour() < permittedInterval.getMaxEnd().getHour()) {
-
-				score = 0;
-				break;
-
-			}
-		}
-
-		scoreHolder.addHardConstraintMatch(kcontext, score);
-end
-
-rule "tillThen"
-	when
-		$activity : Activity(
-			activityType.permittedInterval != null, 
-			$activityType : activityType, 
-			$activityPeriod : activityPeriod, 
-			$activityPeriod != null
-		)
-	then
-		//help(drools, "tillThen");
-		ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod($activityPeriod, $activityType.getDuration());
-		int score = 0;
-		
-		for (TimeInterval permittedInterval : $activityType.getPermittedInterval()) {
-
-			if(activityEndPeriod.getPeriodHour() > permittedInterval.getMaxEnd().getHour()) {
-
-				score += (permittedInterval.getMaxEnd().getHour() - 
-				activityEndPeriod.getPeriodHour()) * 60 + permittedInterval.getMaxEnd().getMinutes() - 
-				activityEndPeriod.getPeriodMinutes();
-
-			} else if (activityEndPeriod.getPeriodHour() == permittedInterval.getMaxEnd().getHour()) {
-
-				if (activityEndPeriod.getPeriodMinutes() > permittedInterval.getMaxEnd().getMinutes()) {
-
-					score += permittedInterval.getMaxEnd().getMinutes() - activityEndPeriod.getPeriodMinutes();
-	
-				}
-
-			} else if($activityPeriod.getPeriodHour() > permittedInterval.getMinStart().getHour()) {
+			} else {
 				score = 0;
 				break;
 			}
 		}
-		
 		scoreHolder.addHardConstraintMatch(kcontext, score);
 end
 
 // the activity must not be planned in the excludedTimeslots
 rule "excludedTimeslots"
 	when
-		$excludedTimePeriodsPenalty : ExcludedTimePeriodsPenalty($excludedActivityType : activityType, excludedActivityPeriods != null)
-		Activity(activityType.code == $excludedActivityType.code, $activityPeriod : activityPeriod, $activityPeriod != null)
+		$excludedTimePeriodsPenalty : ExcludedTimePeriodsPenalty(
+			$excludedActivityType : activityType, 
+			excludedActivityPeriods != null
+		)
+
+		Activity(
+			activityType.code == $excludedActivityType.code, 
+			$activityPeriod : activityPeriod, 
+			$activityPeriod != null
+		)
 	then
 		List<PeriodInterval> excludedPeriods = $excludedTimePeriodsPenalty.getExcludedActivityPeriods();
 		int score = 0;
@@ -173,7 +116,7 @@ rule "excludedTimeslots"
 		for (int i = 0; i < excludedPeriods.size(); i++) {
 			PeriodInterval excludedPeriodInterval = excludedPeriods.get(i);
 
-			// excluded just in a specific day or everyday
+			// excluded just on a specific day or everyday
 			if ((excludedPeriodInterval.getStartPeriod().getWeekDay() == null && excludedPeriodInterval.getEndPeriod().getWeekDay() == null) || 
 				($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getStartPeriod().getWeekDayIndex() && 
 					$activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getEndPeriod().getWeekDayIndex())) {
@@ -182,170 +125,207 @@ rule "excludedTimeslots"
 					score =+ StaticPenaltyScoresDrools.excludedTimeslotsSameDayPenalty;
 				}
 
-			} else { // between days - is not the case for now
-
-				if ($activityPeriod.getWeekDayIndex() > excludedPeriodInterval.getStartPeriod().getWeekDayIndex() && 
-					$activityPeriod.getWeekDayIndex() < excludedPeriodInterval.getEndPeriod().getWeekDayIndex()) {
-
-					scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.excludedTimeslotsBetweenDaysPenalty);
-
-				} else if ($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getStartPeriod().getWeekDayIndex()) {
-
-					if (checkTimeslots($activityPeriod, excludedPeriodInterval, $excludedActivityType.getDuration(), true, false)) {
-						scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.excludedTimeslotsBetweenDaysPenalty);
-					}
-
-				} else if ($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getEndPeriod().getWeekDayIndex()) {
-
-					if (checkTimeslots($activityPeriod, excludedPeriodInterval, $excludedActivityType.getDuration(), false, true)) {
-						scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.excludedTimeslotsBetweenDaysPenalty);
-					}
-
-				}
 			}
 		}
-		
+
 		scoreHolder.addHardConstraintMatch(kcontext, score);
 end
 
 // the activity must be planned after another specified activity
 rule "activityPeriodPenaltyAfter"
 	when
-		$relativeActivityPenalty : RelativeActivityPenalty(
+		RelativeActivityPenalty(
 			relativeType == RelativeType.AFTER,
-			$firstActivityType : firstActivityType,
-			$secondActivityType : secondActivityType
+			$relativeActivityType : relativeActivityType,
+			$staticActivityType : staticActivityType
 		)
-		$firstActivity : RelativeActivity(activityType.code == $firstActivityType.code, activityPeriod != null, $firstActivityPeriod : activityPeriod, $index : index)
-		$secondActivity : Activity(activityType.code == $secondActivityType.code, activityPeriod != null, $secondActivityPeriod : activityPeriod, $index == index)
+		
+		$relativeActivity : RelativeActivity(
+			activityType.code == $relativeActivityType.code, 
+			activityPeriod != null, 
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : offset
+		)
+
+		$staticActivity : Activity(
+			activityType.code == $staticActivityType.code, 
+			activityPeriod != null, 
+			$staticActivityPeriod : activityPeriod
+		)
 	then
-		ActivityPeriod secondActivityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod($secondActivityPeriod, $secondActivityType.getDuration());
+		ActivityPeriod staticActivityEndPeriod = getAdjustedPeriod($staticActivityPeriod, $staticActivityType.getDuration());
 
-		if ($secondActivity.getActivityPeriodWeekday().getDayIndex() == $firstActivityPeriod.getWeekDayIndex()) {
+		if ($staticActivityPeriod.getWeekDayIndex() == $relativeActivityPeriod.getWeekDayIndex()) {
 
-			if (secondActivityEndPeriod.getPeriodHour() > $firstActivityPeriod.getPeriodHour()) {
+			int minutesInInterval = getNumberOfMinutesInPermittedInterval(staticActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
 
-				scoreHolder.addHardConstraintMatch(kcontext, ($firstActivityPeriod.getPeriodHour() - secondActivityEndPeriod.getPeriodHour()) * 60);
+			if (minutesInInterval < $offset) {
 
-			} else if (secondActivityEndPeriod.getPeriodHour() == $firstActivityPeriod.getPeriodHour()) {
-
-				if (secondActivityEndPeriod.getPeriodMinutes() > $firstActivityPeriod.getPeriodMinutes()) {
-					scoreHolder.addHardConstraintMatch(kcontext, $firstActivityPeriod.getPeriodMinutes() - secondActivityEndPeriod.getPeriodMinutes());
-				}
-
-			} else if ($firstActivityPeriod.getPeriodHour() > secondActivityEndPeriod.getPeriodHour() + 1) {
-
-				scoreHolder.addHardConstraintMatch(kcontext, ($firstActivityPeriod.getPeriodHour() - secondActivityEndPeriod.getPeriodHour() - 1) * (-60));
-
-			} else if ($firstActivityPeriod.getPeriodHour() >= secondActivityEndPeriod.getPeriodHour() && 
-				getNumberOfMinutesInPermittedInterval(new TimeInterval(secondActivityEndPeriod.getTime(), $firstActivity.getActivityPeriod().getTime())) 
-				< $firstActivity.getOffset()) {
-
-				scoreHolder.addHardConstraintMatch(kcontext, 
-					getNumberOfMinutesInPermittedInterval(new TimeInterval(secondActivityEndPeriod.getTime(), 
-						$firstActivity.getActivityPeriodTime())) - $firstActivity.getOffset());
+				scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - $offset);
 
 			}
-
-		} else { // different days not ok
-
-			scoreHolder.addHardConstraintMatch(kcontext, 
-				Math.abs($secondActivity.getActivityPeriodWeekday().getDayIndex() - $firstActivityPeriod.getWeekDayIndex()) * 
-				StaticPenaltyScoresDrools.relativeActivityBeforePenaltyDifferentDays);
 		}
 end
 
 rule "activityPeriodPenaltyBefore"
 	when
-		$relativeActivityPenalty : RelativeActivityPenalty(
+		RelativeActivityPenalty(
 			relativeType == RelativeType.BEFORE,
-			$firstActivityType : firstActivityType,
-			$secondActivityType : secondActivityType
+			$relativeActivityType : relativeActivityType,
+			$staticActivityType : staticActivityType
 		)
-		$firstActivity : RelativeActivity(activityType.code == $firstActivityType.code, activityPeriod != null, $firstActivityPeriod : activityPeriod, $index : index)
-		$secondActivity : Activity(activityType.code == $secondActivityType.code, activityPeriod != null, $secondActivityPeriod : activityPeriod, $index == index)
+
+		$relativeActivity: RelativeActivity(
+			activityType.code == $relativeActivityType.code, 
+			activityPeriod != null, 
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : offset
+		)
+
+		$staticActivity : Activity(
+			activityType.code == $staticActivityType.code, 
+			activityPeriod != null, 
+			$staticActivityPeriod : activityPeriod
+		)
 	then
-		ActivityPeriod firstActivityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod($firstActivityPeriod, $firstActivityType.getDuration());
+		ActivityPeriod relativeActivityEndPeriod = getAdjustedPeriod($relativeActivityPeriod, $relativeActivityType.getDuration());
 
-		if ($secondActivityPeriod.getWeekDayIndex() == $firstActivity.getActivityPeriodWeekday().getDayIndex()) {
+		if ($staticActivityPeriod.getWeekDayIndex() == $relativeActivityPeriod.getWeekDayIndex()) {
 
-			if ($secondActivityPeriod.getPeriodHour() < firstActivityEndPeriod.getPeriodHour()) {
+			int minutesInInterval = getNumberOfMinutesInPermittedInterval($staticActivityPeriod.getTime(), relativeActivityEndPeriod.getTime());
 
-				scoreHolder.addHardConstraintMatch(kcontext, ($secondActivityPeriod.getPeriodHour() - firstActivityEndPeriod.getPeriodHour()) * 60);
+			if (minutesInInterval > $offset) {
 
-			} else if ($secondActivityPeriod.getPeriodHour() == firstActivityEndPeriod.getPeriodHour()) {
+				scoreHolder.addHardConstraintMatch(kcontext, $offset - minutesInInterval);
 
-				if ($secondActivityPeriod.getPeriodMinutes() < firstActivityEndPeriod.getPeriodMinutes()) {
-					scoreHolder.addHardConstraintMatch(kcontext, $secondActivityPeriod.getPeriodMinutes() - firstActivityEndPeriod.getPeriodMinutes());
-				}
-
-			} else if ($secondActivityPeriod.getPeriodHour() > firstActivityEndPeriod.getPeriodHour() + 1) {
-				//scoreHolder.addHardConstraintMatch(kcontext, ($secondActivityPeriod.getPeriodHour() - firstActivityEndPeriod.getPeriodHour() - 1) * (-60));
 			}
-		} else { // different days not ok
-
-			scoreHolder.addHardConstraintMatch(kcontext, 
-				Math.abs($secondActivityPeriod.getWeekDayIndex() - $firstActivity.getActivityPeriodWeekday().getDayIndex()) * 
-				StaticPenaltyScoresDrools.relativeActivityAfterPenaltyDifferentDays);
 		}
 end
 
-rule "instancesPerWeekAssigned"
+// the activity must be planned after another specified activity category
+rule "activityPeriodPenaltyAfterCategory"
 	when
-		$activityType : ActivityType(instancesPerWeek > 1, $instancesPerWeek : instancesPerWeek)
-		$pattern : String()
-			from accumulate(
-				$activity : Activity(activityType.code == $activityType.code, activityPeriod != null, $activityPeriod : activityPeriod),
-				init( String pattern = "";
-				),
-				action(
-					pattern += $activityPeriod.getWeekDayIndex();
-				),
-				result(pattern)
-			)
-		exists Activity(activityType.code == $activityType.code, activityPeriod != null);
+		ActivityRelativeToActivityCategory(
+			relativeType == RelativeType.AFTER,
+			$relativeActivityType : relativeActivityType,
+			$category : category
+		)
+		
+		$relativeActivity : RelativeActivity(
+			activityType.code == $relativeActivityType.code, 
+			activityPeriod != null, 
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : offset
+		)
+
+		$staticActivity: Activity(
+			activityType.activityCategory != null, 
+			activityType.activityCategory.code == $category, 
+			activityPeriod != null, 
+			$staticActivityPeriod : activityPeriod, 
+			$staticActivityType : activityType
+		)
 	then
-		//help(drools, "instancesPerWeekAssigned");
-		String pattern = $pattern;
-		//System.out.println("PATTERN: " + pattern);
+		//help(drools, "activityPeriodPenaltyAfterCategory");
+		ActivityPeriod staticActivityEndPeriod = getAdjustedPeriod($staticActivityPeriod, $staticActivityType.getDuration());
 
-		boolean respectPattern = false;
-		for (String currPattern: DaysPatterns.getPatterns().get($instancesPerWeek)) {
+		//System.out.println($staticActivity.getId());
+		//System.out.println($relativeActivity.getId());
 
-			if (stringToCharacterSet(pattern).containsAll(stringToCharacterSet(currPattern))) {
-				respectPattern = true;
+		if (!RelativeActivityMap.getAssignedActivities().containsKey($staticActivity.getId()) && 
+			!RelativeActivityMap.getAssignedRelativeActivities().contains($relativeActivity.getId())) {
+
+			RelativeActivityMap.getAssignedActivities().put($staticActivity.getId(), $relativeActivity.getId());
+			RelativeActivityMap.getAssignedRelativeActivities().add($relativeActivity.getId());
+
+		}
+
+		if (RelativeActivityMap.getAssignedActivities().containsKey($staticActivity.getId()) && 
+			RelativeActivityMap.getAssignedActivities().get($staticActivity.getId()).equals($relativeActivity.getId())) {
+
+			int minutesInInterval = getNumberOfMinutesInPermittedInterval(staticActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
+
+			if (minutesInInterval < $offset) {
+
+				scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - $offset);
+
+			} else {
+				scoreHolder.addHardConstraintMatch(kcontext, 0);
 			}
 
 		}
+end
 
-		if (!respectPattern) {
-			scoreHolder.addHardConstraintMatch(kcontext, StaticPenaltyScoresDrools.instancesPerWeekPenalty);
-		}
+// plan an activity "instancesPerWeek" instances in a week
+rule "instancesPerWeekAssigned"
+	when
+		$activityType : ActivityType(
+			instancesPerWeek > 1, 
+			$instancesPerWeek : instancesPerWeek
+		)
+
+		$result : String()
+			from accumulate(
+				$activity : Activity(activityType.code == $activityType.code, activityPeriod != null, $activityPeriod : activityPeriod),
+				init( String weekSpread = "";
+					  int occurences = 0;
+					  List<Integer> indexes = new ArrayList();
+				),
+				action(
+					weekSpread += $activityPeriod.getWeekDayIndex() + " ";
+					if (!indexes.contains($activityPeriod.getWeekDayIndex())) {
+						indexes.add($activityPeriod.getWeekDayIndex());
+						occurences++;
+					}
+				),
+				result(weekSpread + ":" + occurences)
+			)
+		exists Activity(activityType.code == $activityType.code, activityPeriod != null)
+	then
+		//help(drools, "instancesPerWeekAssigned");
+
+		int indictments = 0;
+		String[] resultSplit = $result.split(":");
+		int occurences = Integer.valueOf(resultSplit[1]);
+		String[] weekSpreadArray = resultSplit[0].split(" ");
+
+		Arrays.sort(weekSpreadArray, new Comparator<String>() {
+			public int compare(String s1, String s2) {
+				return Integer.valueOf(s1).compareTo(Integer.valueOf(s2));
+			}
+		});
+
+		int gap = WeekSpreadConstraints.getSpreadGap().get($instancesPerWeek);
+		for (int i = 0; i < weekSpreadArray.length - 1; i++)
+			if (Integer.valueOf(weekSpreadArray[i + 1]) - Integer.valueOf(weekSpreadArray[i]) < gap)
+				indictments++;
+
+		if (occurences != $instancesPerWeek || indictments != 0)
+			scoreHolder.addHardConstraintMatch(kcontext, 
+					(Math.abs(occurences - $instancesPerWeek) + (indictments * gap)) * StaticPenaltyScoresDrools.instancesPerWeekPenalty);
 end
 
 // plan an activity every day, "instancesPerDay" instances in a day
 rule "instancesPerDay"
 	when
-		$activityType : ActivityType(instancesPerDay != 0, $instancesPerDay : instancesPerDay)
+		$activityType : ActivityType(instancesPerDay > 0, $instancesPerDay : instancesPerDay)
 		$weekDay : WeekDay()
 		$result : String()
 			from accumulate(
-				$activity : Activity(activityType.code == $activityType.code, activityPeriod != null, $activityPeriod : activityPeriod),
+				$activity : Activity(activityType.code == $activityType.code, activityPeriod != null, $activityPeriod : activityPeriod, 
+					activityPeriod.weekDay.dayIndex == $weekDay.dayIndex),
 				init( int occurences = 0;
 					  String hours = "";
 				),
 				action(
-					// do something more important
-					if ($activityPeriod.getWeekDayIndex() == $weekDay.getDayIndex()) {
-						occurences++;
+					occurences++;
 
-						// add the activity time hour to the list
-						hours += $activityPeriod.getPeriodHour() + " ";
-					}
-
+					// add the activity hour to the list
+					hours += $activityPeriod.getPeriodHour() + " ";
 				),
 				result(hours + ":" + occurences)
 			)
+		exists Activity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
 	then
 		//help(drools, "instancesPerDay");
 
@@ -361,22 +341,125 @@ rule "instancesPerDay"
 			}
 		});
 
+		int gap = 6;
 		for (int i = 0; i < hours.length - 1; i++)
-			if (Integer.valueOf(hours[i + 1]) - Integer.valueOf(hours[i]) <= 6)
+			if (Integer.valueOf(hours[i + 1]) - Integer.valueOf(hours[i]) < gap)
 				indictments++;
 
-		scoreHolder.addHardConstraintMatch(kcontext, 
-			(Math.abs(occurences - $instancesPerDay) + indictments) * StaticPenaltyScoresDrools.instancesPerDayPenalty);
+		if (occurences != $instancesPerDay || indictments != 0)
+			scoreHolder.addHardConstraintMatch(kcontext, 
+				(Math.abs(occurences - $instancesPerDay) + (indictments * gap)) * StaticPenaltyScoresDrools.instancesPerDayPenalty);
 end
 
 // SOFT CONSTRAINTS
+
+// don't plan the activities too early in the morning
 rule "notSoEarly"
 	when
 		$activity : Activity(
 			$activityPeriod : activityPeriod, 
-			$activityPeriod != null
+			$activityPeriod != null, 
+			$activityPeriod.time.hour < 6
 		)
 	then
-		if ($activityPeriod.getPeriodHour() < 6)
-			scoreHolder.addSoftConstraintMatch(kcontext, $activityPeriod.getPeriodHour() - 6);
+		scoreHolder.addSoftConstraintMatch(kcontext, $activityPeriod.getPeriodHour() - 6);
+end
+
+rule "distanceBetweenExerciseAndMeal"
+	when
+		$exercise : Activity(
+			$exercisePeriod : activityPeriod, 
+			$exercisePeriod != null, 
+			activityType.activityCategory != null, 
+			activityType.activityCategory.code == "Indoor physical exercises"
+		)
+
+		$meal : Activity(
+			$mealPeriod : activityPeriod, 
+			$mealPeriod != null, 
+			activityType.activityCategory != null, 
+			activityType.activityCategory.code == "Meal", 
+			$mealPeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
+			Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.time, $mealPeriod.time)) <= 120
+		)
+	then
+		scoreHolder.addSoftConstraintMatch(kcontext, Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.getTime(), $mealPeriod.getTime())) - 120);
+end
+
+rule "distanceBetweenExercises"
+	when
+		$exercise : Activity(
+			$exercisePeriod : activityPeriod, 
+			$exercisePeriod != null, 
+			activityType.activityCategory != null, 
+			activityType.activityCategory.code == "Indoor physical exercises"
+		)
+		
+		Activity(
+			$otherExercisePeriod : activityPeriod, 
+			$otherExercisePeriod != null, 
+			activityType.activityCategory != null, 
+			activityType.activityCategory.code == "Indoor physical exercises", 
+			this != $exercise, 
+			$otherExercisePeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
+			Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.time, $otherExercisePeriod.time)) <= 180
+		)
+	then
+		scoreHolder.addSoftConstraintMatch(kcontext, Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.getTime(), $otherExercisePeriod.getTime())) - 180);
+end
+
+
+// OTHER HARD CONSTRAINTS
+rule "postponeActivity"
+	when
+		$activity : Activity(
+			$postpone : postpone, 
+			postpone != null, 
+			activityPeriod != null, 
+			postpone.postponePeriod != null, 
+			$activityPeriod : activityPeriod
+		)
+	then
+		//help(drools, $activity.getLabel());
+
+		if ($postpone.getPostponeType() == PostponeType.POSTPONE_15MIN) {
+			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())) {
+				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInPermittedInterval( 
+					getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime(), $activityPeriod.getTime()));
+			}
+		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_30MIN) {
+			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 30).getTime())) {
+				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInPermittedInterval( 
+					getAdjustedPeriod($postpone.getPostponePeriod(), 30).getTime(), $activityPeriod.getTime()));
+			}
+		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_1HOUR) {
+			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 60).getTime())) {
+				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInPermittedInterval( 
+					getAdjustedPeriod($postpone.getPostponePeriod(), 60).getTime(), $activityPeriod.getTime()));
+			}
+		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_DAY) {
+			if (before($activityPeriod.getTime(), $postpone.getPostponePeriod().getTime())) {
+				scoreHolder.addSoftConstraintMatch(kcontext, -2);
+			}
+		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_WEEK) {
+			if ($postpone.getPostponePeriod().getWeekDay().getDayIndex() < 6)
+				if ($activityPeriod.getWeekDay().getDayIndex() <= $postpone.getPostponePeriod().getWeekDay().getDayIndex()) {
+					scoreHolder.addSoftConstraintMatch(kcontext, -3);
+				}
+		}
+end
+
+rule "postponeActivityDifferentDay"
+	when
+		$activity : Activity(
+			$postpone : postpone, 
+			postpone != null, 
+			activityPeriod != null, 
+			postpone.postponePeriod != null, 
+			$activityPeriod : activityPeriod, 
+			activityPeriod.weekDay.dayIndex != postpone.postponePeriod.weekDay.dayIndex, 
+			postpone.postponeType != PostponeType.POSTPONE_LATER_THIS_WEEK
+		)
+	then
+		scoreHolder.addSoftConstraintMatch(kcontext, -1);
 end

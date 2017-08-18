@@ -2,11 +2,11 @@
 <solver>
   <!--<randomType>MERSENNE_TWISTER</randomType>-->
   <!--<environmentMode>FAST_ASSERT</environmentMode>-->
+
   <!-- uncomment this if you want random seed, unless, the solution generated will be the same every time(useful for debugging) -->
   <!--<environmentMode>NON_REPRODUCIBLE</environmentMode>-->
   <solutionClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</solutionClass>
   <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
-  <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity</entityClass>
 
   <scoreDirectorFactory>
     <scoreDrl>solver/CAMITaskSchedulerScoreRules.drl</scoreDrl>
@@ -18,65 +18,8 @@
     <bestScoreLimit>0hard/0soft</bestScoreLimit>
   </termination>
   <constructionHeuristic>
-    <forager>
-      <pickEarlyType>FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD</pickEarlyType>
-    </forager>
-    <queuedEntityPlacer>
-      <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
-        <cacheType>PHASE</cacheType>
-      </entitySelector>
-      <changeMoveSelector>
-        <entitySelector mimicSelectorRef="placerEntitySelector"/>
-      </changeMoveSelector>
-    </queuedEntityPlacer>
+    <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
   </constructionHeuristic>
-  <constructionHeuristic>
-    <forager>
-      <pickEarlyType>FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD</pickEarlyType>
-    </forager>
-    <queuedEntityPlacer>
-      <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity</entityClass>
-        <cacheType>PHASE</cacheType>
-      </entitySelector>
-      <changeMoveSelector>
-        <entitySelector mimicSelectorRef="placerEntitySelector"/>
-      </changeMoveSelector>
-    </queuedEntityPlacer>
-  </constructionHeuristic>
-  <localSearch>
-    <termination>
-      <unimprovedSecondsSpentLimit>30</unimprovedSecondsSpentLimit>
-    </termination>
-    <unionMoveSelector>
-	  <changeMoveSelector>
-	    <cacheType>PHASE</cacheType>
-        <entitySelector>
-          <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
-        </entitySelector>
-      </changeMoveSelector>
-	  <moveListFactory>
-        <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
-        <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.ActivityPeriodMoveFactory</moveListFactoryClass>
-      </moveListFactory>
-      <moveListFactory>
-        <cacheType>STEP</cacheType>
-        <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.RelativeActivityPeriodMoveFactory</moveListFactoryClass>
-      </moveListFactory>
-    </unionMoveSelector>
-    <acceptor>
-      <entityTabuRatio>0.02</entityTabuRatio>
-      <valueTabuSize>1</valueTabuSize>
-      <moveTabuSize>1</moveTabuSize>
-    </acceptor>
-    <forager>
-      <pickEarlyType>FIRST_BEST_SCORE_IMPROVING</pickEarlyType>
-      <acceptedCountLimit>1000</acceptedCountLimit>
-      <finalistPodiumType>STRATEGIC_OSCILLATION_BY_LEVEL_ON_BEST_SCORE</finalistPodiumType>
-    </forager>
-  </localSearch>
   <localSearch>
     <termination>
       <unimprovedSecondsSpentLimit>15</unimprovedSecondsSpentLimit>
@@ -88,104 +31,13 @@
           <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
         </entitySelector>
       </changeMoveSelector>
-      <moveListFactory>
-        <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
-        <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.ActivityPeriodMoveFactory</moveListFactoryClass>
-      </moveListFactory>
-      <moveListFactory>
-        <cacheType>PHASE</cacheType>
-        <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.RelativeActivityPeriodMoveFactory</moveListFactoryClass>
-      </moveListFactory>
     </unionMoveSelector>
     <acceptor>
-      <lateAcceptanceSize>1000</lateAcceptanceSize>
+      <simulatedAnnealingStartingTemperature>2hard/100soft</simulatedAnnealingStartingTemperature>
+      <lateAcceptanceSize>100</lateAcceptanceSize>
     </acceptor>
     <forager>
-      <acceptedCountLimit>4</acceptedCountLimit>
-    </forager>
-  </localSearch>
-  <localSearch>
-    <termination>
-      <unimprovedSecondsSpentLimit>15</unimprovedSecondsSpentLimit>
-    </termination>
-    <unionMoveSelector>
-	  <changeMoveSelector>
-	    <cacheType>PHASE</cacheType>
-        <entitySelector>
-          <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
-        </entitySelector>
-      </changeMoveSelector>
-	  <moveListFactory>
-        <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
-        <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.ActivityPeriodMoveFactory</moveListFactoryClass>
-      </moveListFactory>
-      <moveListFactory>
-        <cacheType>STEP</cacheType>
-        <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.RelativeActivityPeriodMoveFactory</moveListFactoryClass>
-      </moveListFactory>
-    </unionMoveSelector>
-    <acceptor>
-      <entityTabuRatio>0.02</entityTabuRatio>
-      <valueTabuSize>1</valueTabuSize>
-      <moveTabuSize>1</moveTabuSize>
-    </acceptor>
-    <forager>
-      <acceptedCountLimit>1000</acceptedCountLimit>
+      <acceptedCountLimit>1</acceptedCountLimit>
     </forager>
   </localSearch>
 </solver>
-
-<!--<acceptor>-->
-  <!--<entityTabuSize>9</entityTabuSize>-->
-<!--</acceptor>-->
-<!--<forager>-->
-  <!--<acceptedCountLimit>900</acceptedCountLimit>-->
-<!--</forager>-->
-<!--
-<acceptor>
-  <lateAcceptanceSize>100</lateAcceptanceSize>
-</acceptor>
-<forager>
-  <acceptedCountLimit>4</acceptedCountLimit>
-</forager>
--->
-<!--
-<acceptor>
-  <lateAcceptanceSize>1000</lateAcceptanceSize>
-</acceptor>
-<forager>
-  <acceptedCountLimit>1</acceptedCountLimit>
-</forager>
--->
-<!--
-<acceptor>
-  <entityTabuRatio>0.02</entityTabuRatio>
-</acceptor>
-<forager>
-  <acceptedCountLimit>1000</acceptedCountLimit>
-</forager>
--->
-<!--
-<acceptor>
-  <entityTabuRatio>0.02</entityTabuRatio>
-</acceptor>
-<forager>
-  <acceptedCountLimit>2000</acceptedCountLimit>
-</forager>
--->
-<!--
-<acceptor>
-	<entityTabuSize>10</entityTabuSize>
-</acceptor>
-<forager>
-	<acceptedCountLimit>2000</acceptedCountLimit>
-</forager>
--->
-<!--<acceptor>-->
-  <!--<stepCountingHillClimbingSize>200</stepCountingHillClimbingSize>-->
-<!--</acceptor>-->
-<!--<forager>-->
-  <!--<acceptedCountLimit>1</acceptedCountLimit>-->
-<!--</forager>-->
