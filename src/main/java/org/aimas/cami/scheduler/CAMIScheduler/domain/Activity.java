@@ -136,7 +136,7 @@ public class Activity extends AbstractPersistable {
 		return "Activity [activityType=" + activityType + ", activityPeriod=" + activityPeriod + "]";
 	}
 
-	public String getLabel() {
+	public String getActivityTypeCode() {
 		return activityType.getCode();
 	}
 
