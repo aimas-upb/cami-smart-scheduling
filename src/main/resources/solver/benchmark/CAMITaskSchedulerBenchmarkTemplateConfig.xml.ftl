@@ -7,6 +7,7 @@
       <xStreamAnnotatedClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</xStreamAnnotatedClass>
       <inputSolutionFile>data/activityschedule/unsolved/simple-activity.xml</inputSolutionFile>
       <problemStatisticType>BEST_SCORE</problemStatisticType>
+      <problemStatisticType>SCORE_CALCULATION_SPEED</problemStatisticType>
     </problemBenchmarks>
     <solver>
       <solutionClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</solutionClass>
@@ -103,6 +104,34 @@
     </solver>
   </solverBenchmark>
 -->
+<#list ["1hard/10soft", "1hard/20soft", "1hard/50soft", "1hard/70soft", "1hard/100soft", "2hard/10soft", "2hard/20soft", "2hard/50soft", "2hard/70soft", "2hard/100soft"] as startingTemperature>
+  <solverBenchmark>
+    <name>Simulated Annealing startingTemperature ${startingTemperature?replace("/", "_")}</name>
+    <solver>
+      <constructionHeuristic>
+        <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+      </constructionHeuristic>
+      <localSearch>
+        <unionMoveSelector>
+          <changeMoveSelector>
+	        <cacheType>PHASE</cacheType>
+            <entitySelector>
+              <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
+            </entitySelector>
+          </changeMoveSelector>
+        </unionMoveSelector>
+        <acceptor>
+          <simulatedAnnealingStartingTemperature>${startingTemperature}</simulatedAnnealingStartingTemperature>
+          <lateAcceptanceSize>100</lateAcceptanceSize>
+        </acceptor>
+        <forager>
+          <acceptedCountLimit>1</acceptedCountLimit>
+        </forager>
+      </localSearch>
+    </solver>
+  </solverBenchmark>
+</#list>
+<!--
 <#list [100, 200, 300, 400, 500, 600] as lateAcceptanceSize>
   <#list [1, 2, 3, 4] as acceptedCountLimit>
     <solverBenchmark>
@@ -132,4 +161,5 @@
     </solverBenchmark>
   </#list>
 </#list>
+-->
 </plannerBenchmark>
