@@ -67,6 +67,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.score.FeasibilityScore;
 import org.optaplanner.core.api.score.Score;
+import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.swing.impl.SwingUtils;
 import org.optaplanner.swing.impl.TangoColorFactory;
 import org.slf4j.Logger;
@@ -113,6 +114,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	private ShowConstraintMatchesDialogAction showConstraintMatchesDialogAction;
 
 	private Timer timer;
+	
+	private HardSoftScore lastScore;
 
 	public SolverAndPersistenceFrame(SolutionBusiness<Solution_> solutionBusiness,
 			SolutionPanel<Solution_> solutionPanel) {
@@ -151,7 +154,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 							if (Utility.getNumberOfMinutesInPermittedInterval(
 									new Time(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute()),
 									activity.getActivityPeriodTime()) == 15) {
-								JOptionPane.showMessageDialog(null, activity.getLabel() + " is in 15 minutes!",
+								JOptionPane.showMessageDialog(null, activity.getActivityTypeCode() + " is in 15 minutes!",
 										"Activity notification", JOptionPane.INFORMATION_MESSAGE);
 							}
 						}
@@ -350,6 +353,14 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		}
 
 	}
+	
+	public void activityPostponedAction() {
+		if (solveButton.isEnabled()) {
+			setSolvingState(true);
+			Solution_ planningProblem = solutionBusiness.getSolution();
+			new SolveWorker(planningProblem).execute();
+		}
+	}
 
 	protected class SolveWorker extends SwingWorker<Solution_, Void> {
 
@@ -375,6 +386,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			} catch (ExecutionException e) {
 				throw new IllegalStateException("Solving failed.", e.getCause());
 			} finally {
+				lastScore = ((ActivitySchedule) solutionBusiness.getSolution()).getScore();
+				//System.out.println(lastScore);
 				setSolvingState(false);
 				resetScreen();
 			}
@@ -702,6 +715,23 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			terminateSolvingEarlyButton.requestFocus();
 		} else {
 			solveButton.requestFocus();
+
+			ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
+
+			for (Activity activity: solution.getActivityList()) {
+				if (activity.getPostpone() != null) {
+					
+					activity.setPostpone(null);
+
+					//solutionBusiness.getIndictmentMap().get(activity).getScoreTotal().toShortString();
+
+					// if the activity has some constraint broken
+					if (lastScore.getSoftScore() != 0) {
+						JOptionPane.showMessageDialog(null, activity.getActivityTypeCode() + " could not be postponed!\n The period hasn't changed.",
+								"Activity postpone notification", JOptionPane.WARNING_MESSAGE);
+					}
+				}
+			}
 		}
 		solutionPanel.setEnabled(!solving);
 		progressBar.setIndeterminate(solving);
