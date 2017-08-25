@@ -22,9 +22,11 @@
   </constructionHeuristic>
   <localSearch>
     <termination>
-      <unimprovedSecondsSpentLimit>15</unimprovedSecondsSpentLimit>
+      <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
     </termination>
     <unionMoveSelector>
+      <changeMoveSelector/>
+      <swapMoveSelector/>
 	  <changeMoveSelector>
 	    <cacheType>PHASE</cacheType>
         <entitySelector>
@@ -33,7 +35,7 @@
       </changeMoveSelector>
     </unionMoveSelector>
     <acceptor>
-      <simulatedAnnealingStartingTemperature>2hard/100soft</simulatedAnnealingStartingTemperature>
+      <simulatedAnnealingStartingTemperature>2hard/200soft</simulatedAnnealingStartingTemperature>
       <lateAcceptanceSize>100</lateAcceptanceSize>
     </acceptor>
     <forager>
