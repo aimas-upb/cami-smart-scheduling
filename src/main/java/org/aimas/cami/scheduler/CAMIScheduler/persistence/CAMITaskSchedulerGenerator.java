@@ -52,7 +52,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	}
 
 	private void writeActivitySchedule() {
-		String filename = "simple-activity";
+		String filename = "cami-scenario";
 		File outputFile = new File(outputDir, filename + ".xml");
 		logger.info("Create an Activity Schedule");
 		ActivitySchedule activitySchedule = createActivitySchedule();
