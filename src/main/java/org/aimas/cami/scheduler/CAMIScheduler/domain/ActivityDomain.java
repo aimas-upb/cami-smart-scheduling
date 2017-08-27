@@ -18,6 +18,11 @@ public class ActivityDomain extends AbstractPersistable {
 	private String description;
 	private int index;
 
+	public ActivityDomain(String code) {
+		super();
+		this.code = code;
+	}
+
 	public String getCode() {
 		return code;
 	}

@@ -1,6 +1,9 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
+import java.util.List;
+
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
@@ -17,7 +20,8 @@ public class ActivityType extends AbstractPersistable {
 	private Difficulty difficulty; // EASY, HARD, MEDIUM
 	private int calories; // expressed in kcal
 	private int instancesPerDay, instancesPerWeek;
-	private Timeslot imposedTimeslot, permittedTimeslot;
+	private ActivityPeriod imposedTime;
+	private List<TimeInterval> permittedIntervals;
 	private ActivityCategory activityCategory;
 	private String description;
 
@@ -46,8 +50,6 @@ public class ActivityType extends AbstractPersistable {
 	}
 
 	public int getDuration() {
-		if (duration == 0)
-			return Integer.MIN_VALUE;
 		return duration;
 	}
 
@@ -56,8 +58,6 @@ public class ActivityType extends AbstractPersistable {
 	}
 
 	public Difficulty getDifficulty() {
-		if (difficulty == null)
-			return Difficulty.NODIFFICULTY;
 		return difficulty;
 	}
 
@@ -66,8 +66,6 @@ public class ActivityType extends AbstractPersistable {
 	}
 
 	public int getCalories() {
-		if (calories == 0)
-			return Integer.MIN_VALUE;
 		return calories;
 	}
 
@@ -91,20 +89,20 @@ public class ActivityType extends AbstractPersistable {
 		this.instancesPerWeek = instancesPerWeek;
 	}
 
-	public Timeslot getImposedTimeslot() {
-		return imposedTimeslot;
+	public ActivityPeriod getImposedPeriod() {
+		return imposedTime;
 	}
 
-	public void setImposedTimeslot(Timeslot imposedTimeslot) {
-		this.imposedTimeslot = imposedTimeslot;
+	public void setImposedPeriod(ActivityPeriod imposedTimeslot) {
+		this.imposedTime = imposedTimeslot;
 	}
 
-	public Timeslot getPermittedTimeslot() {
-		return permittedTimeslot;
+	public List<TimeInterval> getPermittedIntervals() {
+		return permittedIntervals;
 	}
 
-	public void setPermittedTimeslot(Timeslot permittedTimeslot) {
-		this.permittedTimeslot = permittedTimeslot;
+	public void setPermittedIntervals(List<TimeInterval> permittedIntervals) {
+		this.permittedIntervals = permittedIntervals;
 	}
 
 	public String getDescription() {
