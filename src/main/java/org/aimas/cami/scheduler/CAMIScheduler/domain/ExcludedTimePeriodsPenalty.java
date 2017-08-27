@@ -8,17 +8,16 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * pentru timeslot exclus de forma e.g. "dupa ora 4", as putea seta o valoare
- * mare pentru ora(e.g. ora 24), pentru capatul max, aici, in metoda, sau in XML
- * input
+ * mare pentru ora(e.g. ora 24), pentru capatul max
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("ExcludedTimeslots")
-public class ExcludedTimeslotsPenalty extends AbstractPersistable {
+@XStreamAlias("ExcludedTimePeriodsPenalty")
+public class ExcludedTimePeriodsPenalty extends AbstractPersistable {
 
 	private ActivityType activityType;
-	private List<ActivityPeriod> excludedActivityPeriods;
+	private List<PeriodInterval> excludedActivityPeriods;
 
 	public ActivityType getActivityType() {
 		return activityType;
@@ -28,12 +27,18 @@ public class ExcludedTimeslotsPenalty extends AbstractPersistable {
 		this.activityType = activityType;
 	}
 
-	public List<ActivityPeriod> getExcludedActivityPeriods() {
+	public List<PeriodInterval> getExcludedActivityPeriods() {
 		return excludedActivityPeriods;
 	}
 
-	public void setExcludedActivityPeriods(List<ActivityPeriod> excludedActivityPeriods) {
+	public void setExcludedActivityPeriods(List<PeriodInterval> excludedActivityPeriods) {
 		this.excludedActivityPeriods = excludedActivityPeriods;
+	}
+
+	@Override
+	public String toString() {
+		return "ExcludedTimePeriodsPenalty [activityType=" + activityType + ", excludedActivityPeriods="
+				+ excludedActivityPeriods + "]";
 	}
 
 }

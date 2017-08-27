@@ -1,9 +1,8 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
-import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.RelativeActivityPeriodUpdateListener;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.CustomShadowVariable;
-import org.optaplanner.core.api.domain.variable.PlanningVariableReference;
+import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -12,16 +11,17 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Bogdan
  *
  */
-@PlanningEntity
-@XStreamAlias("FollowingActivity")
+@XStreamAlias("RelativeActivity")
 public class RelativeActivity extends Activity {
 
-	// shadow variable (it depends on a planning variable)
-	// if the planning variable changes, then the shadow variable adjusts
-	// according to it
-	private ActivityPeriod relativeActivityPeriod;
-
 	private int offset; // in minutes
+
+	@PlanningVariable(valueRangeProviderRefs = {
+			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class)
+	@Override
+	public ActivityPeriod getActivityPeriod() {
+		return super.getActivityPeriod();
+	}
 
 	public int getOffset() {
 		return offset;
@@ -31,19 +31,22 @@ public class RelativeActivity extends Activity {
 		this.offset = offset;
 	}
 
-	@CustomShadowVariable(variableListenerClass = RelativeActivityPeriodUpdateListener.class, sources = {
-			@PlanningVariableReference(entityClass = Activity.class, variableName = "activityPeriod") })
-	public ActivityPeriod getRelativeActivityPeriod() {
-		return relativeActivityPeriod;
+	public Time getRelativeActivityPeriodTime() {
+		if (activityPeriod == null)
+			return null;
+		return activityPeriod.getTime();
 	}
 
-	public void setRelativeActivityPeriod(ActivityPeriod relativeActivityPeriod) {
-		this.relativeActivityPeriod = relativeActivityPeriod;
+	public WeekDay getRelativeActivityWeekDay() {
+		if (activityPeriod == null)
+			return null;
+		return activityPeriod.getWeekDay();
 	}
 
 	@Override
 	public String toString() {
-		return "RelativeActivity [relativeActivityPeriod=" + relativeActivityPeriod + ", offset=" + offset + "]";
+		return "RelativeActivity [activityType=" + getActivityType() + ", activityPeriod=" + getActivityPeriod()
+				+ ", offset=" + offset + "]";
 	}
 
 }

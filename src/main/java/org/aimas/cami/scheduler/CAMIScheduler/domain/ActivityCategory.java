@@ -21,6 +21,13 @@ public class ActivityCategory extends AbstractPersistable {
 	 */
 	private ActivityDomain domain;
 
+	public ActivityCategory(String code, ActivityDomain domain, long id) {
+		super();
+		this.code = code;
+		this.domain = domain;
+		this.id = id;
+	}
+
 	public String getCode() {
 		return code;
 	}

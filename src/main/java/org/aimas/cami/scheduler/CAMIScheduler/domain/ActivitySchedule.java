@@ -30,8 +30,10 @@ public class ActivitySchedule extends AbstractPersistable {
 	private List<ActivityPeriod> activityPeriodList;
 	private List<ActivityCategory> activityCategoryList;
 	private List<ActivityType> activityTypeList;
-	private List<Timeslot> timeslotList;
-	private List<ExcludedTimeslotsPenalty> excludedTimeslotsList;
+	private List<Time> timeList;
+	private List<ExcludedTimePeriodsPenalty> excludedTimePeriodsList;
+	private List<RelativeActivityPenalty> relativeActivityPenaltyList;
+	private List<ActivityRelativeToActivityCategory> activityRelativeToCategoryList;
 	private List<WeekDay> weekdayList;
 
 	@XStreamConverter(HardSoftScoreXStreamConverter.class)
@@ -60,7 +62,7 @@ public class ActivitySchedule extends AbstractPersistable {
 		this.activityDomainList = activityDomainList;
 	}
 
-	@ValueRangeProvider(id = "periodRange")
+	@ValueRangeProvider(id = "activityPeriodRange")
 	@ProblemFactCollectionProperty
 	public List<ActivityPeriod> getActivityPeriodList() {
 		return activityPeriodList;
@@ -75,8 +77,8 @@ public class ActivitySchedule extends AbstractPersistable {
 		return activityCategoryList;
 	}
 
-	public void setActivitySubcategoryList(List<ActivityCategory> activityCategoryategoryList) {
-		this.activityCategoryList = activityCategoryategoryList;
+	public void setActivityCategoryList(List<ActivityCategory> activityCategoryList) {
+		this.activityCategoryList = activityCategoryList;
 	}
 
 	@ProblemFactCollectionProperty
@@ -89,12 +91,12 @@ public class ActivitySchedule extends AbstractPersistable {
 	}
 
 	@ProblemFactCollectionProperty
-	public List<Timeslot> getTimeslotList() {
-		return timeslotList;
+	public List<Time> getTimeList() {
+		return timeList;
 	}
 
-	public void setTimeslotList(List<Timeslot> timeslotList) {
-		this.timeslotList = timeslotList;
+	public void setTimeList(List<Time> timeList) {
+		this.timeList = timeList;
 	}
 
 	@ProblemFactCollectionProperty
@@ -102,8 +104,8 @@ public class ActivitySchedule extends AbstractPersistable {
 		return weekdayList;
 	}
 
-	public void setWeekdayList(List<WeekDay> weekdayList) {
-		this.weekdayList = weekdayList;
+	public void setWeekdayList(List<WeekDay> weekDayList) {
+		this.weekdayList = weekDayList;
 	}
 
 	/*
@@ -122,12 +124,31 @@ public class ActivitySchedule extends AbstractPersistable {
 	}
 
 	@ProblemFactCollectionProperty
-	public List<ExcludedTimeslotsPenalty> getExcludedTimeslotsList() {
-		return excludedTimeslotsList;
+	public List<ExcludedTimePeriodsPenalty> getExcludedTimePeriodsList() {
+		return excludedTimePeriodsList;
 	}
 
-	public void setExcludedTimeslotsList(List<ExcludedTimeslotsPenalty> excludedTimeslotsList) {
-		this.excludedTimeslotsList = excludedTimeslotsList;
+	public void setExcludedTimePeriodsList(List<ExcludedTimePeriodsPenalty> excludedTimePeriodsList) {
+		this.excludedTimePeriodsList = excludedTimePeriodsList;
+	}
+
+	@ProblemFactCollectionProperty
+	public List<RelativeActivityPenalty> getRelativeActivityPenaltyList() {
+		return relativeActivityPenaltyList;
+	}
+
+	public void setRelativeActivityPenaltyList(List<RelativeActivityPenalty> relativeActivityPenaltyList) {
+		this.relativeActivityPenaltyList = relativeActivityPenaltyList;
+	}
+
+	@ProblemFactCollectionProperty
+	public List<ActivityRelativeToActivityCategory> getActivityRelativeToCategoryList() {
+		return activityRelativeToCategoryList;
+	}
+
+	public void setActivityRelativeToCategoryList(
+			List<ActivityRelativeToActivityCategory> activityRelativeToCategoryList) {
+		this.activityRelativeToCategoryList = activityRelativeToCategoryList;
 	}
 
 	// ************************************************************************

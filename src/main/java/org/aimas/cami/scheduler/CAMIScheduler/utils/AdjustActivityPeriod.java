@@ -2,7 +2,6 @@ package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Timeslot;
 
 /**
  * Shift a period(to left or to right).
@@ -12,65 +11,94 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Timeslot;
  */
 public class AdjustActivityPeriod {
 
-	public static ActivityPeriod setPeriod(ActivityPeriod period, int offsetTime) {
-		Timeslot timeslot = period.getTimeslot();
-		Time[] newTimeslotInterval = new Time[2];
+	public static ActivityPeriod getAdjustedPeriod(ActivityPeriod period, int offsetTime) {
+		Time time = period.getTime();
 
-		int leftIntervalTimeslotMinutes = timeslot.getTimeslot()[0].getMinutes();
-		int rightIntervalTimeslotMinutes = timeslot.getTimeslot()[1].getMinutes();
+		int timeMinutes = time.getMinutes();
+
+		// System.out.println("Minutes:" + timeMinutes + " " + offsetTime);
 
 		// convert "offsetTime" minutes to Time format
 		int hours = offsetTime / 60;
 		int minutes = offsetTime % 60;
 
-		// adjust left and right intervals
-		if (leftIntervalTimeslotMinutes + minutes >= 60) {
+		// adjust the time
+		if (timeMinutes + minutes >= 60) {
 			hours++;
-			minutes = (leftIntervalTimeslotMinutes + minutes) % 60;
-		} else if (leftIntervalTimeslotMinutes + minutes < 0) {
+			minutes = (timeMinutes + minutes) % 60;
+		} else if (timeMinutes + minutes < 0) {
 			hours--;
-			minutes = leftIntervalTimeslotMinutes + minutes;
+			minutes = 60 + (timeMinutes + minutes);
+		} else if (timeMinutes + minutes == 0) {
+			minutes = 0;
+		} else {
+			minutes += timeMinutes;
 		}
 
-		newTimeslotInterval[0] = new Time(timeslot.getTimeslot()[0].getHour() + hours, leftIntervalTimeslotMinutes + minutes);
+		return new ActivityPeriod(new Time(time.getHour() + hours, minutes), period.getWeekDay());
+	}
 
-		// reset
-		hours = offsetTime / 60;
-		minutes = offsetTime % 60;
+	public static ActivityPeriod setRelativeActivityPeriod(ActivityPeriod period, int offsetTime, int activityDuration,
+			int relativeActivityDuration) {
 
-		if (rightIntervalTimeslotMinutes + minutes >= 60) {
-			hours++;
-			minutes = (rightIntervalTimeslotMinutes + minutes) % 60;
-		} else if (rightIntervalTimeslotMinutes + minutes < 0) {
-			hours--;
-			minutes = rightIntervalTimeslotMinutes + minutes;
+		ActivityPeriod activityEndPeriod = null;
+		Time time;
+
+		if (offsetTime > 0)
+			activityEndPeriod = getAdjustedPeriod(period, activityDuration);
+		else if (offsetTime < 0) {
+			offsetTime -= relativeActivityDuration;
 		}
 
-		newTimeslotInterval[1] = new Time(timeslot.getTimeslot()[1].getHour() + hours, rightIntervalTimeslotMinutes + minutes);
+		if (activityEndPeriod == null)
+			time = period.getTime();
+		else
+			time = activityEndPeriod.getTime();
 
-		return new ActivityPeriod(new Timeslot(newTimeslotInterval), period.getWeekDay());
+		int timeMinutes = time.getMinutes();
+
+		// convert "offsetTime" minutes to Time format
+		int hours = offsetTime / 60;
+		int minutes = offsetTime % 60;
+
+		// adjust the time
+		if (timeMinutes + minutes >= 60) {
+			hours++;
+			minutes = (timeMinutes + minutes) % 60;
+		} else if (timeMinutes + minutes < 0) {
+			hours--;
+			minutes = 60 + (timeMinutes + minutes);
+		} else if (timeMinutes + minutes == 0) {
+			minutes = 0;
+		} else {
+			minutes += timeMinutes;
+		}
+
+		return new ActivityPeriod(new Time(time.getHour() + hours, minutes), period.getWeekDay());
 	}
 
 	/*
-	public static ActivityPeriod SetActivityPeriodInPermittedTimeslot(ActivityPeriod activityPeriod,
-			Timeslot permittedTimeslot, int duration) {
-		Time[] timeslotInterval = new Time[2];
-		timeslotInterval[0] = permittedTimeslot.getTimeslot()[0];
+	 * public static ActivityPeriod
+	 * SetActivityPeriodInPermittedTimeslot(ActivityPeriod activityPeriod,
+	 * Timeslot permittedTimeslot, int duration) { Time[] timeslotInterval = new
+	 * Time[2];
+	 * 
+	 * if (activityPeriod == null || activityPeriod.getTimeslot() == null)
+	 * timeslotInterval[0] = permittedTimeslot.getTimeslot()[0]; else
+	 * timeslotInterval[0] = activityPeriod.getTimeslot().getTimeslot()[1];
+	 * 
+	 * int hours = duration / 60; int minutes = duration % 60;
+	 * 
+	 * if (timeslotInterval[0].getMinutes() + minutes >= 60) { hours++; minutes
+	 * = (timeslotInterval[0].getMinutes() + minutes) % 60; }
+	 * 
+	 * timeslotInterval[1] = new Time(timeslotInterval[0].getHour() + hours,
+	 * minutes);
+	 * 
+	 * Timeslot timeslot = new Timeslot(timeslotInterval);
+	 * activityPeriod.setTimeslot(timeslot);
+	 * 
+	 * return activityPeriod; }
+	 */
 
-		int hours = duration / 60;
-		int minutes = duration % 60;
-
-		if (timeslotInterval[0].getMinutes() + minutes >= 60) {
-			hours++;
-			minutes = (timeslotInterval[0].getMinutes() + minutes) % 60;
-		}
-
-		timeslotInterval[1] = new Time(timeslotInterval[0].getHour() + hours, minutes);
-
-		Timeslot timeslot = new Timeslot(timeslotInterval);
-		activityPeriod.setTimeslot(timeslot);
-
-		return activityPeriod;
-	}
-	*/
 }

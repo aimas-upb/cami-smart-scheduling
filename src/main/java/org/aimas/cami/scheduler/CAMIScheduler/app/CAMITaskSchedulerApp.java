@@ -22,7 +22,7 @@ public class CAMITaskSchedulerApp extends CommonApp<ActivitySchedule> {
 
 	public CAMITaskSchedulerApp() {
 		super("Weekly Scheduler [CAMI]", "Schedule daily activities every week based on some " + "imposed constraints.",
-				SOLVER_CONFIG, null); // no swing, no logo
+				SOLVER_CONFIG, null); // no logo
 	}
 
 	@Override

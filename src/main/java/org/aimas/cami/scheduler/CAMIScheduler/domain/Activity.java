@@ -1,12 +1,17 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
-import org.optaplanner.core.api.domain.entity.PlanningEntity;
-import org.optaplanner.core.api.domain.variable.PlanningVariable;
+import java.util.List;
+
+import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
+import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
+import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamInclude;
 
 /**
  * 
@@ -15,20 +20,16 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  */
 @PlanningEntity(movableEntitySelectionFilter = MovableActivitySelectionFilter.class)
 @XStreamAlias("Activity")
-public abstract class Activity extends AbstractPersistable {
+@XStreamInclude({ RelativeActivity.class })
+public class Activity extends AbstractPersistable {
 
 	// planning variable
-	// a planning variable is initially uninitialized(unspecified in the XML)
-	// it can be initialized in the XML by specifying a reference to a period
 	// set "immovable" to true, so its period can't be modified
-	private ActivityPeriod activityPeriod;
+	protected ActivityPeriod activityPeriod;
 
 	private ActivityType activityType;
 
-	// RelativeActivity class is used to update the period of an 
-	// activity relative(RelativeActivity.class) to a "normal" activity(Activity.class)
-	// the update is made in RelativeActivityPeriodUpdateListener.class
-	private RelativeActivity relativeActivity;
+	private Postpone postpone;
 
 	// if an activity is immovable or not
 	private boolean immovable;
@@ -36,7 +37,8 @@ public abstract class Activity extends AbstractPersistable {
 
 	// (optional) it can be set to null
 	// by specifying @PlanningVariable(..., nullable = true)
-	@PlanningVariable(valueRangeProviderRefs = { "periodRange" })
+	@PlanningVariable(valueRangeProviderRefs = {
+			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class)
 	public ActivityPeriod getActivityPeriod() {
 		return activityPeriod;
 	}
@@ -45,27 +47,12 @@ public abstract class Activity extends AbstractPersistable {
 		this.activityPeriod = activityPeriod;
 	}
 
-	/*
-	 * public void setStartActivityPeriod(int hour, int minutes) { Time[]
-	 * timeslot = { new Time(hour, minutes), null };
-	 * 
-	 * activityPeriod.setTimeslot(new Timeslot(timeslot)); }
-	 */
-
 	public ActivityType getActivityType() {
 		return activityType;
 	}
 
 	public void setActivityType(ActivityType activityType) {
 		this.activityType = activityType;
-	}
-
-	public RelativeActivity getRelativeActivity() {
-		return relativeActivity;
-	}
-
-	public void setRelativeActivity(RelativeActivity relativeActivity) {
-		this.relativeActivity = relativeActivity;
 	}
 
 	public boolean isImmovable() {
@@ -86,19 +73,34 @@ public abstract class Activity extends AbstractPersistable {
 
 	// other useful methods
 
-	/*
-	 * public ActivityPeriod getAdjustedActivityPeriod() { if
-	 * (activityType.getPermittedTimeslot() != null &&
-	 * activityPeriod.getTimeslot() == null) { return
-	 * AdjustActivityPeriod.SetActivityPeriodInPermittedTimeslot(activityPeriod,
-	 * activityType.getPermittedTimeslot(), activityType.getDuration()); } else
-	 * {
-	 * 
-	 * } return null; }
-	 */
+	public Postpone getPostpone() {
+		return postpone;
+	}
+
+	public void setPostpone(Postpone postpone) {
+		this.postpone = postpone;
+	}
+
+	public ActivityPeriod getActivityEndPeriod() {
+		if (activityPeriod == null) {
+			return null;
+		}
+		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, activityType.getDuration());
+	}
+
+	public Time getActivityEndPeriodTime() {
+		if (activityPeriod == null) {
+			return null;
+		}
+		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, activityType.getDuration()).getTime();
+	}
 
 	public ActivityCategory getActivityCategory() {
 		return activityType.getActivityCategory();
+	}
+
+	public int getActivityDuration() {
+		return activityType.getDuration();
 	}
 
 	public int getInstancesPerDay() {
@@ -109,25 +111,33 @@ public abstract class Activity extends AbstractPersistable {
 		return activityType.getInstancesPerWeek();
 	}
 
-	public Timeslot getImposedTimeslot() {
-		return activityType.getImposedTimeslot();
+	public ActivityPeriod getImposedPeriod() {
+		return activityType.getImposedPeriod();
 	}
 
-	public Timeslot getPermittedTimeslot() {
-		return activityType.getPermittedTimeslot();
+	public List<TimeInterval> getPermittedInterval() {
+		return activityType.getPermittedIntervals();
 	}
 
-	public Timeslot getActivityPeriodTimeslot() {
-		return activityPeriod.getTimeslot();
+	public Time getActivityPeriodTime() {
+		if (activityPeriod == null)
+			return null;
+		return activityPeriod.getTime();
 	}
 
 	public WeekDay getActivityPeriodWeekday() {
+		if (activityPeriod == null)
+			return null;
 		return activityPeriod.getWeekDay();
 	}
 
 	@Override
 	public String toString() {
 		return "Activity [activityType=" + activityType + ", activityPeriod=" + activityPeriod + "]";
+	}
+
+	public String getActivityTypeCode() {
+		return activityType.getCode();
 	}
 
 }

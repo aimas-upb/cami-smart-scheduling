@@ -4,7 +4,11 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.optaplanner.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
-
+/**
+ * 
+ * @author Bogdan
+ *
+ */
 public class MovableActivitySelectionFilter implements SelectionFilter<ActivitySchedule, Activity> {
 
 	@Override
