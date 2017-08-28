@@ -33,7 +33,6 @@ public class ActivitySchedule extends AbstractPersistable {
 	private List<Time> timeList;
 	private List<ExcludedTimePeriodsPenalty> excludedTimePeriodsList;
 	private List<RelativeActivityPenalty> relativeActivityPenaltyList;
-	private List<ActivityRelativeToActivityCategory> activityRelativeToCategoryList;
 	private List<WeekDay> weekdayList;
 
 	@XStreamConverter(HardSoftScoreXStreamConverter.class)
@@ -139,16 +138,6 @@ public class ActivitySchedule extends AbstractPersistable {
 
 	public void setRelativeActivityPenaltyList(List<RelativeActivityPenalty> relativeActivityPenaltyList) {
 		this.relativeActivityPenaltyList = relativeActivityPenaltyList;
-	}
-
-	@ProblemFactCollectionProperty
-	public List<ActivityRelativeToActivityCategory> getActivityRelativeToCategoryList() {
-		return activityRelativeToCategoryList;
-	}
-
-	public void setActivityRelativeToCategoryList(
-			List<ActivityRelativeToActivityCategory> activityRelativeToCategoryList) {
-		this.activityRelativeToCategoryList = activityRelativeToCategoryList;
 	}
 
 	// ************************************************************************
