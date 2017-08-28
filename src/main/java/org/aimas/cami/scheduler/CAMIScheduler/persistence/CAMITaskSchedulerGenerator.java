@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityCategory;
@@ -18,6 +17,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
@@ -35,7 +35,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	private static final int DAY_LIST_SIZE = 7;
 	private static final int TIME_LIST_SIZE = 24;
 	private static final Time[] TIMES = new Time[TIME_LIST_SIZE * grainIntervalsPerHour];
-	private Map<String, Activity> staticActivities = new HashMap<>();
 
 	public static void main(String[] args) {
 		CAMITaskSchedulerGenerator camiTSG = new CAMITaskSchedulerGenerator();
@@ -68,6 +67,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		createWeekDayList(activitySchedule);
 		createActivityPeriodList(activitySchedule);
 		setImposedActivities(activitySchedule);
+		predefinedScoreParametrization(activitySchedule);
 
 		return activitySchedule;
 	}
@@ -606,6 +606,23 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		for (Activity activity : activitySchedule.getActivityList())
 			if (activity.getImposedPeriod() != null)
 				activity.setActivityPeriod(activity.getImposedPeriod());
+	}
+
+	private void predefinedScoreParametrization(ActivitySchedule activitySchedule) {
+		ScoreParametrization scoreParametrization = new ScoreParametrization();
+
+		scoreParametrization.setInstancesPerDayPenalty(2);
+		scoreParametrization.setInstancesPerWeekPenalty(1);
+		scoreParametrization.setPeriodConflictPenalty(3);
+		scoreParametrization.setEarlyHour(6);
+		scoreParametrization.setDistanceBetweenExerciseAndMeal(120);
+		scoreParametrization.setDistanceBetweenExercises(180);
+		scoreParametrization.setHardExerciseLateHour(20);
+
+		scoreParametrization.setId(0L);
+
+		activitySchedule.setScoreParametrization(scoreParametrization);
+
 	}
 
 	private void createTimeList(ActivitySchedule activitySchedule) {
