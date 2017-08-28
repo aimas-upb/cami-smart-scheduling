@@ -6,6 +6,7 @@ import static org.aimas.cami.scheduler.CAMIScheduler.swingui.TimeTablePanel.Head
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -52,6 +53,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	JButton addActivityButton;
 	private long postponeId;
 
+	private ScoreParametrizationDialog scoreParametrizationDialog;
+	private AbstractAction scoreParametrizationAction;
+
 	public CAMITaskSchedulerPanel() {
 		setLayout(new BorderLayout());
 		JTabbedPane tabbedPane = new JTabbedPane();
@@ -60,12 +64,45 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		tabbedPane.add("Week Schedule", new JScrollPane(schedulePanel));
 		tabbedPane.add("Add a new activity", addActivityPanel);
 		add(tabbedPane, BorderLayout.CENTER);
+		add(createScoreParametrizationPanel(), BorderLayout.SOUTH);
 		setPreferredSize(PREFERRED_SCROLLABLE_VIEWPORT_SIZE);
 		createAddActivityButton();
 
 		timeMap = new HashMap<>();
 		weekDayMap = new HashMap<>();
 		postponeId = 0L;
+	}
+
+	private JPanel createScoreParametrizationPanel() {
+		JPanel scoreParametrizationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		scoreParametrizationAction = new AbstractAction("Edit scoring parameters and preferences") {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (solutionBusiness.isSolving()) {
+					JOptionPane.showMessageDialog(CAMITaskSchedulerPanel.this.getTopLevelAncestor(),
+							"The GUI does not support this action during solving.\n"
+									+ "\nTerminate solving first and try again.",
+							"Unsupported in GUI", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				scoreParametrizationDialog.setScoreParametrization(getSolution().getScoreParametrization());
+				scoreParametrizationDialog.setVisible(true);
+
+			}
+		};
+
+		scoreParametrizationAction.setEnabled(false);
+		scoreParametrizationPanel.add(new JButton(scoreParametrizationAction));
+
+		return scoreParametrizationPanel;
+	}
+
+	@Override
+	public void setSolverAndPersistenceFrame(SolverAndPersistenceFrame solverAndPersistenceFrame) {
+		super.setSolverAndPersistenceFrame(solverAndPersistenceFrame);
+		scoreParametrizationDialog = new ScoreParametrizationDialog(solverAndPersistenceFrame, this);
 	}
 
 	@Override
@@ -78,6 +115,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		schedulePanel.reset();
 		defineGrid(activitySchedule);
 		fillCells(activitySchedule);
+		scoreParametrizationAction.setEnabled(true);
 		repaint();
 	}
 
