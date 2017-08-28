@@ -44,7 +44,7 @@
   </constructionHeuristic>
   <localSearch>
     <termination>
-      <unimprovedSecondsSpentLimit>30</unimprovedSecondsSpentLimit>
+      <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
     </termination>
     <unionMoveSelector>
       <changeMoveSelector/>
