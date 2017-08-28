@@ -152,8 +152,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			if (activity instanceof RelativeActivity)
 				if (((RelativeActivity) activity).getRelativeActivityPeriod() != null)
 					schedulePanel.addCell(
-							weekDayMap
-									.get(((RelativeActivity) activity).getRelativeActivityPeriod().getWeekDay().getDayIndex()),
+							weekDayMap.get(((RelativeActivity) activity).getRelativeActivityPeriod().getWeekDay()
+									.getDayIndex()),
 							timeMap.get(((RelativeActivity) activity).getRelativeActivityPeriod().getPeriodHour()),
 							createButton(activity, color, toolTip));
 				else
@@ -191,11 +191,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		}
 
 		if (activity instanceof RelativeActivity)
-			if (((RelativeActivity) activity).getActivityPeriod() == null)
+			if (((RelativeActivity) activity).getRelativeActivityPeriod() == null)
 				plannedTime = "";
 			else
 				plannedTime = ((RelativeActivity) activity).getRelativeActivityPeriod().getLabel() + " - "
-						+ ((RelativeActivity) activity).getActivityEndPeriod().getTime().getLabel();
+						+ ((RelativeActivity) activity).getRelativeActivityEndPeriod().getTime().getLabel();
 		else {
 			if (activity.getActivityPeriod() == null)
 				plannedTime = "";
@@ -204,8 +204,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 						+ activity.getActivityEndPeriod().getTime().getLabel();
 		}
 
-		button.setToolTipText("<html>" + activity.getActivityTypeCode() + ":" + activity.getId() + "<br/><br/>" + plannedTime
-				+ "<br/><br/>" + toolTip.substring(6));
+		button.setToolTipText("<html>" + activity.getActivityTypeCode() + ":" + activity.getId() + "<br/><br/>"
+				+ plannedTime + "<br/><br/>" + toolTip.substring(6));
 		return button;
 	}
 
