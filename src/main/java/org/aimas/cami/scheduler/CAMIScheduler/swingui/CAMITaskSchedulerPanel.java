@@ -150,11 +150,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			String toolTip = determinePlanningEntityTooltip(activity);
 
 			if (activity instanceof RelativeActivity)
-				if (((RelativeActivity) activity).getActivityPeriod() != null)
+				if (((RelativeActivity) activity).getRelativeActivityPeriod() != null)
 					schedulePanel.addCell(
 							weekDayMap
-									.get(((RelativeActivity) activity).getActivityPeriod().getWeekDay().getDayIndex()),
-							timeMap.get(((RelativeActivity) activity).getActivityPeriod().getPeriodHour()),
+									.get(((RelativeActivity) activity).getRelativeActivityPeriod().getWeekDay().getDayIndex()),
+							timeMap.get(((RelativeActivity) activity).getRelativeActivityPeriod().getPeriodHour()),
 							createButton(activity, color, toolTip));
 				else
 					schedulePanel.addCell(((RelativeActivity) activity).getRelativeActivityWeekDay(),
@@ -194,7 +194,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			if (((RelativeActivity) activity).getActivityPeriod() == null)
 				plannedTime = "";
 			else
-				plannedTime = ((RelativeActivity) activity).getActivityPeriod().getLabel() + " - "
+				plannedTime = ((RelativeActivity) activity).getRelativeActivityPeriod().getLabel() + " - "
 						+ ((RelativeActivity) activity).getActivityEndPeriod().getTime().getLabel();
 		else {
 			if (activity.getActivityPeriod() == null)
