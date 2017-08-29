@@ -139,7 +139,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setIndex(i);
-			activity.setAssignedRelativeActivityList(new HashMap<>());
+			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
 
@@ -161,7 +161,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setIndex(i);
-			activity.setAssignedRelativeActivityList(new HashMap<>());
+			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
 
@@ -183,7 +183,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setIndex(i);
-			activity.setAssignedRelativeActivityList(new HashMap<>());
+			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
 

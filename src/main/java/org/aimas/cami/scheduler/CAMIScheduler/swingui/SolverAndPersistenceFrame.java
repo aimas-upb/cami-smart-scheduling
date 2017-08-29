@@ -151,7 +151,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					if (activity.getActivityPeriod() != null) {
 						if ((LocalDateTime.now().getDayOfWeek().getValue() - 1) == activity.getActivityPeriodWeekday()
 								.getDayIndex()) {
-							if (Utility.getNumberOfMinutesInPermittedInterval(
+							if (Utility.getNumberOfMinutesInInterval(
 									new Time(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute()),
 									activity.getActivityPeriodTime()) == 15) {
 								JOptionPane.showMessageDialog(null, activity.getActivityTypeCode() + " is in 15 minutes!",

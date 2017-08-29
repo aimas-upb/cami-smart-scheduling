@@ -39,12 +39,12 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 
 						if (relativeActivity.getActivityTypeCode().equals(rap.getRelativeActivityType())) {
 
-							if (!activityEntity.getAssignedRelativeActivityList()
+							if (!activityEntity.getAssignedToRelativeActivityMap()
 									.containsKey(relativeActivity.getActivityTypeCode())
 									&& !relativeActivity.isAssigned()) {
 
 								scoreDirector.beforeProblemPropertyChanged(activityEntity);
-								activityEntity.getAssignedRelativeActivityList()
+								activityEntity.getAssignedToRelativeActivityMap()
 										.put(relativeActivity.getActivityTypeCode(), relativeActivity.getId());
 								scoreDirector.afterProblemPropertyChanged(activityEntity);
 
@@ -56,9 +56,9 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 
 							if (relativeActivity != null && activityEntity.getActivityPeriod() != null) {
 
-								if (activityEntity.getAssignedRelativeActivityList()
+								if (activityEntity.getAssignedToRelativeActivityMap()
 										.containsKey(relativeActivity.getActivityTypeCode())
-										&& activityEntity.getAssignedRelativeActivityList()
+										&& activityEntity.getAssignedToRelativeActivityMap()
 												.get(relativeActivity.getActivityTypeCode())
 												.equals(relativeActivity.getId())) {
 

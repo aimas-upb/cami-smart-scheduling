@@ -31,7 +31,7 @@ public class Activity extends AbstractPersistable {
 	private ActivityType activityType;
 
 	private Postpone postpone;
-	Map<String, Long> assignedRelativeActivityList;
+	Map<String, Long> assignedToRelativeActivityMap;
 
 	// if an activity is immovable or not
 	private boolean immovable;
@@ -79,12 +79,12 @@ public class Activity extends AbstractPersistable {
 		return postpone;
 	}
 
-	public Map<String, Long> getAssignedRelativeActivityList() {
-		return assignedRelativeActivityList;
+	public Map<String, Long> getAssignedToRelativeActivityMap() {
+		return assignedToRelativeActivityMap;
 	}
 
-	public void setAssignedRelativeActivityList(Map<String, Long> assignedRelativeActivityList) {
-		this.assignedRelativeActivityList = assignedRelativeActivityList;
+	public void setAssignedToRelativeActivityMap(Map<String, Long> assignedRelativeActivityList) {
+		this.assignedToRelativeActivityMap = assignedRelativeActivityList;
 	}
 
 	public void setPostpone(Postpone postpone) {
