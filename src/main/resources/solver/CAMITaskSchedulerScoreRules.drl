@@ -78,21 +78,32 @@ rule "overlapPermittedInterval"
 			$activityPeriod != null
 		)
 	then
-		int score = 0;
+		int minDiff = Integer.MAX_VALUE;
 
 		for (TimeInterval permittedInterval : $activityType.getPermittedIntervals()) {
 
-			if (!fullOverlap($activityPeriod.getTime(), $activity.getActivityEndPeriod().getTime(), permittedInterval.getMinStart(), permittedInterval.getMaxEnd())) {
+			if (!fullOverlap($activityPeriod.getTime(), $activity.getActivityEndPeriod().getTime(), 
+					permittedInterval.getMinStart(), permittedInterval.getMaxEnd())) {
 
-				score += -10;
+				if (exclusiveBefore($activityPeriod.getTime(), permittedInterval.getMinStart())) {
+
+					int diffToPermittedMinStart = getNumberOfMinutesInInterval($activityPeriod.getTime(), permittedInterval.getMinStart());
+					minDiff = diffToPermittedMinStart < minDiff ? diffToPermittedMinStart : minDiff;
+
+				} else if (exclusiveAfter(permittedInterval.getMaxEnd(), $activity.getActivityEndPeriod().getTime())) {
+
+					int diffToPermitedMaxEnd = getNumberOfMinutesInInterval(permittedInterval.getMaxEnd(), $activity.getActivityEndPeriod().getTime());
+					minDiff = diffToPermitedMaxEnd < minDiff ? diffToPermitedMaxEnd : minDiff;
+
+				}
 
 			} else {
-				score = 0;
+				minDiff = 0;
 				break;
 			}
 
 		}
-		scoreHolder.addHardConstraintMatch(kcontext, score);
+		scoreHolder.addHardConstraintMatch(kcontext, -minDiff);
 end
 
 // the activity must not be planned in the excludedTimeslots
@@ -105,12 +116,12 @@ rule "excludedTimeslots"
 
 		Activity(
 			activityType.code == $excludedActivityType.code, 
+			$activityType : activityType, 
 			$activityPeriod : activityPeriod, 
 			$activityPeriod != null
 		)
 	then
 		List<PeriodInterval> excludedPeriods = $excludedTimePeriodsPenalty.getExcludedActivityPeriods();
-		int score = 0;
 
 		// iterate through all excluded timeslots
 		for (int i = 0; i < excludedPeriods.size(); i++) {
@@ -121,14 +132,29 @@ rule "excludedTimeslots"
 				($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getStartPeriod().getWeekDayIndex() && 
 					$activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getEndPeriod().getWeekDayIndex())) {
 
-				if (checkTimeslots($activityPeriod, excludedPeriodInterval, $excludedActivityType.getDuration(), false, false)) {
-					score =+ -3;
+				if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), false, false)) {
+
+					ActivityPeriod activityEndPeriod = getAdjustedPeriod($activityPeriod, $activityType.getDuration());
+					Time activityStartTime = $activityPeriod.getTime();
+					Time activityEndTime = activityEndPeriod.getTime();
+					Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
+					Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
+
+					if (fullOverlap(activityStartTime, activityEndTime, excludedStartTime, excludedEndTime)) {
+
+						scoreHolder.addHardConstraintMatch(kcontext, 
+							-Math.min(getNumberOfMinutesInInterval(excludedStartTime, activityEndTime), 
+								getNumberOfMinutesInInterval(activityStartTime, excludedEndTime)));
+
+					} else {
+						scoreHolder.addHardConstraintMatch(kcontext, 
+							-Math.min(Math.abs(getNumberOfMinutesInInterval(activityStartTime, excludedStartTime)), 
+								Math.abs(getNumberOfMinutesInInterval(activityStartTime, excludedEndTime))));
+					}
 				}
 
 			}
 		}
-
-		scoreHolder.addHardConstraintMatch(kcontext, score);
 end
 
 // plan an activity "instancesPerWeek" instances in a week
@@ -250,35 +276,22 @@ rule "instancesPerDayRelativeActivity"
 
 		$weekDay : WeekDay()
 
-		$result : String()
+		$result : Number()
 			from accumulate(
 				$activity : RelativeActivity(activityType.code == $activityType.code, relativeActivityPeriod != null, $relativeActivityPeriod : relativeActivityPeriod, 
 					relativeActivityPeriod.weekDay.dayIndex == $weekDay.dayIndex),
 				init( int occurences = 0;
-					  String hours = "";
 				),
 				action(
 					occurences++;
-
-					// add the activity hour to the list
-					hours += $relativeActivityPeriod.getPeriodHour() + " ";
 				),
-				result(hours + ":" + occurences)
+				result(occurences)
 			)
 		exists RelativeActivity(activityType.code == $activityType.code, relativeActivityPeriod != null, relativeActivityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
 	then
 		//help(drools, "instancesPerDay");
 
-		String[] resultSplit = $result.split(":");
-		int occurences = Integer.valueOf(resultSplit[1]);
-		String[] hours = resultSplit[0].split(" ");
-
-		// sort the hours
-		Arrays.sort(hours, new Comparator<String>() {
-			public int compare(String s1, String s2) {
-				return Integer.valueOf(s1).compareTo(Integer.valueOf(s2));
-			}
-		});
+		int occurences = $result.intValue();
 
 		if (occurences != $instancesPerDay)
 			scoreHolder.addHardConstraintMatch(kcontext, 
