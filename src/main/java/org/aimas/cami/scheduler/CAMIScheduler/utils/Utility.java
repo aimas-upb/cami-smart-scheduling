@@ -15,9 +15,9 @@ import org.drools.core.spi.KnowledgeHelper;
  *
  */
 public class Utility {
-	
+
 	public static void main(String[] args) {
-		System.out.println(fullOverlap(new Time(19, 05), new Time(19, 35), new Time(7, 0), new Time(10, 0)));
+		System.out.println(fullOverlap(new Time(19, 05), new Time(19, 35), new Time(19, 04), new Time(19, 34)));
 	}
 
 	public static void help(final KnowledgeHelper drools, final String message) {
@@ -29,7 +29,7 @@ public class Utility {
 		System.out.println("\nrule triggered: " + drools.getRule().getName());
 	}
 
-	public static Integer getNumberOfMinutesInPermittedInterval(Time left, Time right) {
+	public static Integer getNumberOfMinutesInInterval(Time left, Time right) {
 
 		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
 	}
@@ -78,18 +78,36 @@ public class Utility {
 		return false;
 	}
 
-	public static boolean exclusiveBefore(Time startA, Time endB) {
-		if (startA.getHour() < endB.getHour())
+	public static boolean exclusiveBefore(Time timeA, Time timeB) {
+		if (timeA.getHour() < timeB.getHour())
 			return true;
-		else if (startA.getHour() == endB.getHour())
-			if (startA.getMinutes() < endB.getMinutes())
+		else if (timeA.getHour() == timeB.getHour())
+			if (timeA.getMinutes() < timeB.getMinutes())
 				return true;
 		return false;
 	}
 
-	public static boolean fullOverlap(Time startA, Time endA, Time startB, Time endB) {
+	public static boolean exclusiveAfter(Time timeA, Time timeB) {
+		if (timeA.getHour() < timeB.getHour())
+			return true;
+		else if (timeA.getHour() == timeB.getHour())
+			if (timeA.getMinutes() < timeB.getMinutes())
+				return true;
+		return false;
+	}
 
-		if (before(startB, startA) && before(endA, endB))
+	/**
+	 * 
+	 * @param startActivity
+	 * @param endActivity
+	 * @param startPermittedInterval
+	 * @param endPermittedInterval
+	 * @return true, if the activity and the permitted interval fully overlap.
+	 */
+	public static boolean fullOverlap(Time startActivity, Time endActivity, Time startPermittedInterval,
+			Time endPermittedInterval) {
+
+		if (before(startPermittedInterval, startActivity) && before(endActivity, endPermittedInterval))
 			return true;
 
 		return false;
