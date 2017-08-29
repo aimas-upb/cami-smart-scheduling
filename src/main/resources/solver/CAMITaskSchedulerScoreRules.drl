@@ -25,10 +25,11 @@ import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.helper;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.help;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.stringToCharacterSet;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.checkTimeslots;
-import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.getNumberOfMinutesInPermittedInterval;
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.getNumberOfMinutesInInterval;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.before;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.after;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.exclusiveBefore;
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.exclusiveAfter;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.fullOverlap;
 
 import java.util.List;
@@ -318,11 +319,11 @@ rule "distanceBetweenExerciseAndMeal"
 			activityType.activityCategory != null, 
 			activityType.activityCategory.code == "Meal", 
 			$mealPeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
-			Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.time, $mealPeriod.time)) <= $scoreParametrization.distanceBetweenExerciseAndMeal
+			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.time, $mealPeriod.time)) <= $scoreParametrization.distanceBetweenExerciseAndMeal
 		)
 	then
 		scoreHolder.addSoftConstraintMatch(kcontext, 
-			Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.getTime(), $mealPeriod.getTime())) - $scoreParametrization.getDistanceBetweenExerciseAndMeal());
+			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.getTime(), $mealPeriod.getTime())) - $scoreParametrization.getDistanceBetweenExerciseAndMeal());
 end
 
 // should be minutes between exercises
@@ -344,11 +345,11 @@ rule "distanceBetweenExercises"
 			activityType.activityCategory.code == "Indoor physical exercises", 
 			this != $exercise, 
 			$otherExercisePeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
-			Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.time, $otherExercisePeriod.time)) <= $scoreParametrization.distanceBetweenExercises
+			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.time, $otherExercisePeriod.time)) <= $scoreParametrization.distanceBetweenExercises
 		)
 	then
 		scoreHolder.addSoftConstraintMatch(kcontext, 
-			Math.abs(getNumberOfMinutesInPermittedInterval($exercisePeriod.getTime(), $otherExercisePeriod.getTime())) - $scoreParametrization.getDistanceBetweenExercises());
+			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.getTime(), $otherExercisePeriod.getTime())) - $scoreParametrization.getDistanceBetweenExercises());
 end
 
 // don't plan a hard activity too late
@@ -382,17 +383,17 @@ rule "postponeActivity"
 
 		if ($postpone.getPostponeType() == PostponeType.POSTPONE_15MIN) {
 			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())) {
-				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInPermittedInterval( 
+				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
 					getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime(), $activityPeriod.getTime()));
 			}
 		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_30MIN) {
 			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 30).getTime())) {
-				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInPermittedInterval( 
+				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
 					getAdjustedPeriod($postpone.getPostponePeriod(), 30).getTime(), $activityPeriod.getTime()));
 			}
 		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_1HOUR) {
 			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 60).getTime())) {
-				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInPermittedInterval( 
+				scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
 					getAdjustedPeriod($postpone.getPostponePeriod(), 60).getTime(), $activityPeriod.getTime()));
 			}
 		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_DAY) {
