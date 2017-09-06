@@ -1,17 +1,18 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain.solver;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.optaplanner.core.impl.domain.variable.listener.VariableListener;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
@@ -28,8 +29,11 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 
 		for (RelativeActivityPenalty rap : activitySchedule.getRelativeActivityPenaltyList()) {
 
-			boolean rightEntity = activityEntity.getActivityTypeCode().equals(rap.getStaticActivityType())
-					|| activityEntity.getActivityCategory().getCode().equals(rap.getCategory());
+			boolean rightEntity = activityEntity.getActivityTypeCode().equals(rap.getStaticActivityType());
+
+			if (activityEntity.getActivityCategory() != null
+					&& activityEntity.getActivityCategory().getCode().equals(rap.getCategory()))
+				rightEntity = true;
 
 			if (rightEntity) {
 
@@ -63,18 +67,30 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 												.equals(relativeActivity.getId())) {
 
 									if (relativeActivity.getOffset() < 0) {
+
+										ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
+												relativeActivity,
+												AdjustActivityPeriod.getAdjustedPeriod(
+														activityEntity.getActivityPeriod(),
+														relativeActivity.getOffset()
+																- relativeActivity.getActivityType().getDuration()),
+												-5);
+
 										scoreDirector.beforeVariableChanged(relativeActivity, "relativeActivityPeriod");
-										relativeActivity
-												.setRelativeActivityPeriod(AdjustActivityPeriod.getAdjustedPeriod(
-														activityEntity.getActivityPeriod(), relativeActivity.getOffset()
-																- relativeActivity.getActivityType().getDuration()));
+										relativeActivity.setRelativeActivityPeriod(period);
 										scoreDirector.afterVariableChanged(relativeActivity, "relativeActivityPeriod");
 
 									} else {
+
+										ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
+												relativeActivity,
+												AdjustActivityPeriod.getAdjustedPeriod(
+														activityEntity.getActivityEndPeriod(),
+														relativeActivity.getOffset()),
+												5);
+
 										scoreDirector.beforeVariableChanged(relativeActivity, "relativeActivityPeriod");
-										relativeActivity.setRelativeActivityPeriod(AdjustActivityPeriod
-												.getAdjustedPeriod(activityEntity.getActivityEndPeriod(),
-														relativeActivity.getOffset()));
+										relativeActivity.setRelativeActivityPeriod(period);
 										scoreDirector.afterVariableChanged(relativeActivity, "relativeActivityPeriod");
 
 									}
