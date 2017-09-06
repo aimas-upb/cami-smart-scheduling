@@ -726,9 +726,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					//solutionBusiness.getIndictmentMap().get(activity).getScoreTotal().toShortString();
 
 					// if the activity has some constraint broken
-					if (lastScore.getSoftScore() != 0) {
-						JOptionPane.showMessageDialog(null, activity.getActivityTypeCode() + " could not be postponed!\n The period hasn't changed.",
-								"Activity postpone notification", JOptionPane.WARNING_MESSAGE);
+					if (lastScore.getHardScore() != 0 || lastScore.getSoftScore() != 0) {
+						JOptionPane.showMessageDialog(null, "This is the best solution found.",
+								"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
 					}
 				}
 			}
