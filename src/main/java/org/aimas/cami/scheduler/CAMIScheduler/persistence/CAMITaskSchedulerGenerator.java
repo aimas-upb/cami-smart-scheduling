@@ -333,8 +333,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			walkInPark2.setActivityCategory(activitySchedule.getActivityCategoryList().get(1));
 			walkInPark2.setCode("Walk in park");
 			walkInPark2.setCalories(100);
-			walkInPark2.setDuration(119);
-			walkInPark2.setImposedPeriod(new ActivityPeriod(new Time(17, 1), new WeekDay(3)));
+			walkInPark2.setDuration(120);
+			walkInPark2.setImposedPeriod(new ActivityPeriod(new Time(17, 0), new WeekDay(3)));
 			walkInPark2.setId(typeId++);
 
 			activityTypeList.add(walkInPark2);
@@ -550,6 +550,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				tvSeries.setCode("Favorite TV Series 2");
 				tvSeries.setDuration(60);
 				tvSeries.setId(typeId++);
+				tvSeries.setInstancesPerDay(1);
 				tvSeries.setImposedPeriod(new ActivityPeriod(new Time(16, 0), new WeekDay(i)));
 
 				activityTypeList.add(tvSeries);
