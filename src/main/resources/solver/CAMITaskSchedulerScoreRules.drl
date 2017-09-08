@@ -65,10 +65,11 @@ rule "periodConflict"
 		)
 	then
 
-		if (before($activityPeriod1.getTime(), $activity2.getActivityEndPeriod().getTime()) && 
-			after($activityPeriod2.getTime(), $activity1.getActivityEndPeriod().getTime()))
-
-			scoreHolder.addHardConstraintMatch(kcontext, (-$scoreParametrization.getPeriodConflictPenalty()));
+		if (!($activity1.getImposedPeriod() != null && $activity2.getImposedPeriod() != null))
+			if (before($activityPeriod1.getTime(), $activity2.getActivityEndPeriod().getTime()) && 
+				after($activityPeriod2.getTime(), $activity1.getActivityEndPeriod().getTime()))
+	
+				scoreHolder.addHardConstraintMatch(kcontext, (-$scoreParametrization.getPeriodConflictPenalty()));
 end
 
 rule "periodConflictBetweenRelativeActivityAndActivity"
@@ -97,7 +98,7 @@ end
 rule "overlapPermittedInterval"
 	when
 		$activity : Activity(
-			activityType.permittedIntervals != null, 
+			activityType.permittedIntervals != null && activityType.permittedIntervals.size != 0, 
 			$activityType : activityType, 
 			$activityPeriod : activityPeriod, 
 			$activityPeriod != null, 
@@ -129,6 +130,7 @@ rule "overlapPermittedInterval"
 			}
 
 		}
+
 		scoreHolder.addHardConstraintMatch(kcontext, -minDiff);
 end
 
