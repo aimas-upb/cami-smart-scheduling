@@ -151,7 +151,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					if (activity.getActivityPeriod() != null) {
 						if ((LocalDateTime.now().getDayOfWeek().getValue() - 1) == activity.getActivityPeriodWeekday()
 								.getDayIndex()) {
-							if (Utility.getNumberOfMinutesInPermittedInterval(
+							if (Utility.getNumberOfMinutesInInterval(
 									new Time(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute()),
 									activity.getActivityPeriodTime()) == 15) {
 								JOptionPane.showMessageDialog(null, activity.getActivityTypeCode() + " is in 15 minutes!",
@@ -726,9 +726,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					//solutionBusiness.getIndictmentMap().get(activity).getScoreTotal().toShortString();
 
 					// if the activity has some constraint broken
-					if (lastScore.getSoftScore() != 0) {
-						JOptionPane.showMessageDialog(null, activity.getActivityTypeCode() + " could not be postponed!\n The period hasn't changed.",
-								"Activity postpone notification", JOptionPane.WARNING_MESSAGE);
+					if (lastScore.getHardScore() != 0 || lastScore.getSoftScore() != 0) {
+						JOptionPane.showMessageDialog(null, "This is the best solution found.",
+								"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
 					}
 				}
 			}

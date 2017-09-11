@@ -1,6 +1,7 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import java.util.List;
+import java.util.Map;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
@@ -30,6 +31,7 @@ public class Activity extends AbstractPersistable {
 	private ActivityType activityType;
 
 	private Postpone postpone;
+	Map<String, Long> assignedToRelativeActivityMap;
 
 	// if an activity is immovable or not
 	private boolean immovable;
@@ -75,6 +77,14 @@ public class Activity extends AbstractPersistable {
 
 	public Postpone getPostpone() {
 		return postpone;
+	}
+
+	public Map<String, Long> getAssignedToRelativeActivityMap() {
+		return assignedToRelativeActivityMap;
+	}
+
+	public void setAssignedToRelativeActivityMap(Map<String, Long> assignedRelativeActivityList) {
+		this.assignedToRelativeActivityMap = assignedRelativeActivityList;
 	}
 
 	public void setPostpone(Postpone postpone) {
