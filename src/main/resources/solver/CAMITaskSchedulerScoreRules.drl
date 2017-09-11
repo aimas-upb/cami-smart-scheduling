@@ -534,7 +534,7 @@ rule "postponeActivity"
 			}
 		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_DAY) {
 			if (before($activityPeriod.getTime(), $postpone.getPostponePeriod().getTime())) {
-				scoreHolder.addHardConstraintMatch(kcontext, -2);
+				scoreHolder.addHardConstraintMatch(kcontext, -30);
 			}
 		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_WEEK) {
 			if ($postpone.getPostponePeriod().getWeekDay().getDayIndex() < 6)
