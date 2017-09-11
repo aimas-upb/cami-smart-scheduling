@@ -1,15 +1,10 @@
 package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.drools.core.spi.KnowledgeHelper;
@@ -20,9 +15,9 @@ import org.drools.core.spi.KnowledgeHelper;
  *
  */
 public class Utility {
-
+	
 	public static void main(String[] args) {
-		System.out.println(fullOverlap(new Time(19, 05), new Time(19, 35), new Time(19, 04), new Time(19, 34)));
+		System.out.println(fullOverlap(new Time(19, 05), new Time(19, 35), new Time(7, 0), new Time(10, 0)));
 	}
 
 	public static void help(final KnowledgeHelper drools, final String message) {
@@ -34,7 +29,7 @@ public class Utility {
 		System.out.println("\nrule triggered: " + drools.getRule().getName());
 	}
 
-	public static Integer getNumberOfMinutesInInterval(Time left, Time right) {
+	public static Integer getNumberOfMinutesInPermittedInterval(Time left, Time right) {
 
 		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
 	}
@@ -83,177 +78,22 @@ public class Utility {
 		return false;
 	}
 
-	public static boolean exclusiveBefore(Time timeA, Time timeB) {
-		if (timeA.getHour() < timeB.getHour())
+	public static boolean exclusiveBefore(Time startA, Time endB) {
+		if (startA.getHour() < endB.getHour())
 			return true;
-		else if (timeA.getHour() == timeB.getHour())
-			if (timeA.getMinutes() < timeB.getMinutes())
+		else if (startA.getHour() == endB.getHour())
+			if (startA.getMinutes() < endB.getMinutes())
 				return true;
 		return false;
 	}
 
-	public static boolean exclusiveAfter(Time timeA, Time timeB) {
-		if (timeA.getHour() < timeB.getHour())
-			return true;
-		else if (timeA.getHour() == timeB.getHour())
-			if (timeA.getMinutes() < timeB.getMinutes())
-				return true;
-		return false;
-	}
+	public static boolean fullOverlap(Time startA, Time endA, Time startB, Time endB) {
 
-	/**
-	 * 
-	 * @param startActivity
-	 * @param endActivity
-	 * @param startPermittedInterval
-	 * @param endPermittedInterval
-	 * @return true, if the activity and the permitted interval fully overlap.
-	 */
-	public static boolean fullOverlap(Time startActivity, Time endActivity, Time startPermittedInterval,
-			Time endPermittedInterval) {
-
-		if (before(startPermittedInterval, startActivity) && before(endActivity, endPermittedInterval))
+		if (before(startB, startA) && before(endA, endB))
 			return true;
 
 		return false;
 
-	}
-
-	/**
-	 * Get all the free periods from the schedule(except some periods that are
-	 * constrained).
-	 * 
-	 * @param activitySchedule
-	 * @param activityEntity
-	 * @return List<ActivityPeriod> activityPeriodList
-	 */
-	public static List<ActivityPeriod> getFreePeriods(ActivitySchedule activitySchedule, Activity activityEntity) {
-		List<ActivityPeriod> activityPeriodList = new ArrayList<>();
-		boolean overlapFound = false;
-
-		for (ActivityPeriod activityPeriod : activitySchedule.getActivityPeriodList()) {
-			overlapFound = false;
-			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
-					activityEntity.getActivityDuration());
-
-			if (activityPeriod.getPeriodHour() >= 6) {
-
-				// modularize this bunch of code
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
-				// modularize this bunch of code
-
-				if (!overlapFound) {
-					activityPeriodList.add(activityPeriod);
-				}
-			}
-		}
-		return activityPeriodList;
-	}
-
-	public static List<ActivityPeriod> getFreePeriodsInInterval(ActivitySchedule activitySchedule,
-			Activity activityEntity, TimeInterval timeInterval, int dayIndex) {
-
-		List<ActivityPeriod> activityPeriodList = new ArrayList<>();
-		boolean overlapFound = false;
-
-		for (ActivityPeriod activityPeriod : activitySchedule.getActivityPeriodList()) {
-
-			overlapFound = false;
-			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
-					activityEntity.getActivityDuration());
-
-			if (activityPeriod.getWeekDayIndex() == dayIndex && activityPeriod.getPeriodHour() >= 6
-					&& fullOverlap(activityPeriod.getTime(), activityEndPeriod.getTime(), timeInterval.getMinStart(),
-							timeInterval.getMaxEnd())) {
-
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
-
-				if (!overlapFound) {
-					activityPeriodList.add(activityPeriod);
-				}
-			}
-		}
-		return activityPeriodList;
-	}
-
-	public static List<ActivityPeriod> getFreePeriodsLaterThisWeek(ActivitySchedule activitySchedule,
-			Activity activityEntity, int dayIndex) {
-
-		List<ActivityPeriod> activityPeriodList = new ArrayList<>();
-		boolean overlapFound = false;
-
-		for (ActivityPeriod activityPeriod : activitySchedule.getActivityPeriodList()) {
-
-			overlapFound = false;
-			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
-					activityEntity.getActivityDuration());
-
-			if (activityPeriod.getWeekDayIndex() > dayIndex && activityPeriod.getPeriodHour() >= 6) {
-
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
-
-				if (!overlapFound) {
-					activityPeriodList.add(activityPeriod);
-				}
-			}
-		}
-		return activityPeriodList;
-	}
-
-	public static ActivityPeriod getRelativeActivityPeriod(ActivitySchedule activitySchedule, Activity activityEntity,
-			ActivityPeriod activityPeriod, int increment) {
-
-		boolean overlapFound = false;
-
-		while (true) {
-
-			overlapFound = false;
-			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
-					activityEntity.getActivityDuration());
-
-			overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
-
-			if (!overlapFound) {
-				return activityPeriod;
-			}
-
-			activityPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, increment);
-		}
-
-	}
-
-	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
-			ActivityPeriod activityEndPeriod, boolean overlapFound) {
-		for (Activity activity : activitySchedule.getActivityList()) {
-			if (!(activity instanceof RelativeActivity)) {
-				if (activity.getActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
-
-					if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
-							&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
-						overlapFound = true;
-						continue;
-
-					}
-				}
-			} else {
-				if (((RelativeActivity) activity).getRelativeActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == ((RelativeActivity) activity)
-								.getRelativeActivityWeekDay().getDayIndex()) {
-
-					if (Utility.before(activityPeriod.getTime(),
-							((RelativeActivity) activity).getRelativeActivityEndPeriod().getTime())
-							&& Utility.after(((RelativeActivity) activity).getRelativeActivityPeriod().getTime(),
-									activityEndPeriod.getTime())) {
-						overlapFound = true;
-						continue;
-
-					}
-				}
-			}
-		}
-
-		return overlapFound;
 	}
 
 	public static Boolean checkTimeslots(ActivityPeriod activityPeriod, PeriodInterval excludedPeriodInterval,

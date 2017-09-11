@@ -2,7 +2,6 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import java.util.List;
 
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -13,7 +12,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  *
  */
 @XStreamAlias("ActivityType")
-public class ActivityType extends AbstractPersistable implements Labeled {
+public class ActivityType extends AbstractPersistable {
 
 	private String code;
 	private int index;
@@ -117,11 +116,6 @@ public class ActivityType extends AbstractPersistable implements Labeled {
 	@Override
 	public String toString() {
 		return "ActivityType [code=" + code + ", description=" + description + "]";
-	}
-
-	@Override
-	public String getLabel() {
-		return code;
 	}
 
 }
