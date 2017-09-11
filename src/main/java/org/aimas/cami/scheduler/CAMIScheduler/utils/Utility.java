@@ -138,9 +138,7 @@ public class Utility {
 
 			if (activityPeriod.getPeriodHour() >= 6) {
 
-				// modularize this bunch of code
 				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
-				// modularize this bunch of code
 
 				if (!overlapFound) {
 					activityPeriodList.add(activityPeriod);
@@ -185,10 +183,11 @@ public class Utility {
 		for (ActivityPeriod activityPeriod : activitySchedule.getActivityPeriodList()) {
 
 			overlapFound = false;
-			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
-					activityEntity.getActivityDuration());
 
 			if (activityPeriod.getWeekDayIndex() > dayIndex && activityPeriod.getPeriodHour() >= 6) {
+
+				ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
+						activityEntity.getActivityDuration());
 
 				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
 
