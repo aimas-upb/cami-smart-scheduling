@@ -64,6 +64,10 @@
       <groupId>org.optaplanner</groupId>
       <artifactId>optaplanner-persistence-xstream</artifactId>
     </dependency>
+    <dependency><!-- JSON:Jackson integration -->
+      <groupId>org.optaplanner</groupId>
+      <artifactId>optaplanner-persistence-jackson</artifactId>
+    </dependency>
     <dependency><!-- TODO add examples that use the JAXB integration -->
       <groupId>org.optaplanner</groupId>
       <artifactId>optaplanner-persistence-jaxb</artifactId>

@@ -17,9 +17,23 @@
 package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.persistence.xstream.impl.domain.solution.XStreamSolutionFileIO;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.json.JsonHierarchicalStreamDriver;
+import com.thoughtworks.xstream.io.json.JsonWriter;
 
 /**
  * @param <Solution_>
@@ -30,9 +44,21 @@ public abstract class XStreamSolutionDao<Solution_> extends AbstractSolutionDao<
 
 	protected XStreamSolutionFileIO<Solution_> xStreamSolutionFileIO;
 
+	protected XStream xstream;
+
 	public XStreamSolutionDao(String dirName, Class... xStreamAnnotations) {
 		super(dirName);
 		xStreamSolutionFileIO = new XStreamSolutionFileIO<>(xStreamAnnotations);
+
+		xstream = new XStream(new JsonHierarchicalStreamDriver() {
+
+			public HierarchicalStreamWriter createWriter(Writer writer) {
+				return new JsonWriter(writer, JsonWriter.DROP_ROOT_MODE);
+			}
+		});
+		
+		xstream.setMode(XStream.XPATH_ABSOLUTE_REFERENCES);
+		xstream.alias("ActivitySchedule", ActivitySchedule.class);
 	}
 
 	@Override
@@ -42,15 +68,21 @@ public abstract class XStreamSolutionDao<Solution_> extends AbstractSolutionDao<
 
 	@Override
 	public Solution_ readSolution(File inputSolutionFile) {
-		Solution_ solution = xStreamSolutionFileIO.read(inputSolutionFile);
-		logger.info("Opened: {}", inputSolutionFile);
-		return solution;
+		
+		try (Reader reader = new InputStreamReader(new FileInputStream(inputSolutionFile), "UTF-8")) {
+            return (Solution_) xstream.fromXML(reader);
+        } catch (XStreamException | IOException e) {
+            throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputSolutionFile + ").", e);
+        }
 	}
 
 	@Override
 	public void writeSolution(Solution_ solution, File outputSolutionFile) {
-		xStreamSolutionFileIO.write(solution, outputSolutionFile);
-		logger.info("Saved: {}", outputSolutionFile);
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputSolutionFile), "UTF-8")) {
+			xstream.toXML(solution, writer);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputSolutionFile + ").", e);
+        }
 	}
 
 }
