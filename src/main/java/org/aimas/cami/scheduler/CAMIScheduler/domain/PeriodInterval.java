@@ -14,16 +14,6 @@ public class PeriodInterval extends AbstractPersistable {
 
 	ActivityPeriod startPeriod, endPeriod;
 
-	public PeriodInterval() {
-
-	}
-
-	public PeriodInterval(ActivityPeriod startPeriod, ActivityPeriod endPeriod) {
-		super();
-		this.startPeriod = startPeriod;
-		this.endPeriod = endPeriod;
-	}
-
 	public ActivityPeriod getStartPeriod() {
 		return startPeriod;
 	}
