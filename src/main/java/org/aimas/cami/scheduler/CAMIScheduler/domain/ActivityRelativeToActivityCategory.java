@@ -1,22 +1,21 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
-import java.util.List;
-
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * Represent a relativity between a relative activity and a category (e.g. Meal)
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("RelativeActivityPenalty")
-public class RelativeActivityPenalty extends AbstractPersistable {
+@XStreamAlias("ActivityRelativeToActivityCategory")
+public class ActivityRelativeToActivityCategory extends AbstractPersistable {
 
 	private RelativeType relativeType;
 	private ActivityType relativeActivityType;
-	private ActivityType staticActivityType;
+	String category;
 
 	public RelativeType getRelativeType() {
 		return relativeType;
@@ -34,18 +33,18 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 		this.relativeActivityType = relativeActivityType;
 	}
 
-	public ActivityType getStaticActivityType() {
-		return staticActivityType;
+	public String getCategory() {
+		return category;
 	}
 
-	public void setStaticActivityType(ActivityType staticActivityType) {
-		this.staticActivityType = staticActivityType;
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 	@Override
 	public String toString() {
-		return "RelativeActivityPenalty [relativeType=" + relativeType + ", relativeActivityType="
-				+ relativeActivityType + ", staticActivityType=" + staticActivityType + "]";
+		return "ActivityRelativeToActivityCategory [relativeType=" + relativeType + ", relativeActivityType="
+				+ relativeActivityType + ", category=" + category + "]";
 	}
 
 }
