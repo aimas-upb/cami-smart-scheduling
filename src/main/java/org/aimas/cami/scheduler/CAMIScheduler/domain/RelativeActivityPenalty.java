@@ -15,8 +15,9 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 public class RelativeActivityPenalty extends AbstractPersistable {
 
 	private RelativeType relativeType;
-	private ActivityType relativeActivityType;
-	private ActivityType staticActivityType;
+	private String relativeActivityType;
+	private String staticActivityType;
+	private String category;
 
 	public RelativeType getRelativeType() {
 		return relativeType;
@@ -26,20 +27,28 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 		this.relativeType = relativeType;
 	}
 
-	public ActivityType getRelativeActivityType() {
+	public String getRelativeActivityType() {
 		return relativeActivityType;
 	}
 
-	public void setRelativeActivityType(ActivityType relativeActivityType) {
+	public void setRelativeActivityType(String relativeActivityType) {
 		this.relativeActivityType = relativeActivityType;
 	}
 
-	public ActivityType getStaticActivityType() {
+	public String getStaticActivityType() {
 		return staticActivityType;
 	}
 
-	public void setStaticActivityType(ActivityType staticActivityType) {
+	public void setStaticActivityType(String staticActivityType) {
 		this.staticActivityType = staticActivityType;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 	@Override

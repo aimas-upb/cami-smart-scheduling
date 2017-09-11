@@ -6,6 +6,7 @@ import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.domain.solution.drools.ProblemFactCollectionProperty;
+import org.optaplanner.core.api.domain.solution.drools.ProblemFactProperty;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 //import org.optaplanner.core.api.score.buildin.simple.SimpleScore;
@@ -33,16 +34,11 @@ public class ActivitySchedule extends AbstractPersistable {
 	private List<Time> timeList;
 	private List<ExcludedTimePeriodsPenalty> excludedTimePeriodsList;
 	private List<RelativeActivityPenalty> relativeActivityPenaltyList;
-	private List<ActivityRelativeToActivityCategory> activityRelativeToCategoryList;
 	private List<WeekDay> weekdayList;
+	private ScoreParametrization scoreParametrization;
 
 	@XStreamConverter(HardSoftScoreXStreamConverter.class)
 	private HardSoftScore score;
-
-	/*
-	 * @XStreamConverter(SimpleScoreXStreamConverter.class) private SimpleScore
-	 * score;
-	 */
 
 	@PlanningEntityCollectionProperty
 	public List<Activity> getActivityList() {
@@ -108,12 +104,6 @@ public class ActivitySchedule extends AbstractPersistable {
 		this.weekdayList = weekDayList;
 	}
 
-	/*
-	 * @PlanningScore public SimpleScore getScore() { return score; }
-	 * 
-	 * public void setScore(SimpleScore score) { this.score = score; }
-	 */
-
 	@PlanningScore
 	public HardSoftScore getScore() {
 		return score;
@@ -141,18 +131,13 @@ public class ActivitySchedule extends AbstractPersistable {
 		this.relativeActivityPenaltyList = relativeActivityPenaltyList;
 	}
 
-	@ProblemFactCollectionProperty
-	public List<ActivityRelativeToActivityCategory> getActivityRelativeToCategoryList() {
-		return activityRelativeToCategoryList;
+	@ProblemFactProperty
+	public ScoreParametrization getScoreParametrization() {
+		return scoreParametrization;
 	}
 
-	public void setActivityRelativeToCategoryList(
-			List<ActivityRelativeToActivityCategory> activityRelativeToCategoryList) {
-		this.activityRelativeToCategoryList = activityRelativeToCategoryList;
+	public void setScoreParametrization(ScoreParametrization scoreParametrization) {
+		this.scoreParametrization = scoreParametrization;
 	}
-
-	// ************************************************************************
-	// Complex methods
-	// ************************************************************************
 
 }
