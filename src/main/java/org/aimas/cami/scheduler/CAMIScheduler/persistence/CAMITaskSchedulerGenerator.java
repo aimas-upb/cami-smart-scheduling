@@ -4,13 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityCategory;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityDomain;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityRelativeToActivityCategory;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Difficulty;
@@ -19,6 +17,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
@@ -36,7 +35,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	private static final int DAY_LIST_SIZE = 7;
 	private static final int TIME_LIST_SIZE = 24;
 	private static final Time[] TIMES = new Time[TIME_LIST_SIZE * grainIntervalsPerHour];
-	private Map<String, Activity> staticActivities = new HashMap<>();
 
 	public static void main(String[] args) {
 		CAMITaskSchedulerGenerator camiTSG = new CAMITaskSchedulerGenerator();
@@ -69,6 +67,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		createWeekDayList(activitySchedule);
 		createActivityPeriodList(activitySchedule);
 		setImposedActivities(activitySchedule);
+		predefinedScoreParametrization(activitySchedule);
 
 		return activitySchedule;
 	}
@@ -119,7 +118,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		List<ExcludedTimePeriodsPenalty> excludedTimePeriodsPenaltyList = new ArrayList<>();
 		List<RelativeActivityPenalty> relativeActivityPenaltyList = new ArrayList<>();
-		List<ActivityRelativeToActivityCategory> activityRelativeToCategoryList = new ArrayList<>();
 		List<ActivityType> activityTypeList = new ArrayList<>();
 		List<Activity> activityList = new ArrayList<>();
 
@@ -141,6 +139,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setIndex(i);
+			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
 
@@ -162,6 +161,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setIndex(i);
+			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
 
@@ -183,6 +183,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setIndex(i);
+			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
 
@@ -332,8 +333,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			walkInPark2.setActivityCategory(activitySchedule.getActivityCategoryList().get(1));
 			walkInPark2.setCode("Walk in park");
 			walkInPark2.setCalories(100);
-			walkInPark2.setDuration(119);
-			walkInPark2.setImposedPeriod(new ActivityPeriod(new Time(17, 1), new WeekDay(3)));
+			walkInPark2.setDuration(120);
+			walkInPark2.setImposedPeriod(new ActivityPeriod(new Time(17, 0), new WeekDay(3)));
 			walkInPark2.setId(typeId++);
 
 			activityTypeList.add(walkInPark2);
@@ -396,8 +397,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			activityTypeList.add(weightMeasurement);
 
-			// pot sa fac un select pentru activitatea statica care ma
-			// intereseaza for
 			for (int i = 0; i < weightMeasurement.getInstancesPerDay() * 7; i++) {
 				RelativeActivity relativeActivity = new RelativeActivity();
 				relativeActivity.setActivityType(weightMeasurement);
@@ -410,8 +409,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
 			relativeActivityPenalty.setRelativeType(RelativeType.BEFORE);
-			relativeActivityPenalty.setRelativeActivityType(weightMeasurement);
-			relativeActivityPenalty.setStaticActivityType(breakfast);
+			relativeActivityPenalty.setRelativeActivityType("Weight measurement");
+			relativeActivityPenalty.setStaticActivityType("Breakfast");
 
 			relativeActivityPenalty.setId(relativeActivityPenaltyId++);
 			relativeActivityPenaltyList.add(relativeActivityPenalty);
@@ -466,8 +465,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
 			relativeActivityPenalty.setRelativeType(RelativeType.AFTER);
-			relativeActivityPenalty.setRelativeActivityType(heartMedication);
-			relativeActivityPenalty.setStaticActivityType(breakfast);
+			relativeActivityPenalty.setRelativeActivityType("Heart medication");
+			relativeActivityPenalty.setStaticActivityType("Breakfast");
 			relativeActivityPenalty.setId(relativeActivityPenaltyId++);
 
 			relativeActivityPenaltyList.add(relativeActivityPenalty);
@@ -496,13 +495,13 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			}
 
-			ActivityRelativeToActivityCategory artac = new ActivityRelativeToActivityCategory();
-			artac.setRelativeType(RelativeType.AFTER);
-			artac.setRelativeActivityType(antibiotic);
-			artac.setCategory("Meal");
-			artac.setId(relativeActivityToCategoryId++);
+			RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
+			relativeActivityPenalty.setRelativeType(RelativeType.AFTER);
+			relativeActivityPenalty.setRelativeActivityType("Antibiotic");
+			relativeActivityPenalty.setCategory("Meal");
+			relativeActivityPenalty.setId(relativeActivityPenaltyId++);
 
-			activityRelativeToCategoryList.add(artac);
+			relativeActivityPenaltyList.add(relativeActivityPenalty);
 
 			ExcludedTimePeriodsPenalty etpp = new ExcludedTimePeriodsPenalty();
 			etpp.setActivityType(antibiotic);
@@ -551,6 +550,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				tvSeries.setCode("Favorite TV Series 2");
 				tvSeries.setDuration(60);
 				tvSeries.setId(typeId++);
+				tvSeries.setInstancesPerDay(1);
 				tvSeries.setImposedPeriod(new ActivityPeriod(new Time(16, 0), new WeekDay(i)));
 
 				activityTypeList.add(tvSeries);
@@ -584,7 +584,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activitySchedule.setActivityList(activityList);
 		activitySchedule.setExcludedTimePeriodsList(excludedTimePeriodsPenaltyList);
 		activitySchedule.setRelativeActivityPenaltyList(relativeActivityPenaltyList);
-		activitySchedule.setActivityRelativeToCategoryList(activityRelativeToCategoryList);
 	}
 
 	private void createActivityPeriodList(ActivitySchedule activitySchedule) {
@@ -608,6 +607,23 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		for (Activity activity : activitySchedule.getActivityList())
 			if (activity.getImposedPeriod() != null)
 				activity.setActivityPeriod(activity.getImposedPeriod());
+	}
+
+	private void predefinedScoreParametrization(ActivitySchedule activitySchedule) {
+		ScoreParametrization scoreParametrization = new ScoreParametrization();
+
+		scoreParametrization.setInstancesPerDayPenalty(2);
+		scoreParametrization.setInstancesPerWeekPenalty(1);
+		scoreParametrization.setPeriodConflictPenalty(3);
+		scoreParametrization.setEarlyHour(6);
+		scoreParametrization.setDistanceBetweenExerciseAndMeal(120);
+		scoreParametrization.setDistanceBetweenExercises(180);
+		scoreParametrization.setHardExerciseLateHour(20);
+
+		scoreParametrization.setId(0L);
+
+		activitySchedule.setScoreParametrization(scoreParametrization);
+
 	}
 
 	private void createTimeList(ActivitySchedule activitySchedule) {
