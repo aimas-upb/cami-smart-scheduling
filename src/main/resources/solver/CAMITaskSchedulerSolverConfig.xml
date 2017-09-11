@@ -7,7 +7,6 @@
   <!--<environmentMode>NON_REPRODUCIBLE</environmentMode>-->
   <solutionClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</solutionClass>
   <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
-  <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity</entityClass>
 
   <scoreDirectorFactory>
     <scoreDrl>solver/CAMITaskSchedulerScoreRules.drl</scoreDrl>
@@ -19,28 +18,7 @@
     <bestScoreLimit>0hard/0soft</bestScoreLimit>
   </termination>
   <constructionHeuristic>
-    <queuedEntityPlacer>
-      <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
-        <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
-      </entitySelector>
-      <changeMoveSelector>
-        <entitySelector mimicSelectorRef="placerEntitySelector"/>
-      </changeMoveSelector>
-    </queuedEntityPlacer>
-  </constructionHeuristic>
-  <constructionHeuristic>
-    <queuedEntityPlacer>
-      <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity</entityClass>
-        <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
-      </entitySelector>
-      <changeMoveSelector>
-        <entitySelector mimicSelectorRef="placerEntitySelector"/>
-      </changeMoveSelector>
-    </queuedEntityPlacer>
+    <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
   </constructionHeuristic>
   <localSearch>
     <termination>
