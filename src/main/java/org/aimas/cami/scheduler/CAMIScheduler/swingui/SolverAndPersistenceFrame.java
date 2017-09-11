@@ -711,28 +711,34 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		solveButton.setVisible(!solving);
 		terminateSolvingEarlyAction.setEnabled(solving);
 		terminateSolvingEarlyButton.setVisible(solving);
+
 		if (solving) {
 			terminateSolvingEarlyButton.requestFocus();
 		} else {
 			solveButton.requestFocus();
 
+			boolean constraintsBroken = false;
+
 			ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
 
 			for (Activity activity: solution.getActivityList()) {
 				if (activity.getPostpone() != null) {
-					
+
 					activity.setPostpone(null);
 
 					//solutionBusiness.getIndictmentMap().get(activity).getScoreTotal().toShortString();
 
-					// if the activity has some constraint broken
-					if (lastScore.getHardScore() != 0 || lastScore.getSoftScore() != 0) {
-						JOptionPane.showMessageDialog(null, "This is the best solution found.",
-								"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
-					}
+					// if there are still some constraints broken
+					if (lastScore.getHardScore() != 0 || lastScore.getSoftScore() != 0)
+						constraintsBroken = true;
 				}
 			}
+
+			if (constraintsBroken)
+				JOptionPane.showMessageDialog(null, "This is the best solution found.",
+						"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
 		}
+
 		solutionPanel.setEnabled(!solving);
 		progressBar.setIndeterminate(solving);
 		progressBar.setStringPainted(solving);
