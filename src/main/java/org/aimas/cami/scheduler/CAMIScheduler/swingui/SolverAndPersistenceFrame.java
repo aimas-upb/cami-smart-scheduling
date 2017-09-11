@@ -724,7 +724,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			for (Activity activity: solution.getActivityList()) {
 				if (activity.getPostpone() != null) {
 
-					activity.setPostpone(null);
+					//activity.setPostpone(null);
 
 					//solutionBusiness.getIndictmentMap().get(activity).getScoreTotal().toShortString();
 
