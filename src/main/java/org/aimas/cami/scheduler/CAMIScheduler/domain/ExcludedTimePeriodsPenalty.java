@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * pentru timeslot exclus de forma e.g. "dupa ora 4", as putea seta o valoare
@@ -13,11 +13,14 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Bogdan
  *
  */
-@XStreamAlias("ExcludedTimePeriodsPenalty")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExcludedTimePeriodsPenalty extends AbstractPersistable {
 
 	private ActivityType activityType;
 	private List<PeriodInterval> excludedActivityPeriods;
+
+	public ExcludedTimePeriodsPenalty() {
+	}
 
 	public ActivityType getActivityType() {
 		return activityType;

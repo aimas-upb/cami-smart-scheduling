@@ -3,20 +3,25 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("ActivityDomain")
 public class ActivityDomain extends AbstractPersistable {
 
+	@JsonManagedReference
 	private List<ActivityCategory> categories;
+
 	private String code;
 	private String description;
 	private int index;
+
+	public ActivityDomain() {
+	}
 
 	public ActivityDomain(String code) {
 		super();

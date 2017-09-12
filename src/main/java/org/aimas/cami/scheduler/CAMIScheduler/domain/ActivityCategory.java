@@ -2,14 +2,14 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("ActivityCategory")
 public class ActivityCategory extends AbstractPersistable implements Labeled {
 
 	private String code;
@@ -20,7 +20,11 @@ public class ActivityCategory extends AbstractPersistable implements Labeled {
 	 * used when need to compare the domain when are overlapped activities(e.g.
 	 * leisure vs health, can overlap)
 	 */
+	@JsonBackReference
 	private ActivityDomain domain;
+
+	public ActivityCategory() {
+	}
 
 	public ActivityCategory(String code, ActivityDomain domain, long id) {
 		super();

@@ -3,14 +3,15 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("ActivityPeriod")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ActivityPeriod extends AbstractPersistable implements Labeled {
 
 	private Time time;
@@ -44,14 +45,17 @@ public class ActivityPeriod extends AbstractPersistable implements Labeled {
 	}
 
 	// helpful methods
+	@JsonIgnore
 	public int getPeriodHour() {
 		return time.getHour();
 	}
 
+	@JsonIgnore
 	public int getPeriodMinutes() {
 		return time.getMinutes();
 	}
 
+	@JsonIgnore
 	public Integer getWeekDayIndex() {
 		return weekDay == null ? null : weekDay.getDayIndex();
 	}

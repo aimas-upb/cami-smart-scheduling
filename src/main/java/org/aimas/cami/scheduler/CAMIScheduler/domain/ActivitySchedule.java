@@ -14,7 +14,6 @@ import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.optaplanner.persistence.xstream.api.score.buildin.hardsoft.HardSoftScoreXStreamConverter;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 /**
@@ -23,7 +22,6 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
  *
  */
 @PlanningSolution
-@XStreamAlias("ActivitySchedule")
 public class ActivitySchedule extends AbstractPersistable {
 
 	private List<Activity> activityList;

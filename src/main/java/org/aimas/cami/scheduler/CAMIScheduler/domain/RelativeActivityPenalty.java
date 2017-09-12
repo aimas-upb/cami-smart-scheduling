@@ -4,20 +4,23 @@ import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("RelativeActivityPenalty")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RelativeActivityPenalty extends AbstractPersistable {
 
 	private RelativeType relativeType;
 	private String relativeActivityType;
 	private String staticActivityType;
 	private String category;
+	
+	public RelativeActivityPenalty() {
+	}
 
 	public RelativeType getRelativeType() {
 		return relativeType;

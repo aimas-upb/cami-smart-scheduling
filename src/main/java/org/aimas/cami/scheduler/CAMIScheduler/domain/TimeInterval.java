@@ -2,14 +2,14 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("TimeInterval")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TimeInterval extends AbstractPersistable {
 
 	private Time minStart, maxEnd;
