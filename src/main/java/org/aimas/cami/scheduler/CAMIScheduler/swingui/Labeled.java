@@ -16,11 +16,14 @@
 
 package org.aimas.cami.scheduler.CAMIScheduler.swingui;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @see LabeledComboBoxRenderer
  */
 public interface Labeled {
 
-    String getLabel();
+	@JsonIgnore
+	String getLabel();
 
 }
