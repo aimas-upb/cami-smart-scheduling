@@ -8,7 +8,8 @@ import org.optaplanner.core.api.domain.variable.CustomShadowVariable;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 import org.optaplanner.core.api.domain.variable.PlanningVariableReference;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
@@ -16,7 +17,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  *
  */
 @PlanningEntity
-@XStreamAlias("RelativeActivity")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RelativeActivity extends Activity {
 
 	// shadow variable (it depends on a planning variable)
@@ -29,6 +30,7 @@ public class RelativeActivity extends Activity {
 
 	@PlanningVariable(valueRangeProviderRefs = {
 			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class)
+	@JsonIgnore
 	@Override
 	public ActivityPeriod getActivityPeriod() {
 		return super.getActivityPeriod();
@@ -60,18 +62,21 @@ public class RelativeActivity extends Activity {
 		this.assigned = assigned;
 	}
 
+	@JsonIgnore
 	public Time getRelativeActivityPeriodTime() {
 		if (relativeActivityPeriod == null)
 			return null;
 		return relativeActivityPeriod.getTime();
 	}
 
+	@JsonIgnore
 	public WeekDay getRelativeActivityWeekDay() {
 		if (relativeActivityPeriod == null)
 			return null;
 		return relativeActivityPeriod.getWeekDay();
 	}
 
+	@JsonIgnore
 	public ActivityPeriod getRelativeActivityEndPeriod() {
 		if (relativeActivityPeriod == null) {
 			return null;

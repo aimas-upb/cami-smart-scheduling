@@ -2,18 +2,21 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("Time")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Time extends AbstractPersistable {
 
 	private int hour;
 	private int minutes;
+
+	public Time() {
+	}
 
 	public Time(int hour, int minutes) {
 		super();

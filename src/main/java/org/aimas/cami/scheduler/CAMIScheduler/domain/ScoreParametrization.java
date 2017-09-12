@@ -2,14 +2,11 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("ScoreParametrization")
 public class ScoreParametrization extends AbstractPersistable {
 
 	private int instancesPerDayPenalty;
@@ -19,6 +16,9 @@ public class ScoreParametrization extends AbstractPersistable {
 	private int distanceBetweenExerciseAndMeal;
 	private int distanceBetweenExercises;
 	private int hardExerciseLateHour;
+
+	public ScoreParametrization() {
+	}
 
 	public int getInstancesPerDayPenalty() {
 		return instancesPerDayPenalty;

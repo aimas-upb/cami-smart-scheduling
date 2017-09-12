@@ -11,8 +11,8 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
@@ -20,8 +20,7 @@ import com.thoughtworks.xstream.annotations.XStreamInclude;
  *
  */
 @PlanningEntity(movableEntitySelectionFilter = MovableActivitySelectionFilter.class)
-@XStreamAlias("Activity")
-@XStreamInclude({ RelativeActivity.class })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Activity extends AbstractPersistable {
 
 	// planning variable
@@ -36,6 +35,9 @@ public class Activity extends AbstractPersistable {
 	// if an activity is immovable or not
 	private boolean immovable;
 	private int index;
+
+	public Activity() {
+	}
 
 	// (optional) it can be set to null
 	// by specifying @PlanningVariable(..., nullable = true)
@@ -91,6 +93,7 @@ public class Activity extends AbstractPersistable {
 		this.postpone = postpone;
 	}
 
+	@JsonIgnore
 	public ActivityPeriod getActivityEndPeriod() {
 		if (activityPeriod == null) {
 			return null;
@@ -98,6 +101,7 @@ public class Activity extends AbstractPersistable {
 		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, activityType.getDuration());
 	}
 
+	@JsonIgnore
 	public Time getActivityEndPeriodTime() {
 		if (activityPeriod == null) {
 			return null;
@@ -105,36 +109,44 @@ public class Activity extends AbstractPersistable {
 		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, activityType.getDuration()).getTime();
 	}
 
+	@JsonIgnore
 	public ActivityCategory getActivityCategory() {
 		return activityType.getActivityCategory();
 	}
 
+	@JsonIgnore
 	public int getActivityDuration() {
 		return activityType.getDuration();
 	}
 
+	@JsonIgnore
 	public int getInstancesPerDay() {
 		return activityType.getInstancesPerDay();
 	}
 
+	@JsonIgnore
 	public int getInstancesPerWeek() {
 		return activityType.getInstancesPerWeek();
 	}
 
+	@JsonIgnore
 	public ActivityPeriod getImposedPeriod() {
 		return activityType.getImposedPeriod();
 	}
 
+	@JsonIgnore
 	public List<TimeInterval> getPermittedInterval() {
 		return activityType.getPermittedIntervals();
 	}
 
+	@JsonIgnore
 	public Time getActivityPeriodTime() {
 		if (activityPeriod == null)
 			return null;
 		return activityPeriod.getTime();
 	}
 
+	@JsonIgnore
 	public WeekDay getActivityPeriodWeekday() {
 		if (activityPeriod == null)
 			return null;
@@ -146,6 +158,7 @@ public class Activity extends AbstractPersistable {
 		return "Activity [activityType=" + activityType + ", activityPeriod=" + activityPeriod + "]";
 	}
 
+	@JsonIgnore
 	public String getActivityTypeCode() {
 		return activityType.getCode();
 	}

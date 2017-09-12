@@ -5,14 +5,11 @@ import java.util.List;
 import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 /**
  * 
  * @author Bogdan
  *
  */
-@XStreamAlias("ActivityType")
 public class ActivityType extends AbstractPersistable implements Labeled {
 
 	private String code;
@@ -25,6 +22,9 @@ public class ActivityType extends AbstractPersistable implements Labeled {
 	private List<TimeInterval> permittedIntervals;
 	private ActivityCategory activityCategory;
 	private String description;
+
+	public ActivityType() {
+	}
 
 	public ActivityCategory getActivityCategory() {
 		return activityCategory;
