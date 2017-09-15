@@ -44,9 +44,7 @@
   </constructionHeuristic>
   <localSearch>
     <termination>
-      <terminationCompositionStyle>OR</terminationCompositionStyle>
       <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
-      <bestScoreLimit>0hard/0soft</bestScoreLimit>
     </termination>
     <unionMoveSelector>
       <changeMoveSelector/>
