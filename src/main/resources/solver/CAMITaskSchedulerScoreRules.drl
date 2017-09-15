@@ -327,6 +327,59 @@ rule "instancesPerWeekAssigned"
 					(Math.abs(occurences - $instancesPerWeek) + (indictments * gap)) * (-$scoreParametrization.getInstancesPerWeekPenalty()));
 end
 
+rule "instancesPerWeekAssignedRelativeActivity"
+	when
+		$scoreParametrization : ScoreParametrization()
+
+		$activityType : ActivityType(
+			instancesPerWeek > 1, 
+			$instancesPerWeek : instancesPerWeek
+		)
+
+		$result : String()
+			from accumulate(
+				$activity : RelativeActivity(activityType.code == $activityType.code, relativeActivityPeriod != null, $relativeActivityPeriod : relativeActivityPeriod),
+				init( String weekSpread = "";
+					  int occurences = 0;
+					  List<Integer> indexes = new ArrayList();
+				),
+				action(
+					if ($relativeActivityPeriod != null) {
+						weekSpread += $relativeActivityPeriod.getWeekDayIndex() + " ";
+						if (!indexes.contains($relativeActivityPeriod.getWeekDayIndex())) {
+							indexes.add($relativeActivityPeriod.getWeekDayIndex());
+							occurences++;
+						}
+					}
+				),
+				result(weekSpread + ":" + occurences)
+			)
+		exists RelativeActivity(activityType.code == $activityType.code, relativeActivityPeriod != null)
+	then
+		//help(drools, "instancesPerWeekAssigned");
+
+		int indictments = 0;
+		String[] resultSplit = $result.split(":");
+		int occurences = Integer.valueOf(resultSplit[1]);
+		String[] weekSpreadArray = resultSplit[0].split(" ");
+
+		// sort the day index values
+		Arrays.sort(weekSpreadArray, new Comparator<String>() {
+			public int compare(String s1, String s2) {
+				return Integer.valueOf(s1).compareTo(Integer.valueOf(s2));
+			}
+		});
+
+		int gap = 7 / $instancesPerWeek;
+		for (int i = 0; i < weekSpreadArray.length - 1; i++)
+			if (Integer.valueOf(weekSpreadArray[i + 1]) - Integer.valueOf(weekSpreadArray[i]) < gap)
+				indictments++;
+
+		if (occurences != $instancesPerWeek || indictments != 0)
+			scoreHolder.addHardConstraintMatch(kcontext, 
+					(Math.abs(occurences - $instancesPerWeek) + (indictments * gap)) * (-$scoreParametrization.getInstancesPerWeekPenalty()));
+end
+
 // plan an activity every day, "instancesPerDay" instances in a day
 // it's important that penalty to this constraint to be slight bigger than instancesPerDayRelativeActivity
 rule "instancesPerDay"
@@ -385,6 +438,7 @@ end
 rule "instancesPerDayRelativeActivity"
 	when
 		$scoreParametrization : ScoreParametrization()
+
 		$activityType : ActivityType(
 			instancesPerDay > 0, 
 			$instancesPerDay : instancesPerDay
