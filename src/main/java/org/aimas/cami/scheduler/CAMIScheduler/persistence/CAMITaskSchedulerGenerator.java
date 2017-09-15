@@ -68,6 +68,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		createActivityPeriodList(activitySchedule);
 		setImposedActivities(activitySchedule);
 		predefinedScoreParametrization(activitySchedule);
+		setPeriodDomainRange(activitySchedule);
 
 		return activitySchedule;
 	}
@@ -624,6 +625,16 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		activitySchedule.setScoreParametrization(scoreParametrization);
 
+	}
+
+	/**
+	 * Set the initial period domain range for ever entity.
+	 * 
+	 * @param activitySchedule
+	 */
+	private void setPeriodDomainRange(ActivitySchedule activitySchedule) {
+		for (Activity activity : activitySchedule.getActivityList())
+			activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 	}
 
 	private void createTimeList(ActivitySchedule activitySchedule) {
