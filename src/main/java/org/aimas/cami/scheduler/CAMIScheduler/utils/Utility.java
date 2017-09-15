@@ -138,7 +138,7 @@ public class Utility {
 
 			if (activityPeriod.getPeriodHour() >= 6) {
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 				if (!overlapFound) {
 					activityPeriodList.add(activityPeriod);
@@ -164,7 +164,7 @@ public class Utility {
 					&& fullOverlap(activityPeriod.getTime(), activityEndPeriod.getTime(), timeInterval.getMinStart(),
 							timeInterval.getMaxEnd())) {
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 				if (!overlapFound) {
 					activityPeriodList.add(activityPeriod);
@@ -189,7 +189,7 @@ public class Utility {
 				ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 						activityEntity.getActivityDuration());
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 				if (!overlapFound) {
 					activityPeriodList.add(activityPeriod);
@@ -210,7 +210,7 @@ public class Utility {
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 					activityEntity.getActivityDuration());
 
-			overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+			overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 			if (!overlapFound) {
 				return activityPeriod;
@@ -222,7 +222,7 @@ public class Utility {
 	}
 
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
-			ActivityPeriod activityEndPeriod, boolean overlapFound) {
+			ActivityPeriod activityEndPeriod) {
 		for (Activity activity : activitySchedule.getActivityList()) {
 			if (!(activity instanceof RelativeActivity)) {
 				if (activity.getActivityPeriod() != null
@@ -230,8 +230,7 @@ public class Utility {
 
 					if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
 							&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
-						overlapFound = true;
-						continue;
+						return true;
 
 					}
 				}
@@ -244,15 +243,14 @@ public class Utility {
 							((RelativeActivity) activity).getRelativeActivityEndPeriod().getTime())
 							&& Utility.after(((RelativeActivity) activity).getRelativeActivityPeriod().getTime(),
 									activityEndPeriod.getTime())) {
-						overlapFound = true;
-						continue;
+						return true;
 
 					}
 				}
 			}
 		}
 
-		return overlapFound;
+		return false;
 	}
 
 	public static Boolean checkTimeslots(ActivityPeriod activityPeriod, PeriodInterval excludedPeriodInterval,
