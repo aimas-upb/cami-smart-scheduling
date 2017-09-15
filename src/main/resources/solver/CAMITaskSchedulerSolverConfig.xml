@@ -4,7 +4,7 @@
   <!--<environmentMode>FAST_ASSERT</environmentMode>-->
 
   <!-- uncomment this if you want random seed, unless, the solution generated will be the same every time(useful for debugging) -->
-  <!--<environmentMode>NON_REPRODUCIBLE</environmentMode>-->
+  <environmentMode>NON_REPRODUCIBLE</environmentMode>
   <solutionClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</solutionClass>
   <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
   <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity</entityClass>
@@ -44,7 +44,9 @@
   </constructionHeuristic>
   <localSearch>
     <termination>
+      <terminationCompositionStyle>OR</terminationCompositionStyle>
       <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
+      <bestScoreLimit>0hard/0soft</bestScoreLimit>
     </termination>
     <unionMoveSelector>
       <changeMoveSelector/>
