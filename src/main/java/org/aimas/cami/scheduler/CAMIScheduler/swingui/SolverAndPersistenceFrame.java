@@ -82,9 +82,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-	// public static final ImageIcon OPTA_PLANNER_ICON = new ImageIcon(
-	// SolverAndPersistenceFrame.class.getResource("optaPlannerIcon.png"));
-
 	private final SolutionBusiness<Solution_> solutionBusiness;
 	private final ImageIcon indictmentHeatMapTrueIcon;
 	private final ImageIcon indictmentHeatMapFalseIcon;
@@ -114,15 +111,13 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	private ShowConstraintMatchesDialogAction showConstraintMatchesDialogAction;
 
 	private Timer timer;
-	
-	private HardSoftScore lastScore;
+	protected boolean solutionWasOpened;
 
 	public SolverAndPersistenceFrame(SolutionBusiness<Solution_> solutionBusiness,
 			SolutionPanel<Solution_> solutionPanel) {
 		super(solutionBusiness.getAppName());
 		this.solutionBusiness = solutionBusiness;
 		this.solutionPanel = solutionPanel;
-		// setIconImage(OPTA_PLANNER_ICON.getImage());
 		solutionPanel.setSolutionBusiness(solutionBusiness);
 		solutionPanel.setSolverAndPersistenceFrame(this);
 		indictmentHeatMapTrueIcon = new ImageIcon(getClass().getResource(""));
@@ -131,6 +126,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingFalseIcon = new ImageIcon(getClass().getResource(""));
 		registerListeners();
 		constraintMatchesDialog = new ConstraintMatchesDialog(this, solutionBusiness);
+		solutionWasOpened = false;
 	}
 
 	private void createTimer() {
@@ -154,8 +150,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 							if (Utility.getNumberOfMinutesInInterval(
 									new Time(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute()),
 									activity.getActivityPeriodTime()) == 15) {
-								JOptionPane.showMessageDialog(null, activity.getActivityTypeCode() + " is in 15 minutes!",
-										"Activity notification", JOptionPane.INFORMATION_MESSAGE);
+								JOptionPane.showMessageDialog(null,
+										activity.getActivityTypeCode() + " is in 15 minutes!", "Activity notification",
+										JOptionPane.INFORMATION_MESSAGE);
 							}
 						}
 					}
@@ -284,8 +281,11 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			try {
+				solutionWasOpened = true;
 				solutionBusiness.openSolution(file);
 				setSolutionLoaded();
+
+				resetValueRange();
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
 			}
@@ -344,7 +344,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			super("Solve", new ImageIcon(SolverAndPersistenceFrame.class.getResource("")));
 		}
 
-		// *********************SOLUTIONSOLVER********************
+		// *********************SOLUTION SOLVER********************
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			setSolvingState(true);
@@ -353,7 +353,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		}
 
 	}
-	
+
 	public void activityPostponedAction() {
 		if (solveButton.isEnabled()) {
 			setSolvingState(true);
@@ -386,8 +386,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			} catch (ExecutionException e) {
 				throw new IllegalStateException("Solving failed.", e.getCause());
 			} finally {
-				lastScore = ((ActivitySchedule) solutionBusiness.getSolution()).getScore();
-				//System.out.println(lastScore);
 				setSolvingState(false);
 				resetScreen();
 			}
@@ -408,8 +406,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			// This async, so it doesn't stop the solving immediately
 			solutionBusiness.terminateSolvingEarly();
 			ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
-			
-			for (Activity activity: solution.getActivityList()) {
+
+			for (Activity activity : solution.getActivityList()) {
 				if (activity.getPostpone() != null) {
 					activity.setPostpone(null);
 				}
@@ -425,6 +423,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 		public OpenAction() {
 			super(NAME, new ImageIcon(SolverAndPersistenceFrame.class.getResource("")));
+			
+			solutionWasOpened = true;
 			fileChooser = new JFileChooser(solutionBusiness.getSolvedDataDir());
 			fileChooser.setFileFilter(new FileFilter() {
 				@Override
@@ -448,12 +448,27 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				try {
 					solutionBusiness.openSolution(fileChooser.getSelectedFile());
 					setSolutionLoaded();
+
+					resetValueRange();
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
 			}
 		}
 
+	}
+
+	protected void resetValueRange() {
+
+		ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+
+		solutionPanel.doProblemFactChange(scoreDirector -> {
+			for (Activity activity : activitySchedule.getActivityList()) {
+				scoreDirector.beforeProblemPropertyChanged(activity);
+				activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+				scoreDirector.afterProblemPropertyChanged(activity);
+			}
+		});
 	}
 
 	private class SaveAction extends AbstractAction {
@@ -717,26 +732,22 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		} else {
 			solveButton.requestFocus();
 
-			boolean constraintsBroken = false;
+			boolean postponeFound = false;
 
 			ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
 
-			for (Activity activity: solution.getActivityList()) {
+			for (Activity activity : solution.getActivityList()) {
 				if (activity.getPostpone() != null) {
-
-					//activity.setPostpone(null);
-
-					//solutionBusiness.getIndictmentMap().get(activity).getScoreTotal().toShortString();
-
-					// if there are still some constraints broken
-					if (lastScore.getHardScore() != 0 || lastScore.getSoftScore() != 0)
-						constraintsBroken = true;
+					postponeFound = true;
+					break;
 				}
 			}
 
-			if (constraintsBroken)
+			if (postponeFound && !solutionWasOpened)
 				JOptionPane.showMessageDialog(null, "This is the best solution found.",
 						"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
+			
+			solutionWasOpened = false;
 		}
 
 		solutionPanel.setEnabled(!solving);
