@@ -405,13 +405,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			progressBar.setString("Terminating...");
 			// This async, so it doesn't stop the solving immediately
 			solutionBusiness.terminateSolvingEarly();
-			ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
-
-			for (Activity activity : solution.getActivityList()) {
-				if (activity.getPostpone() != null) {
-					activity.setPostpone(null);
-				}
-			}
 		}
 
 	}
