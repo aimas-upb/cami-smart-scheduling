@@ -175,6 +175,7 @@ end
 rule "excludedTimeslots"
 	when
 		$excludedTimePeriodsPenalty : ExcludedTimePeriodsPenalty(
+			activityType != null, 
 			$excludedActivityType : activityType, 
 			excludedActivityPeriods != null
 		)
@@ -209,12 +210,13 @@ rule "excludedTimeslots"
 					if (fullOverlap(activityStartTime, activityEndTime, excludedStartTime, excludedEndTime)) {
 
 						scoreHolder.addHardConstraintMatch(kcontext, 
-							-Math.min(getNumberOfMinutesInInterval(excludedStartTime, activityEndTime), 
+							-Math.min(getNumberOfMinutesInInterval(excludedStartTime, activityEndTime) + 
+								getNumberOfMinutesInInterval(excludedStartTime, activityStartTime), 
 								getNumberOfMinutesInInterval(activityStartTime, excludedEndTime)));
 
 					} else {
 						scoreHolder.addHardConstraintMatch(kcontext, 
-							-Math.min(Math.abs(getNumberOfMinutesInInterval(activityStartTime, excludedStartTime)), 
+							-Math.min(Math.abs(getNumberOfMinutesInInterval(excludedStartTime, activityEndTime)), 
 								Math.abs(getNumberOfMinutesInInterval(activityStartTime, excludedEndTime))));
 					}
 				}
@@ -226,6 +228,7 @@ end
 rule "excludedTimeslotsRelativeActivity"
 	when
 		$excludedTimePeriodsPenalty : ExcludedTimePeriodsPenalty(
+			activityType != null, 
 			$excludedActivityType : activityType, 
 			excludedActivityPeriods != null
 		)
@@ -259,12 +262,13 @@ rule "excludedTimeslotsRelativeActivity"
 					if (fullOverlap(relativeActivityStartTime, relativeActivityEndTime, excludedStartTime, excludedEndTime)) {
 
 						scoreHolder.addHardConstraintMatch(kcontext, 
-							-Math.min(getNumberOfMinutesInInterval(excludedStartTime, relativeActivityEndTime), 
+							-Math.min(getNumberOfMinutesInInterval(excludedStartTime, relativeActivityEndTime) + 
+								getNumberOfMinutesInInterval(excludedStartTime, relativeActivityStartTime), 
 								getNumberOfMinutesInInterval(relativeActivityStartTime, excludedEndTime)));
 
 					} else {
 						scoreHolder.addHardConstraintMatch(kcontext, 
-							-Math.min(Math.abs(getNumberOfMinutesInInterval(relativeActivityStartTime, excludedStartTime)), 
+							-Math.min(Math.abs(getNumberOfMinutesInInterval(excludedStartTime, relativeActivityEndTime)), 
 								Math.abs(getNumberOfMinutesInInterval(relativeActivityStartTime, excludedEndTime))));
 					}
 				}
