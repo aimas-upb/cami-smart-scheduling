@@ -765,14 +765,30 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 						scoreDirector.afterProblemFactAdded(activityType);
 
 						// *****need this to trigger the listener*****
-						for (Activity activity : activityList) {
-							if (activity.getActivityTypeCode()
-									.equals(((ActivityType) activityTypeListListField.getSelectedItem()).getCode())) {
+						if (activityTypeListListField.getSelectedItem() != null) {
 
-								scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-								activity.setActivityPeriod(activity.getActivityPeriod());
-								scoreDirector.afterVariableChanged(activity, "activityPeriod");
+							for (Activity activity : activityList) {
+								if (activity.getActivityTypeCode().equals(
+										((ActivityType) activityTypeListListField.getSelectedItem()).getCode())) {
+
+									scoreDirector.beforeVariableChanged(activity, "activityPeriod");
+									activity.setActivityPeriod(activity.getActivityPeriod());
+									scoreDirector.afterVariableChanged(activity, "activityPeriod");
+								}
 							}
+
+						} else if ((activityCategoryListField.getSelectedItem() != null)) {
+
+							for (Activity activity : activityList) {
+								if (activity.getActivityCategory().getCode() != null && activity.getActivityCategory()
+										.getCode().equals(((String) activityCategoryListField.getSelectedItem()))) {
+
+									scoreDirector.beforeVariableChanged(activity, "activityPeriod");
+									activity.setActivityPeriod(activity.getActivityPeriod());
+									scoreDirector.afterVariableChanged(activity, "activityPeriod");
+								}
+							}
+
 						}
 
 						scoreDirector.triggerVariableListeners();
