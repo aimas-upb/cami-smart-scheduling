@@ -1,6 +1,7 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import java.util.List;
+import java.util.Map;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
@@ -8,6 +9,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelecti
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
@@ -30,6 +32,8 @@ public class Activity extends AbstractPersistable {
 	private ActivityType activityType;
 
 	private Postpone postpone;
+	Map<String, Long> assignedToRelativeActivityMap;
+	List<ActivityPeriod> periodDomainRangeList;
 
 	// if an activity is immovable or not
 	private boolean immovable;
@@ -71,7 +75,14 @@ public class Activity extends AbstractPersistable {
 		this.index = index;
 	}
 
-	// other useful methods
+	@ValueRangeProvider(id = "activityPeriodRange")
+	public List<ActivityPeriod> getPeriodDomainRangeList() {
+		return periodDomainRangeList;
+	}
+
+	public void setPeriodDomainRangeList(List<ActivityPeriod> periodDomainRangeList) {
+		this.periodDomainRangeList = periodDomainRangeList;
+	}
 
 	public Postpone getPostpone() {
 		return postpone;
@@ -80,6 +91,16 @@ public class Activity extends AbstractPersistable {
 	public void setPostpone(Postpone postpone) {
 		this.postpone = postpone;
 	}
+
+	public Map<String, Long> getAssignedToRelativeActivityMap() {
+		return assignedToRelativeActivityMap;
+	}
+
+	public void setAssignedToRelativeActivityMap(Map<String, Long> assignedRelativeActivityList) {
+		this.assignedToRelativeActivityMap = assignedRelativeActivityList;
+	}
+
+	// other useful methods
 
 	public ActivityPeriod getActivityEndPeriod() {
 		if (activityPeriod == null) {
