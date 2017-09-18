@@ -8,8 +8,8 @@ import java.util.Set;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.drools.core.spi.KnowledgeHelper;
@@ -224,28 +224,13 @@ public class Utility {
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
 			ActivityPeriod activityEndPeriod) {
 		for (Activity activity : activitySchedule.getActivityList()) {
-			if (!(activity instanceof RelativeActivity)) {
-				if (activity.getActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
+			if (activity.getActivityPeriod() != null
+					&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
 
-					if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
-							&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
-						return true;
+				if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
+						&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
+					return true;
 
-					}
-				}
-			} else {
-				if (((RelativeActivity) activity).getRelativeActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == ((RelativeActivity) activity)
-								.getRelativeActivityWeekDay().getDayIndex()) {
-
-					if (Utility.before(activityPeriod.getTime(),
-							((RelativeActivity) activity).getRelativeActivityEndPeriod().getTime())
-							&& Utility.after(((RelativeActivity) activity).getRelativeActivityPeriod().getTime(),
-									activityEndPeriod.getTime())) {
-						return true;
-
-					}
 				}
 			}
 		}

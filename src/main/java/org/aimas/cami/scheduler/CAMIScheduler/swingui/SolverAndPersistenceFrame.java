@@ -59,6 +59,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractSolutionImporter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionBusiness;
@@ -67,7 +68,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.score.FeasibilityScore;
 import org.optaplanner.core.api.score.Score;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.swing.impl.SwingUtils;
 import org.optaplanner.swing.impl.TangoColorFactory;
 import org.slf4j.Logger;
@@ -416,7 +416,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 		public OpenAction() {
 			super(NAME, new ImageIcon(SolverAndPersistenceFrame.class.getResource("")));
-			
+
 			solutionWasOpened = true;
 			fileChooser = new JFileChooser(solutionBusiness.getSolvedDataDir());
 			fileChooser.setFileFilter(new FileFilter() {
@@ -457,9 +457,11 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 		solutionPanel.doProblemFactChange(scoreDirector -> {
 			for (Activity activity : activitySchedule.getActivityList()) {
-				scoreDirector.beforeProblemPropertyChanged(activity);
-				activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-				scoreDirector.afterProblemPropertyChanged(activity);
+				if (activity instanceof NormalActivity) {
+					scoreDirector.beforeProblemPropertyChanged(activity);
+					((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+					scoreDirector.afterProblemPropertyChanged(activity);
+				}
 			}
 		});
 	}
@@ -739,7 +741,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			if (postponeFound && !solutionWasOpened)
 				JOptionPane.showMessageDialog(null, "This is the best solution found.",
 						"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
-			
+
 			solutionWasOpened = false;
 		}
 
