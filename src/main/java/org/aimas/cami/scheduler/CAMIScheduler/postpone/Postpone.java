@@ -1,6 +1,6 @@
 package org.aimas.cami.scheduler.CAMIScheduler.postpone;
 
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
