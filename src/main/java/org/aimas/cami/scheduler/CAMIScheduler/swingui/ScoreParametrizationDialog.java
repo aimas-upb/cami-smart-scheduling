@@ -25,6 +25,7 @@ public class ScoreParametrizationDialog extends JDialog {
 	private JSpinner instancesPerDayPenaltyField;
 	private JSpinner instancesPerWeekPenaltyField;
 	private JSpinner periodConflictPenaltyField;
+	private JSpinner postponeLaterThisDayAndThisWeekPenaltyField;
 	private JSpinner earlyHourField;
 	private JSpinner distanceBetweenExerciseAndMealField;
 	private JSpinner distanceBetweenExercisesField;
@@ -66,6 +67,8 @@ public class ScoreParametrizationDialog extends JDialog {
 		instancesPerDayPenaltyField.setValue(scoreParametrization.getInstancesPerDayPenalty());
 		instancesPerWeekPenaltyField.setValue(scoreParametrization.getInstancesPerWeekPenalty());
 		periodConflictPenaltyField.setValue(scoreParametrization.getPeriodConflictPenalty());
+		postponeLaterThisDayAndThisWeekPenaltyField
+				.setValue(scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
 		earlyHourField.setValue(scoreParametrization.getEarlyHour());
 		distanceBetweenExerciseAndMealField.setValue(scoreParametrization.getDistanceBetweenExerciseAndMeal());
 		distanceBetweenExercisesField.setValue(scoreParametrization.getDistanceBetweenExercises());
@@ -88,6 +91,10 @@ public class ScoreParametrizationDialog extends JDialog {
 		dialogPanel.add(new JLabel("period conflict between activities penalty"));
 		periodConflictPenaltyField = new JSpinner(new SpinnerNumberModel(0, 0, null, 1));
 		dialogPanel.add(periodConflictPenaltyField);
+
+		dialogPanel.add(new JLabel("postpone later this day & this week penalty"));
+		postponeLaterThisDayAndThisWeekPenaltyField = new JSpinner(new SpinnerNumberModel(0, 0, null, 1));
+		dialogPanel.add(postponeLaterThisDayAndThisWeekPenaltyField);
 
 		dialogPanel.add(new JLabel("activities must be planned after this hour"));
 		earlyHourField = new JSpinner(new SpinnerNumberModel(0, 0, null, 1));
@@ -112,6 +119,8 @@ public class ScoreParametrizationDialog extends JDialog {
 		final int instancesPerDayPenalty = (Integer) instancesPerDayPenaltyField.getValue();
 		final int instancesPerWeekPenalty = (Integer) instancesPerWeekPenaltyField.getValue();
 		final int periodConflictPenalty = (Integer) periodConflictPenaltyField.getValue();
+		final int postponeLaterThisDayAndThisWeekPenalty = (Integer) postponeLaterThisDayAndThisWeekPenaltyField
+				.getValue();
 		final int earlyHour = (Integer) earlyHourField.getValue();
 		final int distanceBetweenExerciseAndMeal = (Integer) distanceBetweenExerciseAndMealField.getValue();
 		final int distanceBetweenExercises = (Integer) distanceBetweenExercisesField.getValue();
@@ -127,6 +136,7 @@ public class ScoreParametrizationDialog extends JDialog {
 			scoreParametrization.setInstancesPerDayPenalty(instancesPerDayPenalty);
 			scoreParametrization.setInstancesPerWeekPenalty(instancesPerWeekPenalty);
 			scoreParametrization.setPeriodConflictPenalty(periodConflictPenalty);
+			scoreParametrization.setPostponeLaterThisDayAndThisWeekPenalty(postponeLaterThisDayAndThisWeekPenalty);
 			scoreParametrization.setEarlyHour(earlyHour);
 			scoreParametrization.setDistanceBetweenExerciseAndMeal(distanceBetweenExerciseAndMeal);
 			scoreParametrization.setDistanceBetweenExercises(distanceBetweenExercises);

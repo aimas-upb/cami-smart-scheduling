@@ -611,6 +611,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		scoreParametrization.setInstancesPerDayPenalty(2);
 		scoreParametrization.setInstancesPerWeekPenalty(1);
 		scoreParametrization.setPeriodConflictPenalty(3);
+		scoreParametrization.setPostponeLaterThisDayAndThisWeekPenalty(30);
 		scoreParametrization.setEarlyHour(6);
 		scoreParametrization.setDistanceBetweenExerciseAndMeal(120);
 		scoreParametrization.setDistanceBetweenExercises(180);
