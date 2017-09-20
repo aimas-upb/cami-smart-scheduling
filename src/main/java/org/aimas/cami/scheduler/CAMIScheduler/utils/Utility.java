@@ -39,6 +39,13 @@ public class Utility {
 		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
 	}
 
+	public static Integer getNumberOfMinutesInPeriodInterval(int dayIndexLeft, int dayIndexRight, Time left,
+			Time right) {
+
+		return ((dayIndexRight - dayIndexLeft) * 24 + (right.getHour() - left.getHour())) * 60 + right.getMinutes()
+				- left.getMinutes();
+	}
+
 	public static Set<Character> stringToCharacterSet(String s) {
 		Set<Character> set = new LinkedHashSet<>();
 		for (char c : s.toCharArray()) {
@@ -247,37 +254,15 @@ public class Utility {
 		Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
 		Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
 
-		if (((activityStartTime.getHour() > excludedStartTime.getHour()
-				|| activityEndTime.getHour() > excludedStartTime.getHour()) && sameStartDay)
-				|| (activityStartTime.getHour() < excludedEndTime.getHour() && sameEndDay)) {
+		if (sameStartDay) {
 
-			return true;
-
-		} else if (sameStartDay) {
-
-			if (activityStartTime.getHour() == excludedStartTime.getHour()) {
-
-				if ((activityStartTime.getMinutes() + activityDuration) >= excludedStartTime.getMinutes()) {
-					return true;
-				}
-
-			} else if (activityEndTime.getHour() == excludedStartTime.getHour()) {
-
-				if (activityEndTime.getMinutes() > excludedStartTime.getMinutes()) {
-					return true;
-				}
-
-			}
+			if (before(activityStartTime, new Time(24, 0)) && after(excludedStartTime, activityEndTime))
+				return true;
 
 		} else if (sameEndDay) {
 
-			if (activityStartTime.getHour() == excludedEndTime.getHour()) {
-
-				if (activityStartTime.getMinutes() < excludedEndTime.getMinutes()) {
-					return true;
-				}
-
-			}
+			if (before(activityStartTime, excludedEndTime) && after(new Time(0, 0), activityEndTime))
+				return true;
 
 		} else {
 
