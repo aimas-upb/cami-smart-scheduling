@@ -4,10 +4,10 @@
   <!--<environmentMode>FAST_ASSERT</environmentMode>-->
 
   <!-- uncomment this if you want random seed, unless, the solution generated will be the same every time(useful for debugging) -->
-  <!--<environmentMode>NON_REPRODUCIBLE</environmentMode>-->
+  <environmentMode>NON_REPRODUCIBLE</environmentMode>
   <solutionClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</solutionClass>
-  <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
-  <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity</entityClass>
+  <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
+  <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
 
   <scoreDirectorFactory>
     <scoreDrl>solver/CAMITaskSchedulerScoreRules.drl</scoreDrl>
@@ -21,7 +21,7 @@
   <constructionHeuristic>
     <queuedEntityPlacer>
       <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
         <cacheType>PHASE</cacheType>
         <selectionOrder>SHUFFLED</selectionOrder>
       </entitySelector>
@@ -33,7 +33,7 @@
   <constructionHeuristic>
     <queuedEntityPlacer>
       <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity</entityClass>
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
         <cacheType>PHASE</cacheType>
         <selectionOrder>SHUFFLED</selectionOrder>
       </entitySelector>

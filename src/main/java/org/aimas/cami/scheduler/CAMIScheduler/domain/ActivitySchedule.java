@@ -7,7 +7,6 @@ import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.domain.solution.drools.ProblemFactCollectionProperty;
 import org.optaplanner.core.api.domain.solution.drools.ProblemFactProperty;
-import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 //import org.optaplanner.core.api.score.buildin.simple.SimpleScore;
 //import org.optaplanner.persistence.xstream.api.score.buildin.simple.SimpleScoreXStreamConverter;
@@ -58,7 +57,6 @@ public class ActivitySchedule extends AbstractPersistable {
 		this.activityDomainList = activityDomainList;
 	}
 
-	@ValueRangeProvider(id = "activityPeriodRange")
 	@ProblemFactCollectionProperty
 	public List<ActivityPeriod> getActivityPeriodList() {
 		return activityPeriodList;

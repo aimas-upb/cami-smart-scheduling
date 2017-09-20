@@ -5,13 +5,12 @@
   <inheritedSolverBenchmark>
     <problemBenchmarks>
       <xStreamAnnotatedClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</xStreamAnnotatedClass>
-      <inputSolutionFile>data/activityschedule/unsolved/simple-activity.xml</inputSolutionFile>
+      <inputSolutionFile>data/activityschedule/unsolved/cami-scenario.xml</inputSolutionFile>
       <problemStatisticType>BEST_SCORE</problemStatisticType>
       <problemStatisticType>SCORE_CALCULATION_SPEED</problemStatisticType>
     </problemBenchmarks>
     <solver>
-      <solutionClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</solutionClass>
-      <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.Activity</entityClass>
+      <scanAnnotatedClasses/>
       <scoreDirectorFactory>
         <scoreDrl>solver/CAMITaskSchedulerScoreRules.drl</scoreDrl>
       </scoreDirectorFactory>

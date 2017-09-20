@@ -8,8 +8,8 @@ import java.util.Set;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.drools.core.spi.KnowledgeHelper;
@@ -37,6 +37,13 @@ public class Utility {
 	public static Integer getNumberOfMinutesInInterval(Time left, Time right) {
 
 		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
+	}
+
+	public static Integer getNumberOfMinutesInPeriodInterval(int dayIndexLeft, int dayIndexRight, Time left,
+			Time right) {
+
+		return ((dayIndexRight - dayIndexLeft) * 24 + (right.getHour() - left.getHour())) * 60 + right.getMinutes()
+				- left.getMinutes();
 	}
 
 	public static Set<Character> stringToCharacterSet(String s) {
@@ -138,7 +145,7 @@ public class Utility {
 
 			if (activityPeriod.getPeriodHour() >= 6) {
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 				if (!overlapFound) {
 					activityPeriodList.add(activityPeriod);
@@ -164,7 +171,7 @@ public class Utility {
 					&& fullOverlap(activityPeriod.getTime(), activityEndPeriod.getTime(), timeInterval.getMinStart(),
 							timeInterval.getMaxEnd())) {
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 				if (!overlapFound) {
 					activityPeriodList.add(activityPeriod);
@@ -189,7 +196,7 @@ public class Utility {
 				ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 						activityEntity.getActivityDuration());
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 				if (!overlapFound) {
 					activityPeriodList.add(activityPeriod);
@@ -210,7 +217,7 @@ public class Utility {
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 					activityEntity.getActivityDuration());
 
-			overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod, overlapFound);
+			overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
 			if (!overlapFound) {
 				return activityPeriod;
@@ -222,37 +229,20 @@ public class Utility {
 	}
 
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
-			ActivityPeriod activityEndPeriod, boolean overlapFound) {
+			ActivityPeriod activityEndPeriod) {
 		for (Activity activity : activitySchedule.getActivityList()) {
-			if (!(activity instanceof RelativeActivity)) {
-				if (activity.getActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
+			if (activity.getActivityPeriod() != null
+					&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
 
-					if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
-							&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
-						overlapFound = true;
-						continue;
+				if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
+						&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
+					return true;
 
-					}
-				}
-			} else {
-				if (((RelativeActivity) activity).getRelativeActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == ((RelativeActivity) activity)
-								.getRelativeActivityWeekDay().getDayIndex()) {
-
-					if (Utility.before(activityPeriod.getTime(),
-							((RelativeActivity) activity).getRelativeActivityEndPeriod().getTime())
-							&& Utility.after(((RelativeActivity) activity).getRelativeActivityPeriod().getTime(),
-									activityEndPeriod.getTime())) {
-						overlapFound = true;
-						continue;
-
-					}
 				}
 			}
 		}
 
-		return overlapFound;
+		return false;
 	}
 
 	public static Boolean checkTimeslots(ActivityPeriod activityPeriod, PeriodInterval excludedPeriodInterval,
@@ -264,37 +254,15 @@ public class Utility {
 		Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
 		Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
 
-		if (((activityStartTime.getHour() > excludedStartTime.getHour()
-				|| activityEndTime.getHour() > excludedStartTime.getHour()) && sameStartDay)
-				|| (activityStartTime.getHour() < excludedEndTime.getHour() && sameEndDay)) {
+		if (sameStartDay) {
 
-			return true;
-
-		} else if (sameStartDay) {
-
-			if (activityStartTime.getHour() == excludedStartTime.getHour()) {
-
-				if ((activityStartTime.getMinutes() + activityDuration) >= excludedStartTime.getMinutes()) {
-					return true;
-				}
-
-			} else if (activityEndTime.getHour() == excludedStartTime.getHour()) {
-
-				if (activityEndTime.getMinutes() > excludedStartTime.getMinutes()) {
-					return true;
-				}
-
-			}
+			if (before(activityStartTime, new Time(24, 0)) && after(excludedStartTime, activityEndTime))
+				return true;
 
 		} else if (sameEndDay) {
 
-			if (activityStartTime.getHour() == excludedEndTime.getHour()) {
-
-				if (activityStartTime.getMinutes() < excludedEndTime.getMinutes()) {
-					return true;
-				}
-
-			}
+			if (before(activityStartTime, excludedEndTime) && after(new Time(0, 0), activityEndTime))
+				return true;
 
 		} else {
 

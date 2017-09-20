@@ -42,8 +42,9 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Difficulty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
@@ -199,26 +200,13 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			Color color = determinePlanningEntityColor(activity, activity.getActivityType());
 			String toolTip = determinePlanningEntityTooltip(activity);
 
-			if (activity instanceof RelativeActivity)
-				if (((RelativeActivity) activity).getRelativeActivityPeriod() != null)
-					schedulePanel.addCell(
-							weekDayMap.get(((RelativeActivity) activity).getRelativeActivityPeriod().getWeekDay()
-									.getDayIndex()),
-							timeMap.get(((RelativeActivity) activity).getRelativeActivityPeriod().getPeriodHour()),
-							createButton(activity, color, toolTip));
-				else
-					schedulePanel.addCell(((RelativeActivity) activity).getRelativeActivityWeekDay(),
-							((RelativeActivity) activity).getRelativeActivityPeriodTime(),
-							createButton(activity, color, toolTip));
-			else {
-				if (activity.getActivityPeriodTime() != null) {
-					schedulePanel.addCell(weekDayMap.get(activity.getActivityPeriodWeekday().getDayIndex()),
-							timeMap.get(activity.getActivityPeriodTime().getHour()),
-							createButton(activity, color, toolTip));
-				} else
-					schedulePanel.addCell(activity.getActivityPeriodWeekday(), activity.getActivityPeriodTime(),
-							createButton(activity, color, toolTip));
-			}
+			if (activity.getActivityPeriod() != null) {
+				schedulePanel.addCell(weekDayMap.get(activity.getActivityPeriodWeekday().getDayIndex()),
+						timeMap.get(activity.getActivityPeriodTime().getHour()),
+						createButton(activity, color, toolTip));
+			} else
+				schedulePanel.addCell(activity.getActivityPeriodWeekday(), activity.getActivityPeriodTime(),
+						createButton(activity, color, toolTip));
 		}
 	}
 
@@ -240,21 +228,13 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			button.setIcon(new ImageIcon("locked.png"));
 		}
 
-		if (activity instanceof RelativeActivity)
-			if (((RelativeActivity) activity).getRelativeActivityPeriod() == null)
-				plannedTime = "";
-			else
-				plannedTime = ((RelativeActivity) activity).getRelativeActivityPeriod().getLabel() + " - "
-						+ ((RelativeActivity) activity).getRelativeActivityEndPeriod().getTime().getLabel();
-		else {
-			if (activity.getActivityPeriod() == null)
-				plannedTime = "";
-			else
-				plannedTime = activity.getActivityPeriod().getLabel() + " - "
-						+ activity.getActivityEndPeriod().getTime().getLabel();
-		}
+		if (activity.getActivityPeriod() == null)
+			plannedTime = "";
+		else
+			plannedTime = activity.getActivityPeriod().getLabel() + " - "
+					+ activity.getActivityEndPeriod().getTime().getLabel();
 
-		button.setToolTipText("<html>" + activity.getActivityTypeCode() + ":" + activity.getId() + "<br/><br/>"
+		button.setToolTipText("<html>" + activity.getActivityTypeCode() + ": " + activity.getId() + "<br/><br/>"
 				+ plannedTime + "<br/><br/>" + toolTip.substring(6));
 		return button;
 	}
@@ -262,6 +242,64 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	@Override
 	public boolean isIndictmentHeatMapEnabled() {
 		return true;
+	}
+
+	private void triggerInstancesListeners(JTextField instancesPerDayField, JTextField instancesPerWeekField) {
+
+		instancesPerDayField.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				actionPerformed();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				actionPerformed();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				actionPerformed();
+			}
+
+			public void actionPerformed() {
+				if (!instancesPerDayField.getText().equals("")) {
+					instancesPerWeekField.setEnabled(false);
+					instancesPerWeekField.setText("");
+				} else
+					instancesPerWeekField.setEnabled(true);
+
+			}
+		});
+
+		instancesPerWeekField.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				actionPerformed();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				actionPerformed();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				actionPerformed();
+			}
+
+			public void actionPerformed() {
+				if (!instancesPerWeekField.getText().equals("")) {
+					instancesPerDayField.setEnabled(false);
+					instancesPerDayField.setText("");
+				} else
+					instancesPerDayField.setEnabled(true);
+
+			}
+		});
+
 	}
 
 	private class ActivityOptionAction extends AbstractAction {
@@ -283,8 +321,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			JButton addPostponeButton = SwingUtils.makeSmallButton(new JButton(new AddPostponeAction(activity)));
 			listFieldsPanel.add(addPostponeButton);
 
-			if (activity instanceof RelativeActivity) {
-				if (((RelativeActivity) activity).getRelativeActivityPeriod() == null) {
+			if (activity instanceof NormalRelativeActivity) {
+				if (((NormalRelativeActivity) activity).getActivityPeriod() == null) {
 					addPostponeButton.setEnabled(false);
 				}
 			} else {
@@ -306,8 +344,6 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	}
 
 	private class AddActivityOptionAction extends AbstractAction {
-
-		private Activity activity;
 
 		public AddActivityOptionAction() {
 			super("Add activity");
@@ -354,8 +390,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			JComboBox periodListField = new JComboBox<>(periodList.toArray(new Object[periodList.size() + 1]));
 			LabeledComboBoxRenderer.applyToComboBox(periodListField);
 
-			periodListField.setSelectedItem((activity instanceof RelativeActivity)
-					? ((RelativeActivity) activity).getRelativeActivityPeriod() : activity.getActivityPeriod());
+			periodListField.setSelectedItem((activity instanceof NormalRelativeActivity)
+					? ((NormalRelativeActivity) activity).getActivityPeriod()
+					: activity.getActivityPeriod());
 			listFieldsPanel.add(periodListField);
 
 			listFieldsPanel.add(new JLabel("Immovable:"));
@@ -370,17 +407,16 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 				ActivityPeriod toActivityPeriod = (ActivityPeriod) periodListField.getSelectedItem();
 
-				if (!(activity instanceof RelativeActivity)) {
+				if (!(activity instanceof NormalRelativeActivity)) {
 					if (activity.getActivityPeriod() != toActivityPeriod) {
 						solutionBusiness.doChangeMove(activity, "activityPeriod", toActivityPeriod);
 					}
 				} else {
-					if (((RelativeActivity) activity).getRelativeActivityPeriod() != toActivityPeriod) {
+					if (((NormalRelativeActivity) activity).getActivityPeriod() != toActivityPeriod) {
 						doProblemFactChange(scoreDirector -> {
-							scoreDirector.beforeVariableChanged(((RelativeActivity) activity),
-									"relativeActivityPeriod");
-							((RelativeActivity) activity).setRelativeActivityPeriod(toActivityPeriod);
-							scoreDirector.afterVariableChanged(((RelativeActivity) activity), "relativeActivityPeriod");
+							scoreDirector.beforeVariableChanged(((NormalRelativeActivity) activity), "activityPeriod");
+							((NormalRelativeActivity) activity).setActivityPeriod(toActivityPeriod);
+							scoreDirector.afterVariableChanged(((NormalRelativeActivity) activity), "activityPeriod");
 
 							scoreDirector.triggerVariableListeners();
 						});
@@ -457,29 +493,34 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 						instances = activityType.getInstancesPerWeek();
 
 					for (int i = 0; i < instances; i++) {
-						Activity activity = new Activity();
+						NormalActivity activity = new NormalActivity();
 						activity.setActivityType(activityType);
 						activity.setImmovable(lockedField.isSelected());
+						activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 						activity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
 						scoreDirector.beforeEntityAdded(activity);
 						activityList.add(activity);
 						scoreDirector.afterEntityAdded(activity);
-						
+
 						if (activityType.getImposedPeriod() != null) {
 							scoreDirector.beforeVariableChanged(activity, "activityPeriod");
 							activity.setActivityPeriod(activityType.getImposedPeriod());
 							scoreDirector.afterVariableChanged(activity, "activityPeriod");
-							
+
 							activity.setImmovable(true);
 						}
 					}
+
+					etpp.setActivityType(activityType);
 
 					scoreDirector.beforeProblemFactAdded(activityType);
 					activityTypeList.add(activityType);
 					scoreDirector.afterProblemFactAdded(activityType);
 
 					scoreDirector.triggerVariableListeners();
+
+					solverAndPersistenceFrame.activityPostponedAction();
 
 				});
 
@@ -498,13 +539,13 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			JPanel listFieldsPanel = new JPanel(new GridLayout(6, 2));
+			JPanel listFieldsPanel = new JPanel(new GridLayout(8, 2));
 
 			ActivitySchedule activitySchedule = getSolution();
 
 			ActivityType activityType = new ActivityType();
 			JButton activityTypeButton = SwingUtils
-					.makeSmallButton(new JButton(new AddActivityTypeAction(activityType)));
+					.makeSmallButton(new JButton(new AddRelativeActivityTypeAction(activityType)));
 			activityTypeButton.setToolTipText("Define activity type properties");
 			listFieldsPanel.add(new JLabel("Define the activity type"));
 			listFieldsPanel.add(activityTypeButton);
@@ -534,14 +575,34 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			listFieldsPanel.add(new JLabel("Relative to category"));
 			listFieldsPanel.add(activityCategoryListField);
 
+			JTextField instancesPerDayField = new JTextField();
+			listFieldsPanel.add(new JLabel("Instances per day"));
+			listFieldsPanel.add(instancesPerDayField);
+
+			JTextField instancesPerWeekField = new JTextField();
+			listFieldsPanel.add(new JLabel("Instances per week"));
+			listFieldsPanel.add(instancesPerWeekField);
+
+			triggerInstancesListeners(instancesPerDayField, instancesPerWeekField);
+
 			ActionListener activityTypeActionListener = new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (activityTypeListListField.getSelectedItem() != null) {
 						activityCategoryListField.setEnabled(false);
-					} else
+						activityCategoryListField.setSelectedItem(null);
+
+						instancesPerDayField.setEnabled(false);
+						instancesPerDayField.setText("");
+
+						instancesPerWeekField.setEnabled(false);
+						instancesPerWeekField.setText("");
+					} else {
 						activityCategoryListField.setEnabled(true);
+						instancesPerDayField.setEnabled(true);
+						instancesPerWeekField.setEnabled(true);
+					}
 				}
 			};
 
@@ -553,6 +614,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				public void actionPerformed(ActionEvent e) {
 					if (activityCategoryListField.getSelectedItem() != null) {
 						activityTypeListListField.setEnabled(false);
+						activityTypeListListField.setSelectedItem(null);
 					} else
 						activityTypeListListField.setEnabled(true);
 				}
@@ -598,22 +660,28 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 					activityType.setId(activityTypeListSolution.get(activityTypeListSolution.size() - 1).getId() + 1);
 
-					if (activityTypeListListField.getSelectedItem() != null) {
-						int instances = 1;
-						if (((ActivityType) activityTypeListListField.getSelectedItem()).getInstancesPerDay() != 0) {
-							instances = ((ActivityType) activityTypeListListField.getSelectedItem())
-									.getInstancesPerDay() * 7;
-							activityType.setInstancesPerDay(instances / 7);
-						} else if (((ActivityType) activityTypeListListField.getSelectedItem())
-								.getInstancesPerWeek() != 0) {
-							instances = ((ActivityType) activityTypeListListField.getSelectedItem())
-									.getInstancesPerWeek();
-							activityType.setInstancesPerWeek(instances);
-						}
+					if (relativeTypeListField.getSelectedItem() != null) {
 
-						if (relativeTypeListField.getSelectedItem() != null) {
+						RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
+						relativeActivityPenalty.setRelativeType((RelativeType) relativeTypeListField.getSelectedItem());
+						relativeActivityPenalty.setRelativeActivityType(activityType.getCode());
+
+						if (activityTypeListListField.getSelectedItem() != null) {
+
+							int instances = 1;
+							ActivityType staticActivityType = (ActivityType) activityTypeListListField
+									.getSelectedItem();
+
+							if (staticActivityType.getInstancesPerDay() != 0) {
+								instances = staticActivityType.getInstancesPerDay() * 7;
+								activityType.setInstancesPerDay(instances / 7);
+							} else if (staticActivityType.getInstancesPerWeek() != 0) {
+								instances = staticActivityType.getInstancesPerWeek();
+								activityType.setInstancesPerWeek(instances);
+							}
+
 							for (int i = 0; i < instances; i++) {
-								RelativeActivity relativeActivity = new RelativeActivity();
+								NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 								relativeActivity.setActivityType(activityType);
 								relativeActivity.setOffset(Integer
 										.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText()));
@@ -625,27 +693,89 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 								scoreDirector.afterEntityAdded(relativeActivity);
 							}
 
-							RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
-							relativeActivityPenalty
-									.setRelativeType((RelativeType) relativeTypeListField.getSelectedItem());
-							relativeActivityPenalty.setRelativeActivityType(activityType.getCode());
-							relativeActivityPenalty.setStaticActivityType(
-									((ActivityType) activityTypeListListField.getSelectedItem()).getCode());
-							relativeActivityPenalty.setId(
-									relativeActivityPenaltyList.get(relativeActivityPenaltyList.size() - 1).getId()
-											+ 1);
+							relativeActivityPenalty.setStaticActivityType(staticActivityType.getCode());
 
-							scoreDirector.beforeProblemFactAdded(relativeActivityPenalty);
-							relativeActivityPenaltyList.add(relativeActivityPenalty);
-							scoreDirector.afterProblemFactAdded(relativeActivityPenalty);
+						} else if (activityCategoryListField.getSelectedItem() != null) {
+
+							int instances = 1;
+							String activityCategory = ((ActivityCategory) activityCategoryListField.getSelectedItem())
+									.getCode();
+
+							if (!instancesPerDayField.getText().equals("")) {
+								instances = Integer.parseInt(instancesPerDayField.getText()) * 7;
+								activityType.setInstancesPerDay(instances / 7);
+							} else if (!instancesPerWeekField.getText().equals("")) {
+								instances = Integer.parseInt(instancesPerWeekField.getText());
+								activityType.setInstancesPerWeek(instances);
+							}
+
+							for (int i = 0; i < instances; i++) {
+								NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
+								relativeActivity.setActivityType(activityType);
+								relativeActivity.setOffset(Integer
+										.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText()));
+								relativeActivity.setImmovable(false);
+								relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
+
+								scoreDirector.beforeEntityAdded(relativeActivity);
+								activityList.add(relativeActivity);
+								scoreDirector.afterEntityAdded(relativeActivity);
+							}
+
+							relativeActivityPenalty.setCategory(activityCategory);
+
 						}
+
+						etpp.setActivityType(activityType);
+
+						relativeActivityPenalty.setId(
+								relativeActivityPenaltyList.get(relativeActivityPenaltyList.size() - 1).getId() + 1);
+
+						scoreDirector.beforeProblemFactAdded(relativeActivityPenalty);
+						relativeActivityPenaltyList.add(relativeActivityPenalty);
+						scoreDirector.afterProblemFactAdded(relativeActivityPenalty);
+
+						scoreDirector.beforeProblemFactAdded(activityType);
+						activityTypeListSolution.add(activityType);
+						scoreDirector.afterProblemFactAdded(activityType);
+
+						// *****need this to trigger the listener*****
+						if (activityTypeListListField.getSelectedItem() != null) {
+
+							for (Activity activity : activityList) {
+								if (activity instanceof NormalActivity) {
+									if (((NormalActivity) activity).getActivityTypeCode().equals(
+											((ActivityType) activityTypeListListField.getSelectedItem()).getCode())) {
+
+										scoreDirector.beforeVariableChanged(activity, "activityPeriod");
+										((NormalActivity) activity).setActivityPeriod(activity.getActivityPeriod());
+										scoreDirector.afterVariableChanged(activity, "activityPeriod");
+									}
+								}
+							}
+
+						} else if ((activityCategoryListField.getSelectedItem() != null)) {
+
+							for (Activity activity : activityList) {
+								if (activity instanceof NormalActivity) {
+									if (((NormalActivity) activity).getActivityCategory().getCode() != null
+											&& ((NormalActivity) activity).getActivityCategory().getCode()
+													.equals(((String) activityCategoryListField.getSelectedItem()))) {
+
+										scoreDirector.beforeVariableChanged(activity, "activityPeriod");
+										((NormalActivity) activity).setActivityPeriod(activity.getActivityPeriod());
+										scoreDirector.afterVariableChanged(activity, "activityPeriod");
+									}
+								}
+							}
+
+						}
+
+						scoreDirector.triggerVariableListeners();
+
+						solverAndPersistenceFrame.activityPostponedAction();
+
 					}
-
-					scoreDirector.beforeProblemFactAdded(activityType);
-					activityTypeListSolution.add(activityType);
-					scoreDirector.afterProblemFactAdded(activityType);
-
-					scoreDirector.triggerVariableListeners();
 
 				});
 
@@ -697,57 +827,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			listFieldsPanel.add(new JLabel("Instances per week"));
 			listFieldsPanel.add(instancesPerWeekField);
 
-			instancesPerDayField.getDocument().addDocumentListener(new DocumentListener() {
-
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					actionPerformed();
-				}
-
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					actionPerformed();
-				}
-
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					actionPerformed();
-				}
-
-				public void actionPerformed() {
-					if (!instancesPerDayField.getText().equals("")) {
-						instancesPerWeekField.setEnabled(false);
-					} else
-						instancesPerWeekField.setEnabled(true);
-
-				}
-			});
-
-			instancesPerWeekField.getDocument().addDocumentListener(new DocumentListener() {
-
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					actionPerformed();
-				}
-
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					actionPerformed();
-				}
-
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					actionPerformed();
-				}
-
-				public void actionPerformed() {
-					if (!instancesPerWeekField.getText().equals("")) {
-						instancesPerDayField.setEnabled(false);
-					} else
-						instancesPerDayField.setEnabled(true);
-
-				}
-			});
+			triggerInstancesListeners(instancesPerDayField, instancesPerWeekField);
 
 			ActivityPeriod imposedPeriod = new ActivityPeriod();
 			JButton imposedPeriodButton = SwingUtils
@@ -789,9 +869,90 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				activityType.setInstancesPerWeek(Integer
 						.parseInt(instancesPerWeekField.getText().equals("") ? "1" : instancesPerWeekField.getText()));
 
-				activityType.setImposedPeriod(imposedPeriod);
+				if (imposedPeriod.getTime() == null || imposedPeriod.getWeekDay() == null)
+					activityType.setImposedPeriod(null);
+				else
+					activityType.setImposedPeriod(imposedPeriod);
 
-				activityType.setPermittedIntervals(permittedIntervals);
+				if (permittedIntervals.size() != 0)
+					activityType.setPermittedIntervals(permittedIntervals);
+				else
+					activityType.setPermittedIntervals(null);
+
+				activityType.setActivityCategory((ActivityCategory) activityCategoryListField.getSelectedItem());
+
+				solverAndPersistenceFrame.resetScreen();
+			}
+
+		}
+
+	}
+
+	private class AddRelativeActivityTypeAction extends AbstractAction {
+
+		private ActivityType activityType;
+
+		public AddRelativeActivityTypeAction(ActivityType activityType) {
+			super("Define activity type properties");
+			this.activityType = activityType;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			JPanel listFieldsPanel = new JPanel(new GridLayout(6, 2));
+
+			ActivitySchedule activitySchedule = getSolution();
+
+			JTextField codeField = new JTextField();
+			listFieldsPanel.add(new JLabel("Code"));
+			listFieldsPanel.add(codeField);
+
+			JTextField durationField = new JTextField();
+			listFieldsPanel.add(new JLabel("Duration"));
+			listFieldsPanel.add(durationField);
+
+			listFieldsPanel.add(new JLabel("Difficulty:"));
+			JComboBox difficultyListField = new JComboBox<>(Difficulty.values());
+			LabeledComboBoxRenderer.applyToComboBox(difficultyListField);
+			difficultyListField.setSelectedItem(null);
+			listFieldsPanel.add(difficultyListField);
+
+			JTextField caloriesField = new JTextField();
+			listFieldsPanel.add(new JLabel("Calories"));
+			listFieldsPanel.add(caloriesField);
+
+			List<TimeInterval> permittedIntervals = new ArrayList<>();
+			JButton permittedIntervalsButton = SwingUtils
+					.makeSmallButton(new JButton(new AddPermittedIntervalsAction(permittedIntervals)));
+			listFieldsPanel.add(new JLabel("Permitted intervals"));
+			listFieldsPanel.add(permittedIntervalsButton);
+
+			List<ActivityCategory> activityCategoryList = activitySchedule.getActivityCategoryList();
+			JComboBox activityCategoryListField = new JComboBox<>(
+					activityCategoryList.toArray(new Object[activityCategoryList.size() + 1]));
+			activityCategoryListField.setSelectedItem(null);
+			LabeledComboBoxRenderer.applyToComboBox(activityCategoryListField);
+			listFieldsPanel.add(new JLabel("Activity Category"));
+			listFieldsPanel.add(activityCategoryListField);
+
+			int result = JOptionPane.showConfirmDialog(CAMITaskSchedulerPanel.this.getRootPane(), listFieldsPanel,
+					"Define activity type properties", JOptionPane.OK_CANCEL_OPTION);
+
+			if (result == JOptionPane.OK_OPTION) {
+
+				activityType.setCode(codeField.getText());
+
+				activityType.setDuration(
+						Integer.parseInt(durationField.getText().equals("") ? "0" : durationField.getText()));
+				activityType.setDifficulty((Difficulty) difficultyListField.getSelectedItem());
+
+				activityType.setCalories(
+						Integer.parseInt(caloriesField.getText().equals("") ? "0" : caloriesField.getText()));
+
+				if (permittedIntervals.size() != 0)
+					activityType.setPermittedIntervals(permittedIntervals);
+				else
+					activityType.setPermittedIntervals(null);
 
 				activityType.setActivityCategory((ActivityCategory) activityCategoryListField.getSelectedItem());
 
@@ -1115,7 +1276,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 					ActivitySchedule activitySchedule = getSolution();
 					Activity workingActivity = scoreDirector.lookUpWorkingObject(activity);
 
-					if (!(workingActivity instanceof RelativeActivity)) {
+					if (workingActivity instanceof NormalActivity) {
 
 						Postpone postpone = new Postpone();
 						postpone.setPostponePeriod(workingActivity.getActivityPeriod());
@@ -1130,16 +1291,21 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 								.getSelectedItem() == PostponeType.POSTPONE_LATER_THIS_WEEK
 								&& workingActivity.getActivityType().getInstancesPerWeek() != 0) {
 
+							setActivitiesValueRangeForFutureActivities(activitySchedule,
+									workingActivity.getActivityPeriod());
+							setActivitiesValueRangeForPastActivities(activitySchedule,
+									workingActivity.getActivityPeriod());
+
 							if (workingActivity.getActivityPeriod() != null) {
 								for (Activity activity : activitySchedule.getActivityList()) {
-									if (activity != workingActivity
+									if (activity instanceof NormalActivity && activity != workingActivity
 											&& activity.getActivityTypeCode() == workingActivity.getActivityTypeCode()
 											&& activity.getActivityPeriod() != null
 											&& activity.getActivityPeriodWeekday().getDayIndex() > workingActivity
 													.getActivityPeriodWeekday().getDayIndex()) {
 
 										scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-										activity.setActivityPeriod(null);
+										((NormalActivity) activity).setActivityPeriod(null);
 										scoreDirector.afterVariableChanged(activity, "activityPeriod");
 
 										scoreDirector.beforeProblemPropertyChanged(activity);
@@ -1149,26 +1315,32 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 								}
 
 								scoreDirector.beforeVariableChanged(workingActivity, "activityPeriod");
-								workingActivity.setActivityPeriod(null);
+								((NormalActivity) workingActivity).setActivityPeriod(null);
 								scoreDirector.afterVariableChanged(workingActivity, "activityPeriod");
 
 								scoreDirector.beforeProblemPropertyChanged(workingActivity);
 								workingActivity.setPostpone(postpone);
 								scoreDirector.afterProblemPropertyChanged(workingActivity);
 							}
+
 						} else if ((PostponeType) postponeTypeListField
 								.getSelectedItem() == PostponeType.POSTPONE_LATER_THIS_DAY) {
 
+							setActivitiesValueRangeForFutureActivities(activitySchedule,
+									workingActivity.getActivityPeriod());
+							setActivitiesValueRangeForPastActivities(activitySchedule,
+									workingActivity.getActivityPeriod());
+
 							if (workingActivity.getActivityPeriod() != null) {
 								for (Activity activity : activitySchedule.getActivityList()) {
-									if (activity != workingActivity
+									if (activity instanceof NormalActivity && activity != workingActivity
 											&& activity.getActivityTypeCode() == workingActivity.getActivityTypeCode()
 											&& activity.getActivityPeriod() != null
 											&& activity.getActivityPeriodWeekday().getDayIndex() == workingActivity
 													.getActivityPeriodWeekday().getDayIndex()) {
 
 										scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-										activity.setActivityPeriod(null);
+										((NormalActivity) activity).setActivityPeriod(null);
 										scoreDirector.afterVariableChanged(activity, "activityPeriod");
 
 										scoreDirector.beforeProblemPropertyChanged(activity);
@@ -1179,7 +1351,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 								}
 
 								scoreDirector.beforeVariableChanged(workingActivity, "activityPeriod");
-								workingActivity.setActivityPeriod(null);
+								((NormalActivity) workingActivity).setActivityPeriod(null);
 								scoreDirector.afterVariableChanged(workingActivity, "activityPeriod");
 
 								scoreDirector.beforeProblemPropertyChanged(workingActivity);
@@ -1192,83 +1364,90 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 							scoreDirector.beforeProblemPropertyChanged(workingActivity);
 							workingActivity.setPostpone(postpone);
 							scoreDirector.afterProblemPropertyChanged(workingActivity);
+
 						}
+
+						scoreDirector.triggerVariableListeners();
 
 						solverAndPersistenceFrame.activityPostponedAction();
 
-						scoreDirector.triggerVariableListeners();
-					} else {
+					} else if (workingActivity instanceof NormalRelativeActivity) {
 
 						Postpone postpone = new Postpone();
-						postpone.setPostponePeriod(((RelativeActivity) workingActivity).getRelativeActivityPeriod());
+						postpone.setPostponePeriod(((NormalRelativeActivity) workingActivity).getActivityPeriod());
 						postpone.setPostponeType((PostponeType) postponeTypeListField.getSelectedItem());
 						postpone.setId(postponeId++);
 
 						if ((PostponeType) postponeTypeListField.getSelectedItem() == PostponeType.POSTPONE_15MIN) {
 							ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
-									((RelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
-											((RelativeActivity) workingActivity).getRelativeActivityPeriod(), 15),
+									((NormalRelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
+											((NormalRelativeActivity) workingActivity).getActivityPeriod(), 15),
 									5);
 
-							scoreDirector.beforeVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
-							((RelativeActivity) workingActivity).setRelativeActivityPeriod(period);
-							scoreDirector.afterVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
+							scoreDirector.beforeVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
+							((NormalRelativeActivity) workingActivity).setActivityPeriod(period);
+							scoreDirector.afterVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
 						} else if ((PostponeType) postponeTypeListField
 								.getSelectedItem() == PostponeType.POSTPONE_30MIN) {
 							ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
-									((RelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
-											((RelativeActivity) workingActivity).getRelativeActivityPeriod(), 30),
+									((NormalRelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
+											((NormalRelativeActivity) workingActivity).getActivityPeriod(), 30),
 									5);
 
-							scoreDirector.beforeVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
-							((RelativeActivity) workingActivity).setRelativeActivityPeriod(period);
-							scoreDirector.afterVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
+							scoreDirector.beforeVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
+							((NormalRelativeActivity) workingActivity).setActivityPeriod(period);
+							scoreDirector.afterVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
 						} else if ((PostponeType) postponeTypeListField
 								.getSelectedItem() == PostponeType.POSTPONE_1HOUR) {
 							ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
-									((RelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
-											((RelativeActivity) workingActivity).getRelativeActivityPeriod(), 60),
+									((NormalRelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
+											((NormalRelativeActivity) workingActivity).getActivityPeriod(), 60),
 									5);
 
-							scoreDirector.beforeVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
-							((RelativeActivity) workingActivity).setRelativeActivityPeriod(period);
-							scoreDirector.afterVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
+							scoreDirector.beforeVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
+							((NormalRelativeActivity) workingActivity).setActivityPeriod(period);
+							scoreDirector.afterVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
 						} else if ((PostponeType) postponeTypeListField
 								.getSelectedItem() == PostponeType.POSTPONE_LATER_THIS_DAY) {
 							ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
-									((RelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
-											((RelativeActivity) workingActivity).getRelativeActivityPeriod(), 5),
+									((NormalRelativeActivity) workingActivity), AdjustActivityPeriod.getAdjustedPeriod(
+											((NormalRelativeActivity) workingActivity).getActivityPeriod(), 5),
 									5);
 
-							for (Activity activity : activitySchedule.getActivityList()) {
-								if (activity instanceof RelativeActivity
-										&& ((RelativeActivity) activity)
-												.getActivityTypeCode() == ((RelativeActivity) workingActivity)
-														.getActivityTypeCode()
-										&& ((RelativeActivity) activity).getRelativeActivityPeriod() != null
-										&& ((RelativeActivity) workingActivity).getRelativeActivityPeriod() != null
-										&& ((RelativeActivity) activity).getRelativeActivityWeekDay()
-												.getDayIndex() == ((RelativeActivity) workingActivity)
-														.getRelativeActivityWeekDay().getDayIndex()) {
+							setActivitiesValueRangeForFutureActivities(activitySchedule,
+									((NormalRelativeActivity) workingActivity).getActivityPeriod());
+							setActivitiesValueRangeForPastActivities(activitySchedule,
+									((NormalRelativeActivity) workingActivity).getActivityPeriod());
 
-									scoreDirector.beforeProblemPropertyChanged(((RelativeActivity) activity));
-									((RelativeActivity) activity).setPostpone(postpone);
-									scoreDirector.afterProblemPropertyChanged(((RelativeActivity) activity));
+							for (Activity activity : activitySchedule.getActivityList()) {
+								if (activity instanceof NormalRelativeActivity
+										&& ((NormalRelativeActivity) activity)
+												.getActivityTypeCode() == ((NormalRelativeActivity) workingActivity)
+														.getActivityTypeCode()
+										&& ((NormalRelativeActivity) activity).getActivityPeriod() != null
+										&& ((NormalRelativeActivity) workingActivity).getActivityPeriod() != null
+										&& ((NormalRelativeActivity) activity).getActivityPeriodWeekday()
+												.getDayIndex() == ((NormalRelativeActivity) workingActivity)
+														.getActivityPeriodWeekday().getDayIndex()) {
+
+									scoreDirector.beforeProblemPropertyChanged(((NormalRelativeActivity) activity));
+									((NormalRelativeActivity) activity).setPostpone(postpone);
+									scoreDirector.afterProblemPropertyChanged(((NormalRelativeActivity) activity));
 
 								}
 							}
 
-							scoreDirector.beforeVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
-							((RelativeActivity) workingActivity).setRelativeActivityPeriod(period);
-							scoreDirector.afterVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
+							scoreDirector.beforeVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
+							((NormalRelativeActivity) workingActivity).setActivityPeriod(period);
+							scoreDirector.afterVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
 						} else if ((PostponeType) postponeTypeListField
 								.getSelectedItem() == PostponeType.POSTPONE_LATER_THIS_WEEK) {
 
@@ -1276,30 +1455,35 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 									activitySchedule, workingActivity,
 									workingActivity.getActivityPeriodWeekday().getDayIndex());
 
-							for (Activity activity : activitySchedule.getActivityList()) {
-								if (activity instanceof RelativeActivity
-										&& ((RelativeActivity) activity)
-												.getActivityTypeCode() == ((RelativeActivity) workingActivity)
-														.getActivityTypeCode()
-										&& ((RelativeActivity) activity).getRelativeActivityPeriod() != null
-										&& ((RelativeActivity) workingActivity).getRelativeActivityPeriod() != null
-										&& ((RelativeActivity) activity).getRelativeActivityWeekDay()
-												.getDayIndex() > ((RelativeActivity) workingActivity)
-														.getRelativeActivityWeekDay().getDayIndex()) {
+							setActivitiesValueRangeForFutureActivities(activitySchedule,
+									((NormalRelativeActivity) workingActivity).getActivityPeriod());
+							setActivitiesValueRangeForPastActivities(activitySchedule,
+									((NormalRelativeActivity) workingActivity).getActivityPeriod());
 
-									scoreDirector.beforeProblemPropertyChanged(((RelativeActivity) activity));
-									((RelativeActivity) activity).setPostpone(postpone);
-									scoreDirector.afterProblemPropertyChanged(((RelativeActivity) activity));
+							for (Activity activity : activitySchedule.getActivityList()) {
+								if (activity instanceof NormalRelativeActivity
+										&& ((NormalRelativeActivity) activity)
+												.getActivityTypeCode() == ((NormalRelativeActivity) workingActivity)
+														.getActivityTypeCode()
+										&& ((NormalRelativeActivity) activity).getActivityPeriod() != null
+										&& ((NormalRelativeActivity) workingActivity).getActivityPeriod() != null
+										&& ((NormalRelativeActivity) activity).getActivityPeriodWeekday()
+												.getDayIndex() > ((NormalRelativeActivity) workingActivity)
+														.getActivityPeriodWeekday().getDayIndex()) {
+
+									scoreDirector.beforeProblemPropertyChanged(((NormalRelativeActivity) activity));
+									((NormalRelativeActivity) activity).setPostpone(postpone);
+									scoreDirector.afterProblemPropertyChanged(((NormalRelativeActivity) activity));
 
 								}
 							}
 
-							scoreDirector.beforeVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
-							((RelativeActivity) workingActivity).setRelativeActivityPeriod(periodsLaterThisWeek
+							scoreDirector.beforeVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
+							((NormalRelativeActivity) workingActivity).setActivityPeriod(periodsLaterThisWeek
 									.get(ThreadLocalRandom.current().nextInt(0, periodsLaterThisWeek.size())));
-							scoreDirector.afterVariableChanged(((RelativeActivity) workingActivity),
-									"relativeActivityPeriod");
+							scoreDirector.afterVariableChanged(((NormalRelativeActivity) workingActivity),
+									"activityPeriod");
 
 						}
 
@@ -1307,9 +1491,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 						workingActivity.setPostpone(postpone);
 						scoreDirector.afterProblemPropertyChanged(workingActivity);
 
-						solverAndPersistenceFrame.activityPostponedAction();
-
 						scoreDirector.triggerVariableListeners();
+
+						solverAndPersistenceFrame.activityPostponedAction();
 					}
 
 				});
@@ -1319,6 +1503,88 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		}
 
+	}
+
+	private void setActivitiesValueRangeForFutureActivities(ActivitySchedule activitySchedule,
+			ActivityPeriod activityPeriod) {
+		doProblemFactChange(scoreDirector -> {
+
+			List<ActivityPeriod> restrictedPeriodDomain = getRestrictedPeriodDomainForFutureActivities(activitySchedule,
+					activityPeriod);
+
+			for (Activity activity : activitySchedule.getActivityList()) {
+				if ((activity instanceof NormalActivity) && activity.getActivityPeriod() != null) {
+					if (activity.getActivityPeriodWeekday().getDayIndex() == activityPeriod.getWeekDayIndex()) {
+						if (Utility.after(activityPeriod.getTime(), activity.getActivityPeriod().getTime())) {
+							scoreDirector.beforeProblemPropertyChanged(activity);
+							((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
+							scoreDirector.afterProblemPropertyChanged(activity);
+						}
+					} else if (activity.getActivityPeriodWeekday().getDayIndex() > activityPeriod.getWeekDayIndex()) {
+						scoreDirector.beforeProblemPropertyChanged(activity);
+						((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
+						scoreDirector.afterProblemPropertyChanged(activity);
+					}
+				}
+			}
+		});
+	}
+
+	private void setActivitiesValueRangeForPastActivities(ActivitySchedule activitySchedule,
+			ActivityPeriod activityPeriod) {
+		doProblemFactChange(scoreDirector -> {
+
+			List<ActivityPeriod> restrictedPeriodDomain = getRestrictedPeriodDomainForPastActivities(activitySchedule,
+					activityPeriod);
+
+			for (Activity activity : activitySchedule.getActivityList()) {
+				if ((activity instanceof NormalActivity) && activity.getActivityPeriod() != null) {
+					if (activity.getActivityPeriodWeekday().getDayIndex() == activityPeriod.getWeekDayIndex()) {
+						if (Utility.exclusiveBefore(activity.getActivityPeriod().getTime(), activityPeriod.getTime())) {
+							scoreDirector.beforeProblemPropertyChanged(activity);
+							((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
+							scoreDirector.afterProblemPropertyChanged(activity);
+						}
+					} else if (activity.getActivityPeriodWeekday().getDayIndex() < activityPeriod.getWeekDayIndex()) {
+						scoreDirector.beforeProblemPropertyChanged(activity);
+						((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
+						scoreDirector.afterProblemPropertyChanged(activity);
+					}
+				}
+			}
+		});
+	}
+
+	private List<ActivityPeriod> getRestrictedPeriodDomainForFutureActivities(ActivitySchedule activitySchedule,
+			ActivityPeriod activityPeriod) {
+
+		List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
+
+		for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+			if (period.getWeekDayIndex() == activityPeriod.getWeekDayIndex()
+					&& Utility.after(activityPeriod.getTime(), period.getTime())) {
+				restrictedPeriodDomain.add(period);
+			} else if (period.getWeekDayIndex() > activityPeriod.getWeekDayIndex()) {
+				restrictedPeriodDomain.add(period);
+			}
+		}
+		return restrictedPeriodDomain;
+	}
+
+	private List<ActivityPeriod> getRestrictedPeriodDomainForPastActivities(ActivitySchedule activitySchedule,
+			ActivityPeriod activityPeriod) {
+
+		List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
+
+		for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+			if (period.getWeekDayIndex() == activityPeriod.getWeekDayIndex()
+					&& Utility.exclusiveBefore(period.getTime(), activityPeriod.getTime())) {
+				restrictedPeriodDomain.add(period);
+			} else if (period.getWeekDayIndex() < activityPeriod.getWeekDayIndex()) {
+				restrictedPeriodDomain.add(period);
+			}
+		}
+		return restrictedPeriodDomain;
 	}
 
 }
