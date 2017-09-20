@@ -15,6 +15,7 @@ public class ScoreParametrization extends AbstractPersistable {
 	private int instancesPerDayPenalty;
 	private int instancesPerWeekPenalty;
 	private int periodConflictPenalty;
+	private int postponeLaterThisDayAndThisWeekPenalty;
 	private int earlyHour;
 	private int distanceBetweenExerciseAndMeal;
 	private int distanceBetweenExercises;
@@ -42,6 +43,14 @@ public class ScoreParametrization extends AbstractPersistable {
 
 	public void setPeriodConflictPenalty(int periodConflictPenalty) {
 		this.periodConflictPenalty = periodConflictPenalty;
+	}
+
+	public int getPostponeLaterThisDayAndThisWeekPenalty() {
+		return postponeLaterThisDayAndThisWeekPenalty;
+	}
+
+	public void setPostponeLaterThisDayAndThisWeekPenalty(int postponeLaterThisDayAndThisWeekPenaltyField) {
+		this.postponeLaterThisDayAndThisWeekPenalty = postponeLaterThisDayAndThisWeekPenaltyField;
 	}
 
 	public int getEarlyHour() {
