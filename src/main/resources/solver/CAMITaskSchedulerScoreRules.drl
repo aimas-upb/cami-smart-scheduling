@@ -415,6 +415,8 @@ end
 // postpone an activity
 rule "postponeActivity"
 	when
+		$scoreParametrization : ScoreParametrization()
+
 		$activity : Activity(
 			$postpone : postpone, 
 			postpone != null, 
@@ -442,12 +444,12 @@ rule "postponeActivity"
 			}
 		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_DAY) {
 			if (before($activityPeriod.getTime(), $postpone.getPostponePeriod().getTime())) {
-				scoreHolder.addHardConstraintMatch(kcontext, -30);
+				scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
 			}
 		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_WEEK) {
 			if ($postpone.getPostponePeriod().getWeekDay().getDayIndex() < 6)
 				if ($activityPeriod.getWeekDay().getDayIndex() <= $postpone.getPostponePeriod().getWeekDay().getDayIndex()) {
-					scoreHolder.addHardConstraintMatch(kcontext, -30);
+					scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
 				}
 		}
 end
@@ -465,5 +467,6 @@ rule "postponeActivityDifferentDay"
 			postpone.postponeType != PostponeType.POSTPONE_LATER_THIS_WEEK
 		)
 	then
-		scoreHolder.addHardConstraintMatch(kcontext, -1);
+		scoreHolder.addHardConstraintMatch(kcontext, -Math.abs($activityPeriod.getWeekDay().getDayIndex() - 
+			$postpone.getPostponePeriod().getWeekDay().getDayIndex()));
 end
