@@ -27,6 +27,7 @@ import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.help;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.stringToCharacterSet;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.checkTimeslots;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.getNumberOfMinutesInInterval;
+import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.getNumberOfMinutesInPeriodInterval;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.before;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.after;
 import function org.aimas.cami.scheduler.CAMIScheduler.utils.Utility.exclusiveBefore;
@@ -130,6 +131,12 @@ rule "excludedTimeslots"
 		// iterate through all excluded timeslots
 		for (int i = 0; i < excludedPeriods.size(); i++) {
 			PeriodInterval excludedPeriodInterval = excludedPeriods.get(i);
+			
+			ActivityPeriod activityEndPeriod = getAdjustedPeriod($activityPeriod, $activityType.getDuration());
+			Time activityStartTime = $activityPeriod.getTime();
+			Time activityEndTime = activityEndPeriod.getTime();
+			Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
+			Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
 
 			// excluded just on a specific day or everyday
 			if ((excludedPeriodInterval.getStartPeriod().getWeekDay() == null && excludedPeriodInterval.getEndPeriod().getWeekDay() == null) || 
@@ -137,12 +144,6 @@ rule "excludedTimeslots"
 					$activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getEndPeriod().getWeekDayIndex())) {
 
 				if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), false, false)) {
-
-					ActivityPeriod activityEndPeriod = getAdjustedPeriod($activityPeriod, $activityType.getDuration());
-					Time activityStartTime = $activityPeriod.getTime();
-					Time activityEndTime = activityEndPeriod.getTime();
-					Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
-					Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
 
 					if (fullOverlap(activityStartTime, activityEndTime, excludedStartTime, excludedEndTime)) {
 
@@ -158,6 +159,32 @@ rule "excludedTimeslots"
 					}
 				}
 
+			} else { // excluded between some specific days
+
+				if ($activityPeriod.getWeekDayIndex() > excludedPeriodInterval.getStartPeriod().getWeekDayIndex() && 
+					$activityPeriod.getWeekDayIndex() < excludedPeriodInterval.getEndPeriod().getWeekDayIndex()) {
+
+					int leftTimeslotMinutesDifference = getNumberOfMinutesInPeriodInterval(excludedPeriodInterval.getStartPeriod().getWeekDayIndex(), 
+						$activityPeriod.getWeekDayIndex(), excludedStartTime, activityEndTime);
+
+					int rightTimeslotMinutesDifference = getNumberOfMinutesInPeriodInterval($activityPeriod.getWeekDayIndex(), 
+						excludedPeriodInterval.getEndPeriod().getWeekDayIndex(), activityStartTime, excludedEndTime);
+
+					scoreHolder.addHardConstraintMatch(kcontext, -Math.min(leftTimeslotMinutesDifference, rightTimeslotMinutesDifference));
+
+				} else if ($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getStartPeriod().getWeekDayIndex()) {
+
+					if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), true, false)) {
+						scoreHolder.addHardConstraintMatch(kcontext, -getNumberOfMinutesInInterval(excludedStartTime, activityEndTime));
+					}
+
+				} else if ($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getEndPeriod().getWeekDayIndex()) {
+
+					if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), false, true)) {
+						scoreHolder.addHardConstraintMatch(kcontext, -getNumberOfMinutesInInterval(activityStartTime, excludedEndTime));
+					}
+
+				}
 			}
 		}
 end
@@ -217,7 +244,7 @@ rule "instancesPerWeekAssigned"
 end
 
 // plan an activity every day, "instancesPerDay" instances in a day
-// it's important that penalty to this constraint to be slight bigger than instancesPerDayRelativeActivity
+// it's important that penalty to this constraint to be slight bigger than instancesPerDayNormalRelativeActivity
 rule "instancesPerDayNormalActivity"
 	when
 		$scoreParametrization : ScoreParametrization()
@@ -299,7 +326,7 @@ rule "instancesPerDayNormalRelativeActivity"
 
 		if (occurences != $instancesPerDay)
 			scoreHolder.addHardConstraintMatch(kcontext, 
-				Math.abs(occurences - $instancesPerDay) * (-$scoreParametrization.getInstancesPerDayPenalty()));
+				Math.abs(occurences - $instancesPerDay) * (-$scoreParametrization.getInstancesPerDayPenalty() + 1));
 end
 
 // SOFT CONSTRAINTS
