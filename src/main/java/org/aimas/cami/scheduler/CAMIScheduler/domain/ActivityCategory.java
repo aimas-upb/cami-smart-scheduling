@@ -28,6 +28,12 @@ public class ActivityCategory extends AbstractPersistable implements Labeled {
 		this.id = id;
 	}
 
+	public ActivityCategory(String code, ActivityDomain domain) {
+		super();
+		this.code = code;
+		this.domain = domain;
+	}
+
 	public String getCode() {
 		return code;
 	}
