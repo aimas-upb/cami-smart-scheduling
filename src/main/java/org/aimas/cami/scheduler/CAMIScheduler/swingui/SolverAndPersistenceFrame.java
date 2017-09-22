@@ -354,7 +354,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
-	public void activityPostponedAction() {
+	public void startSolveAction() {
 		if (solveButton.isEnabled()) {
 			setSolvingState(true);
 			Solution_ planningProblem = solutionBusiness.getSolution();
@@ -629,7 +629,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		// JLabel usageExplanationLabel = new JLabel(usageExplanationIcon);
 		// Allow splitPane divider to be moved to the right
 		// usageExplanationLabel.setMinimumSize(new Dimension(100, 100));
-		// usageExplanationPanel.add(usageExplanationLabel, BorderLayout.CENTER);
+		// usageExplanationPanel.add(usageExplanationLabel,
+		// BorderLayout.CENTER);
 		JPanel descriptionPanel = new JPanel(new BorderLayout(2, 2));
 		descriptionPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		descriptionPanel.add(new JLabel("Example description"), BorderLayout.NORTH);
@@ -677,9 +678,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingToggleButton = new JToggleButton(refreshScreenDuringSolvingTrueIcon, true);
 		refreshScreenDuringSolvingToggleButton.setToolTipText("Refresh screen during solving");
 		refreshScreenDuringSolvingToggleButton.addActionListener(e -> {
-			refreshScreenDuringSolvingToggleButton
-					.setIcon(refreshScreenDuringSolvingToggleButton.isSelected() ? refreshScreenDuringSolvingTrueIcon
-							: refreshScreenDuringSolvingFalseIcon);
+			refreshScreenDuringSolvingToggleButton.setIcon(refreshScreenDuringSolvingToggleButton.isSelected()
+					? refreshScreenDuringSolvingTrueIcon : refreshScreenDuringSolvingFalseIcon);
 		});
 		scorePanel.add(refreshScreenDuringSolvingToggleButton, BorderLayout.EAST);
 		return scorePanel;
