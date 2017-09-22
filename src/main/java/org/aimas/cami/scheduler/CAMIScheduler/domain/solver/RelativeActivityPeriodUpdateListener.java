@@ -6,6 +6,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.optaplanner.core.impl.domain.variable.listener.VariableListener;
@@ -61,13 +62,13 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 												.get(relativeActivity.getActivityTypeCode())
 												.equals(relativeActivity.getId())) {
 
-									if (relativeActivity.getOffset() < 0) {
+									if (rap.getRelativeType().equals(RelativeType.BEFORE)) {
 
 										ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
 												relativeActivity,
 												AdjustActivityPeriod.getAdjustedPeriod(
 														activityEntity.getActivityPeriod(),
-														relativeActivity.getOffset()
+														relativeActivity.getOffset() * (-1)
 																- relativeActivity.getActivityType().getDuration()),
 												-5);
 
