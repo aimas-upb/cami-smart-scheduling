@@ -11,6 +11,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +47,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Difficulty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
@@ -57,13 +63,19 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.optaplanner.swing.impl.SwingUtils;
 import org.optaplanner.swing.impl.TangoColorFactory;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
+
 public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	private final TimeTablePanel<WeekDay, Time> schedulePanel;
+	private JPanel addActivityListPanel;
 	private final JPanel addActivityPanel;
+	private final JPanel addActivityFromXMLPanel;
 	private Map<Integer, Time> timeMap;
 	private Map<Integer, WeekDay> weekDayMap;
-	JButton addActivityButton;
+	private JButton addActivityButton;
+	private JButton addActivityFromXmlButton;
 	private long postponeId;
 
 	private ScoreParametrizationDialog scoreParametrizationDialog;
@@ -73,13 +85,23 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		setLayout(new BorderLayout());
 		JTabbedPane tabbedPane = new JTabbedPane();
 		schedulePanel = new TimeTablePanel<>();
-		addActivityPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		addActivityListPanel = new JPanel(new BorderLayout());
+		addActivityPanel = new JPanel();
+		addActivityFromXMLPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+
 		tabbedPane.add("Week Schedule", new JScrollPane(schedulePanel));
+
 		add(tabbedPane, BorderLayout.CENTER);
 		add(createScoreParametrizationPanel(), BorderLayout.SOUTH);
-		add(addActivityPanel, BorderLayout.NORTH);
+		add(addActivityListPanel, BorderLayout.NORTH);
+
 		setPreferredSize(PREFERRED_SCROLLABLE_VIEWPORT_SIZE);
+
 		createAddActivityButton();
+		createAddActivityFromXMLButton(new File("data\\activityschedule\\", "New Activity" + ".xml"));
+
+		addActivityListPanel.add(addActivityPanel, BorderLayout.WEST);
+		addActivityListPanel.add(addActivityFromXMLPanel, BorderLayout.CENTER);
 
 		timeMap = new HashMap<>();
 		weekDayMap = new HashMap<>();
@@ -138,6 +160,113 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		addActivityButton.setPreferredSize(new Dimension(110, 25));
 		addActivityButton.setFont(new Font("TIMES NEW ROMAN", Font.BOLD, 16));
 		addActivityPanel.add(addActivityButton);
+	}
+
+	private void createAddActivityFromXMLButton(File inputFile) {
+		addActivityFromXmlButton = SwingUtils.makeSmallButton(new JButton("Add activity from XML"));
+		addActivityFromXmlButton.setToolTipText("Add a new activity from XML to the schedule");
+		addActivityFromXmlButton.setPreferredSize(new Dimension(180, 25));
+		addActivityFromXmlButton.setFont(new Font("TIMES NEW ROMAN", Font.BOLD, 16));
+		addActivityFromXmlButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				// deserialize the new activity added
+				XStream xStream = new XStream();
+				xStream.alias("NewActivity", NewActivity.class);
+				xStream.setMode(XStream.ID_REFERENCES);
+				xStream.autodetectAnnotations(true);
+
+				try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
+					NewActivity na = (NewActivity) xStream.fromXML(reader);
+					Activity newActivity = na.getActivity();
+					ExcludedTimePeriodsPenalty excludedTimePeriodsPenalty = na.getExcludedTimePeriodsPenalty();
+					RelativeActivityPenalty relativeActivityPenalty = na.getRelativeActivityPenalty();
+
+					ActivitySchedule activitySchedule = getSolution();
+
+					if (newActivity instanceof NormalActivity) {
+						doProblemFactChange(scoreDirector -> {
+
+							List<Activity> activityList = new ArrayList<>(activitySchedule.getActivityList());
+							activitySchedule.setActivityList(activityList);
+
+							List<ActivityType> activityTypeList = new ArrayList<>(
+									activitySchedule.getActivityTypeList());
+							activitySchedule.setActivityTypeList(activityTypeList);
+
+							int instances = 1;
+							if (newActivity.getActivityType().getInstancesPerDay() != 0)
+								instances = newActivity.getActivityType().getInstancesPerDay() * 7;
+							else if (newActivity.getActivityType().getInstancesPerWeek() != 0)
+								instances = newActivity.getActivityType().getInstancesPerWeek();
+
+							newActivity.getActivityType()
+									.setId(activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
+
+							for (int i = 0; i < instances; i++) {
+								NormalActivity activity = new NormalActivity();
+
+								activity.setActivityType(newActivity.getActivityType());
+								activity.setImmovable(newActivity.isImmovable());
+								activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+								activity.setId(activityList.get(activityList.size() - 1).getId() + 1);
+
+								scoreDirector.beforeEntityAdded(activity);
+								activityList.add(activity);
+								scoreDirector.afterEntityAdded(activity);
+
+								if (activity.getActivityType().getImposedPeriod() != null) {
+									scoreDirector.beforeVariableChanged(activity, "activityPeriod");
+									activity.setActivityPeriod(activity.getActivityType().getImposedPeriod());
+									scoreDirector.afterVariableChanged(activity, "activityPeriod");
+
+									activity.setImmovable(true);
+								}
+							}
+
+							scoreDirector.beforeProblemFactAdded(newActivity.getActivityType());
+							activityTypeList.add(newActivity.getActivityType());
+							scoreDirector.afterProblemFactAdded(newActivity.getActivityType());
+
+							scoreDirector.triggerVariableListeners();
+
+						});
+					} else if (newActivity instanceof NormalRelativeActivity) {
+						// TODO
+					}
+
+					if (excludedTimePeriodsPenalty != null) {
+
+						List<ExcludedTimePeriodsPenalty> excludedTimePeriodsPenaltyList = new ArrayList<>(
+								activitySchedule.getExcludedTimePeriodsList());
+						activitySchedule.setExcludedTimePeriodsList(excludedTimePeriodsPenaltyList);
+
+						doProblemFactChange(scoreDirector -> {
+							excludedTimePeriodsPenalty.setId(excludedTimePeriodsPenaltyList
+									.get(excludedTimePeriodsPenaltyList.size() - 1).getId() + 1);
+
+							scoreDirector.beforeProblemFactAdded(excludedTimePeriodsPenalty);
+							excludedTimePeriodsPenaltyList.add(excludedTimePeriodsPenalty);
+							scoreDirector.afterProblemFactAdded(excludedTimePeriodsPenalty);
+
+							scoreDirector.triggerVariableListeners();
+						});
+
+					}
+
+					solverAndPersistenceFrame.startSolveAction();
+
+				} catch (XStreamException | IOException exception) {
+					throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").",
+							exception);
+				}
+
+				solverAndPersistenceFrame.resetScreen();
+			}
+		});
+		addActivityFromXMLPanel.add(addActivityFromXmlButton);
 	}
 
 	private void defineGrid(ActivitySchedule activitySchedule) {
@@ -391,8 +520,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			LabeledComboBoxRenderer.applyToComboBox(periodListField);
 
 			periodListField.setSelectedItem((activity instanceof NormalRelativeActivity)
-					? ((NormalRelativeActivity) activity).getActivityPeriod()
-					: activity.getActivityPeriod());
+					? ((NormalRelativeActivity) activity).getActivityPeriod() : activity.getActivityPeriod());
 			listFieldsPanel.add(periodListField);
 
 			listFieldsPanel.add(new JLabel("Immovable:"));
@@ -520,7 +648,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 					scoreDirector.triggerVariableListeners();
 
-					solverAndPersistenceFrame.activityPostponedAction();
+					solverAndPersistenceFrame.startSolveAction();
 
 				});
 
@@ -773,7 +901,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 						scoreDirector.triggerVariableListeners();
 
-						solverAndPersistenceFrame.activityPostponedAction();
+						solverAndPersistenceFrame.startSolveAction();
 
 					}
 
@@ -1369,7 +1497,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 						scoreDirector.triggerVariableListeners();
 
-						solverAndPersistenceFrame.activityPostponedAction();
+						solverAndPersistenceFrame.startSolveAction();
 
 					} else if (workingActivity instanceof NormalRelativeActivity) {
 
@@ -1493,7 +1621,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 						scoreDirector.triggerVariableListeners();
 
-						solverAndPersistenceFrame.activityPostponedAction();
+						solverAndPersistenceFrame.startSolveAction();
 					}
 
 				});

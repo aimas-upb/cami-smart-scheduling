@@ -1,6 +1,13 @@
 package org.aimas.cami.scheduler.CAMIScheduler.persistence;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +20,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Difficulty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
@@ -24,6 +32,9 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.LoggingMain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 
 /**
  * 
@@ -40,6 +51,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	public static void main(String[] args) {
 		CAMITaskSchedulerGenerator camiTSG = new CAMITaskSchedulerGenerator();
 		camiTSG.writeActivitySchedule();
+		camiTSG.generateNewActivityExampleInput();
 	}
 
 	protected final SolutionDao solutionDao;
@@ -53,8 +65,11 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	private void writeActivitySchedule() {
 		String filename = "cami-scenario";
 		File outputFile = new File(outputDir, filename + ".xml");
-		logger.info("Create an Activity Schedule");
+
 		ActivitySchedule activitySchedule = createActivitySchedule();
+
+		setScoreParametrization(activitySchedule,
+				new File(new File(solutionDao.getDataDir(), ""), "Score parametrization" + ".xml"));
 		solutionDao.writeSolution(activitySchedule, outputFile);
 	}
 
@@ -68,10 +83,78 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		createWeekDayList(activitySchedule);
 		createActivityPeriodList(activitySchedule);
 		setImposedActivities(activitySchedule);
-		predefinedScoreParametrization(activitySchedule);
+		predefinedScoreParametrization();
 		setPeriodDomainRange(activitySchedule);
 
 		return activitySchedule;
+	}
+
+	private void generateNewActivityExampleInput() {
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activity" + ".xml");
+
+		NewActivity na = new NewActivity();
+		na.setId(0L);
+
+		// generate a new activity
+		NormalActivity normalActivity = new NormalActivity();
+
+		ActivityType activityType = new ActivityType();
+		activityType.setActivityCategory(
+				new ActivityCategory("Indoor physical exercises", new ActivityDomain("Health Related Activities")));
+		activityType.setCode("Yoga");
+		activityType.setDuration(30);
+		activityType.setId(0L);
+		List<TimeInterval> permittedIntervalListBreakfast = new ArrayList<>();
+		permittedIntervalListBreakfast.add(new TimeInterval(new Time(7, 0), new Time(10, 0)));
+		permittedIntervalListBreakfast.add(new TimeInterval(new Time(14, 0), new Time(18, 0)));
+		activityType.setPermittedIntervals(permittedIntervalListBreakfast);
+
+		normalActivity.setActivityType(activityType);
+
+		ExcludedTimePeriodsPenalty etpp = new ExcludedTimePeriodsPenalty();
+		etpp.setActivityType(activityType);
+
+		PeriodInterval pi = new PeriodInterval();
+		WeekDay wd = new WeekDay(6);
+		pi.setStartPeriod(new ActivityPeriod(new Time(0, 0), wd));
+		pi.setEndPeriod(new ActivityPeriod(new Time(24, 0), wd));
+		List<PeriodInterval> excludedActivityPeriods = new ArrayList<>();
+
+		excludedActivityPeriods.add(pi);
+		etpp.setExcludedActivityPeriods(excludedActivityPeriods);
+
+		na.setActivity(normalActivity);
+		na.setExcludedTimePeriodsPenalty(etpp);
+
+		// serialize the new activity
+		XStream xStream = new XStream();
+		xStream.alias("NewActivity", NewActivity.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
+			xStream.toXML(na, writer);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
+		}
+
+	}
+
+	private void deserializeNewActivityExampleInput() {
+		File inputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activity" + ".xml");
+
+		// deserialize the new activity added
+		XStream xStream = new XStream();
+		xStream.alias("NewActivity", NewActivity.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
+			NewActivity na = (NewActivity) xStream.fromXML(reader);
+			System.out.println(inputFile);
+		} catch (XStreamException | IOException e) {
+			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
+		}
 	}
 
 	private void createActivityDomainList(ActivitySchedule activitySchedule) {
@@ -605,8 +688,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				((NormalActivity) activity).setActivityPeriod(activity.getImposedPeriod());
 	}
 
-	private void predefinedScoreParametrization(ActivitySchedule activitySchedule) {
+	private void predefinedScoreParametrization() {
 		ScoreParametrization scoreParametrization = new ScoreParametrization();
+
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Score parametrization" + ".xml");
 
 		scoreParametrization.setInstancesPerDayPenalty(2);
 		scoreParametrization.setInstancesPerWeekPenalty(1);
@@ -619,8 +704,31 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		scoreParametrization.setId(0L);
 
-		activitySchedule.setScoreParametrization(scoreParametrization);
+		XStream xStream = new XStream();
+		xStream.alias("ScoreParametrization", ScoreParametrization.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
 
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
+			xStream.toXML(scoreParametrization, writer);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
+		}
+
+	}
+
+	private void setScoreParametrization(ActivitySchedule activitySchedule, File inputFile) {
+		XStream xStream = new XStream();
+		xStream.alias("ScoreParametrization", ScoreParametrization.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
+			ScoreParametrization scoreParametrization = (ScoreParametrization) xStream.fromXML(reader);
+			activitySchedule.setScoreParametrization(scoreParametrization);
+		} catch (XStreamException | IOException e) {
+			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
+		}
 	}
 
 	/**
