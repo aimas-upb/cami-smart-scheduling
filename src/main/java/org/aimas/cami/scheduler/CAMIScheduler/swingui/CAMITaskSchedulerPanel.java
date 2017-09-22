@@ -811,8 +811,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 							for (int i = 0; i < instances; i++) {
 								NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 								relativeActivity.setActivityType(activityType);
-								relativeActivity.setOffset(Integer
-										.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText()));
+								relativeActivity.setOffset(
+										Integer.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
+												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 								relativeActivity.setImmovable(false);
 								relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
@@ -840,8 +841,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 							for (int i = 0; i < instances; i++) {
 								NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 								relativeActivity.setActivityType(activityType);
-								relativeActivity.setOffset(Integer
-										.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText()));
+								relativeActivity.setOffset(
+										Integer.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
+												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 								relativeActivity.setImmovable(false);
 								relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
@@ -1713,6 +1715,10 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			}
 		}
 		return restrictedPeriodDomain;
+	}
+
+	private int getRelativeTypeSign(RelativeType relativeType) {
+		return relativeType.equals(RelativeType.AFTER) ? 1 : (-1);
 	}
 
 }

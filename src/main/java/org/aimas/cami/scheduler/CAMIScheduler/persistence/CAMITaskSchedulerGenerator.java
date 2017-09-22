@@ -481,7 +481,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			for (int i = 0; i < weightMeasurement.getInstancesPerDay() * 7; i++) {
 				NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 				relativeActivity.setActivityType(weightMeasurement);
-				relativeActivity.setOffset(-15);
+				relativeActivity.setOffset(15);
 				relativeActivity.setId(id++);
 
 				activityList.add(relativeActivity);
