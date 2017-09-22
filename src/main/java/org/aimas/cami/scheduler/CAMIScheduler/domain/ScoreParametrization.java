@@ -85,4 +85,14 @@ public class ScoreParametrization extends AbstractPersistable {
 		this.hardExerciseLateHour = hardExerciseLateHour;
 	}
 
+	@Override
+	public String toString() {
+		return "ScoreParametrization [instancesPerDayPenalty=" + instancesPerDayPenalty + ", instancesPerWeekPenalty="
+				+ instancesPerWeekPenalty + ", periodConflictPenalty=" + periodConflictPenalty
+				+ ", postponeLaterThisDayAndThisWeekPenalty=" + postponeLaterThisDayAndThisWeekPenalty + ", earlyHour="
+				+ earlyHour + ", distanceBetweenExerciseAndMeal=" + distanceBetweenExerciseAndMeal
+				+ ", distanceBetweenExercises=" + distanceBetweenExercises + ", hardExerciseLateHour="
+				+ hardExerciseLateHour + "]";
+	}
+
 }
