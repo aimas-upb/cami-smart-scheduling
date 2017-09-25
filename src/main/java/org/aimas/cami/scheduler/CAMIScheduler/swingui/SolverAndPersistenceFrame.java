@@ -738,9 +738,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				}
 			}
 
-			if (postponeFound && !solutionWasOpened)
+			if (postponeFound || !solutionWasOpened)
 				JOptionPane.showMessageDialog(null, "This is the best solution found.",
-						"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
+						"Solver notification", JOptionPane.INFORMATION_MESSAGE);
 
 			solutionWasOpened = false;
 		}
