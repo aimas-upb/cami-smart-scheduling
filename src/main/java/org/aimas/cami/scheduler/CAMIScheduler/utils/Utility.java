@@ -185,20 +185,15 @@ public class Utility {
 			Activity activityEntity, int dayIndex) {
 
 		List<ActivityPeriod> activityPeriodList = new ArrayList<>();
-		boolean overlapFound = false;
 
 		for (ActivityPeriod activityPeriod : activitySchedule.getActivityPeriodList()) {
-
-			overlapFound = false;
 
 			if (activityPeriod.getWeekDayIndex() > dayIndex && activityPeriod.getPeriodHour() >= 6) {
 
 				ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 						activityEntity.getActivityDuration());
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
-
-				if (!overlapFound) {
+				if (!findOverlap(activitySchedule, activityPeriod, activityEndPeriod)) {
 					activityPeriodList.add(activityPeriod);
 				}
 			}
@@ -206,30 +201,27 @@ public class Utility {
 		return activityPeriodList;
 	}
 
-	public static ActivityPeriod getRelativeActivityPeriod(ActivitySchedule activitySchedule, Activity activityEntity,
-			ActivityPeriod activityPeriod, int increment) {
-
-		boolean overlapFound = false;
+	public static ActivityPeriod getRelativeActivityPeriod(ActivitySchedule activitySchedule,
+			Activity relativeActivityEntity, ActivityPeriod activityPeriod, int increment) {
 
 		while (true) {
 
-			overlapFound = false;
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
-					activityEntity.getActivityDuration());
+					relativeActivityEntity.getActivityDuration());
 
-			overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
-
-			if (!overlapFound) {
+			if (!findOverlap(activitySchedule, activityPeriod, activityEndPeriod)) {
 				return activityPeriod;
 			}
 
 			activityPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, increment);
+
 		}
 
 	}
 
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
 			ActivityPeriod activityEndPeriod) {
+
 		for (Activity activity : activitySchedule.getActivityList()) {
 			if (activity.getActivityPeriod() != null
 					&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
