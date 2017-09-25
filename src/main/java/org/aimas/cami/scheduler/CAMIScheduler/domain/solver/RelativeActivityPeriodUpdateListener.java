@@ -25,7 +25,7 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 
 		for (RelativeActivityPenalty rap : activitySchedule.getRelativeActivityPenaltyList()) {
 
-			boolean rightEntity = activityEntity.getActivityTypeCode().equals(rap.getStaticActivityType());
+			boolean rightEntity = activityEntity.getActivityTypeCode().equals(rap.getNormalActivityType());
 
 			if (activityEntity.getActivityCategory() != null
 					&& activityEntity.getActivityCategory().getCode().equals(rap.getCategory()))
@@ -68,7 +68,7 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 												relativeActivity,
 												AdjustActivityPeriod.getAdjustedPeriod(
 														activityEntity.getActivityPeriod(),
-														relativeActivity.getOffset() * (-1)
+														Math.abs(relativeActivity.getOffset()) * (-1)
 																- relativeActivity.getActivityType().getDuration()),
 												-5);
 

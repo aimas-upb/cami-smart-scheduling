@@ -16,7 +16,7 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 
 	private RelativeType relativeType;
 	private String relativeActivityType;
-	private String staticActivityType;
+	private String normalActivityType;
 	private String category;
 
 	public RelativeType getRelativeType() {
@@ -35,12 +35,12 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 		this.relativeActivityType = relativeActivityType;
 	}
 
-	public String getStaticActivityType() {
-		return staticActivityType;
+	public String getNormalActivityType() {
+		return normalActivityType;
 	}
 
-	public void setStaticActivityType(String staticActivityType) {
-		this.staticActivityType = staticActivityType;
+	public void setNormalActivityType(String normalActivityType) {
+		this.normalActivityType = normalActivityType;
 	}
 
 	public String getCategory() {
@@ -54,7 +54,7 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 	@Override
 	public String toString() {
 		return "RelativeActivityPenalty [relativeType=" + relativeType + ", relativeActivityType="
-				+ relativeActivityType + ", staticActivityType=" + staticActivityType + "]";
+				+ relativeActivityType + ", staticActivityType=" + normalActivityType + "]";
 	}
 
 }
