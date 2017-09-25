@@ -59,6 +59,7 @@ rule "periodConflict"
 		$activity2 : Activity(
 			activityPeriod != null, 
 			$activityPeriod2 : activityPeriod, 
+			$activityPeriod1 != null, 
 			$activityPeriod1.weekDay.dayIndex == activityPeriod.weekDay.dayIndex, 
 			this != $activity1, 
 			$id < id
@@ -310,8 +311,7 @@ rule "instancesPerDayNormalRelativeActivity"
 
 		$result : Number()
 			from accumulate(
-				$activity : NormalRelativeActivity(activityType.code == $activityType.code, activityPeriod != null, $activityPeriod : activityPeriod, 
-					activityPeriod.weekDay.dayIndex == $weekDay.dayIndex),
+				$activity : NormalRelativeActivity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex),
 				init( int occurences = 0;
 				),
 				action(
@@ -412,7 +412,7 @@ rule "hardExerciseNotTooLateInDay"
 		scoreHolder.addSoftConstraintMatch(kcontext, $scoreParametrization.getHardExerciseLateHour() - $exercisePeriod.getPeriodHour());
 end
 
-// postpone an activity
+// postpone a normal relative activity
 rule "postponeActivity"
 	when
 		$scoreParametrization : ScoreParametrization()
@@ -425,7 +425,6 @@ rule "postponeActivity"
 			$activityPeriod : activityPeriod
 		)
 	then
-		//help(drools, $activity.getLabel());
 
 		if ($postpone.getPostponeType() == PostponeType.POSTPONE_15MIN) {
 			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())) {
@@ -452,21 +451,4 @@ rule "postponeActivity"
 					scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
 				}
 		}
-end
-
-// when an activity is postponed(except POSTPONE_LATER_THIS_WEEK), it must be planned in the same day it was before postpone 
-rule "postponeActivityDifferentDay"
-	when
-		$activity : Activity(
-			$postpone : postpone, 
-			postpone != null, 
-			activityPeriod != null, 
-			postpone.postponePeriod != null, 
-			$activityPeriod : activityPeriod, 
-			activityPeriod.weekDay.dayIndex != postpone.postponePeriod.weekDay.dayIndex, 
-			postpone.postponeType != PostponeType.POSTPONE_LATER_THIS_WEEK
-		)
-	then
-		scoreHolder.addHardConstraintMatch(kcontext, -Math.abs($activityPeriod.getWeekDay().getDayIndex() - 
-			$postpone.getPostponePeriod().getWeekDay().getDayIndex()));
 end
