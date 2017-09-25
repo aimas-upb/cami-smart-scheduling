@@ -1,12 +1,9 @@
 package org.aimas.cami.scheduler.CAMIScheduler.persistence;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +31,6 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.LoggingMain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.XStreamException;
 
 /**
  * 
@@ -67,8 +63,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		File outputFile = new File(outputDir, filename + ".xml");
 
 		ActivitySchedule activitySchedule = createActivitySchedule();
-		setScoreParametrization(activitySchedule,
-				new File(new File(solutionDao.getDataDir(), ""), "Score parametrization" + ".xml"));
 		solutionDao.writeSolution(activitySchedule, outputFile);
 	}
 
@@ -137,23 +131,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
 		}
 
-	}
-
-	private void deserializeNewActivityExampleInput() {
-		File inputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activity" + ".xml");
-
-		// deserialize the new activity added
-		XStream xStream = new XStream();
-		xStream.alias("NewActivity", NewActivity.class);
-		xStream.setMode(XStream.ID_REFERENCES);
-		xStream.autodetectAnnotations(true);
-
-		try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
-			NewActivity na = (NewActivity) xStream.fromXML(reader);
-			System.out.println(inputFile);
-		} catch (XStreamException | IOException e) {
-			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
-		}
 	}
 
 	private void createActivityDomainList(ActivitySchedule activitySchedule) {
@@ -714,20 +691,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
 		}
 
-	}
-
-	private void setScoreParametrization(ActivitySchedule activitySchedule, File inputFile) {
-		XStream xStream = new XStream();
-		xStream.alias("ScoreParametrization", ScoreParametrization.class);
-		xStream.setMode(XStream.ID_REFERENCES);
-		xStream.autodetectAnnotations(true);
-
-		try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
-			ScoreParametrization scoreParametrization = (ScoreParametrization) xStream.fromXML(reader);
-			activitySchedule.setScoreParametrization(scoreParametrization);
-		} catch (XStreamException | IOException e) {
-			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
-		}
 	}
 
 	/**

@@ -1,5 +1,10 @@
 package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -8,11 +13,14 @@ import java.util.Set;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.drools.core.spi.KnowledgeHelper;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 
 /**
  * 
@@ -264,6 +272,20 @@ public class Utility {
 		}
 
 		return false;
+	}
+
+	public static ScoreParametrization getScoreParametrization(ActivitySchedule activitySchedule, File inputFile) {
+		XStream xStream = new XStream();
+		xStream.alias("ScoreParametrization", ScoreParametrization.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
+			ScoreParametrization scoreParametrization = (ScoreParametrization) xStream.fromXML(reader);
+			return scoreParametrization;
+		} catch (XStreamException | IOException e) {
+			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
+		}
 	}
 
 }

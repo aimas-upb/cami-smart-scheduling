@@ -60,6 +60,7 @@ import javax.swing.filechooser.FileFilter;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractSolutionImporter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionBusiness;
@@ -268,6 +269,26 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		}
 	}
 
+	private void setScoreParametrization() {
+		solutionPanel.doProblemFactChange(scoreDirector -> {
+
+			ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+
+			ScoreParametrization scoreParamertization = Utility.getScoreParametrization(
+					(ActivitySchedule) solutionBusiness.getSolution(),
+					new File(new File(solutionBusiness.getUnsolvedDataDir().getParentFile(), ""),
+							"Score parametrization" + ".xml"));
+
+			scoreParamertization.setId(activitySchedule.getScoreParametrization() == null ? scoreParamertization.getId()
+					: (activitySchedule.getScoreParametrization().getId() + 1));
+
+			scoreDirector.beforeProblemFactAdded(scoreParamertization);
+			activitySchedule.setScoreParametrization(scoreParamertization);
+			scoreDirector.afterProblemFactAdded(scoreParamertization);
+
+		});
+	}
+
 	private class QuickOpenAction extends AbstractAction {
 
 		private File file;
@@ -286,6 +307,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				setSolutionLoaded();
 
 				resetValueRange();
+				setScoreParametrization();
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
 			}
@@ -443,6 +465,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					setSolutionLoaded();
 
 					resetValueRange();
+					setScoreParametrization();
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
@@ -496,6 +519,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			if (approved == JFileChooser.APPROVE_OPTION) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				try {
+					setScoreParametrization();
 					solutionBusiness.saveSolution(fileChooser.getSelectedFile());
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
@@ -678,8 +702,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingToggleButton = new JToggleButton(refreshScreenDuringSolvingTrueIcon, true);
 		refreshScreenDuringSolvingToggleButton.setToolTipText("Refresh screen during solving");
 		refreshScreenDuringSolvingToggleButton.addActionListener(e -> {
-			refreshScreenDuringSolvingToggleButton.setIcon(refreshScreenDuringSolvingToggleButton.isSelected()
-					? refreshScreenDuringSolvingTrueIcon : refreshScreenDuringSolvingFalseIcon);
+			refreshScreenDuringSolvingToggleButton
+					.setIcon(refreshScreenDuringSolvingToggleButton.isSelected() ? refreshScreenDuringSolvingTrueIcon
+							: refreshScreenDuringSolvingFalseIcon);
 		});
 		scorePanel.add(refreshScreenDuringSolvingToggleButton, BorderLayout.EAST);
 		return scorePanel;
@@ -727,6 +752,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		} else {
 			solveButton.requestFocus();
 
+			setScoreParametrization();
+
 			boolean postponeFound = false;
 
 			ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
@@ -739,8 +766,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			}
 
 			if (postponeFound || !solutionWasOpened)
-				JOptionPane.showMessageDialog(null, "This is the best solution found.",
-						"Solver notification", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "This is the best solution found.", "Solver notification",
+						JOptionPane.INFORMATION_MESSAGE);
 
 			solutionWasOpened = false;
 		}
@@ -757,6 +784,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		Solution_ solution = solutionBusiness.getSolution();
 		Score score = solutionBusiness.getScore();
 		solutionPanel.resetPanel(solution);
+		setScoreParametrization();
 		validate();
 		refreshScoreField(score);
 	}
