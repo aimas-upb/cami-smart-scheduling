@@ -354,7 +354,7 @@ rule "distanceBetweenExerciseAndMeal"
 			$exercisePeriod : activityPeriod, 
 			$exercisePeriod != null, 
 			activityType.activityCategory != null, 
-			activityType.activityCategory.code == "Indoor physical exercises"
+			activityType.activityCategory.code == "Indoor physical exercises" || activityType.activityCategory.code == "Outdoor physical exercises"
 		)
 
 		$meal : Activity(
@@ -379,16 +379,17 @@ rule "distanceBetweenExercises"
 			$exercisePeriod : activityPeriod, 
 			$exercisePeriod != null, 
 			activityType.activityCategory != null, 
-			activityType.activityCategory.code == "Indoor physical exercises"
+			activityType.activityCategory.code == "Indoor physical exercises" || activityType.activityCategory.code == "Outdoor physical exercises"
 		)
 		
 		Activity(
 			$otherExercisePeriod : activityPeriod, 
 			$otherExercisePeriod != null, 
 			activityType.activityCategory != null, 
-			activityType.activityCategory.code == "Indoor physical exercises", 
+			activityType.activityCategory.code == "Indoor physical exercises" || activityType.activityCategory.code == "Outdoor physical exercises", 
 			this != $exercise, 
 			$otherExercisePeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
+			$exercise.id < id, 
 			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.time, $otherExercisePeriod.time)) <= $scoreParametrization.distanceBetweenExercises
 		)
 	then
@@ -405,6 +406,8 @@ rule "hardExerciseNotTooLateInDay"
 			$exercisePeriod : activityPeriod, 
 			$exercisePeriod != null,  
 			activityType.difficulty != null, 
+			activityType.activityCategory != null, 
+			activityType.activityCategory.code == "Indoor physical exercises" || activityType.activityCategory.code == "Outdoor physical exercises", 
 			activityType.difficulty == Difficulty.HARD, 
 			$exercisePeriod.getPeriodHour() > $scoreParametrization.hardExerciseLateHour
 		)
