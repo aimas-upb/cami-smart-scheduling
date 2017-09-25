@@ -490,7 +490,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
 			relativeActivityPenalty.setRelativeType(RelativeType.BEFORE);
 			relativeActivityPenalty.setRelativeActivityType("Weight measurement");
-			relativeActivityPenalty.setStaticActivityType("Breakfast");
+			relativeActivityPenalty.setNormalActivityType("Breakfast");
 
 			relativeActivityPenalty.setId(relativeActivityPenaltyId++);
 			relativeActivityPenaltyList.add(relativeActivityPenalty);
@@ -545,7 +545,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
 			relativeActivityPenalty.setRelativeType(RelativeType.AFTER);
 			relativeActivityPenalty.setRelativeActivityType("Heart medication");
-			relativeActivityPenalty.setStaticActivityType("Breakfast");
+			relativeActivityPenalty.setNormalActivityType("Breakfast");
 			relativeActivityPenalty.setId(relativeActivityPenaltyId++);
 
 			relativeActivityPenaltyList.add(relativeActivityPenalty);
