@@ -33,6 +33,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
 import com.thoughtworks.xstream.XStream;
 
 /**
+ * Class used to generate input for solver.
  * 
  * @author Bogdan
  *
@@ -63,9 +64,16 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		File outputFile = new File(outputDir, filename + ".xml");
 
 		ActivitySchedule activitySchedule = createActivitySchedule();
+
+		// write the schedule to the file
 		solutionDao.writeSolution(activitySchedule, outputFile);
 	}
 
+	/**
+	 * Create a new schedule.
+	 * 
+	 * @return {@link ActivitySchedule}
+	 */
 	private ActivitySchedule createActivitySchedule() {
 		ActivitySchedule activitySchedule = new ActivitySchedule();
 		activitySchedule.setId(0L);
@@ -82,6 +90,9 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		return activitySchedule;
 	}
 
+	/**
+	 * Generate a new activity and serialize it into XML.
+	 */
 	private void generateNewActivityExampleInput() {
 		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activity" + ".xml");
 
@@ -89,6 +100,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		na.setId(0L);
 
 		// generate a new activity
+
+		// set its properties here
 		NormalActivity normalActivity = new NormalActivity();
 
 		ActivityType activityType = new ActivityType();
@@ -169,13 +182,17 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activitySchedule.setActivityDomainList(activityDomainList);
 	}
 
+	/**
+	 * Create all the activities you want to be planned.
+	 * 
+	 * @param activitySchedule
+	 *            {@link ActivitySchedule}
+	 */
 	private void createActivityList(ActivitySchedule activitySchedule) {
 		long id = 0L;
 		long typeId = 0L;
 		long exccludedId = 0L;
-		// long relativeId = 0L;
 		long relativeActivityPenaltyId = 0L;
-		long relativeActivityToCategoryId = 0L;
 
 		List<ExcludedTimePeriodsPenalty> excludedTimePeriodsPenaltyList = new ArrayList<>();
 		List<RelativeActivityPenalty> relativeActivityPenaltyList = new ArrayList<>();
@@ -641,6 +658,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activitySchedule.setRelativeActivityPenaltyList(relativeActivityPenaltyList);
 	}
 
+	/**
+	 * Generate all the time periods.
+	 * 
+	 */
 	private void createActivityPeriodList(ActivitySchedule activitySchedule) {
 		List<ActivityPeriod> activityPeriodList = new ArrayList<>();
 		long id = 0L;
@@ -658,12 +679,18 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activitySchedule.setActivityPeriodList(activityPeriodList);
 	}
 
+	/**
+	 * Set imposed activities' period. Also, these activities are immovable.
+	 */
 	private void setImposedActivities(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
 			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null)
 				((NormalActivity) activity).setActivityPeriod(activity.getImposedPeriod());
 	}
 
+	/**
+	 * Generate a predefined Score Parametrization input and write it to a file.
+	 */
 	private void predefinedScoreParametrization(ActivitySchedule activitySchedule) {
 		ScoreParametrization scoreParametrization = new ScoreParametrization();
 

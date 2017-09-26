@@ -5,6 +5,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * An interval of periods e.g. [(MONDAY, 12:00) - (TUESDAY, 14:00)]
  * 
  * @author Bogdan
  *

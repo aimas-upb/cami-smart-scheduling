@@ -42,11 +42,17 @@ public class Utility {
 		System.out.println("\nrule triggered: " + drools.getRule().getName());
 	}
 
+	/**
+	 * Distance between two {@link Time} values.
+	 */
 	public static Integer getNumberOfMinutesInInterval(Time left, Time right) {
 
 		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
 	}
 
+	/**
+	 * Distance between two {@link ActivityPeriod} values.
+	 */
 	public static Integer getNumberOfMinutesInPeriodInterval(int dayIndexLeft, int dayIndexRight, Time left,
 			Time right) {
 
@@ -98,6 +104,9 @@ public class Utility {
 		return false;
 	}
 
+	/**
+	 * like {@link #before}, but strict less
+	 */
 	public static boolean exclusiveBefore(Time timeA, Time timeB) {
 		if (timeA.getHour() < timeB.getHour())
 			return true;
@@ -107,6 +116,9 @@ public class Utility {
 		return false;
 	}
 
+	/**
+	 * like {@link #after}, but strict less
+	 */
 	public static boolean exclusiveAfter(Time timeA, Time timeB) {
 		if (timeA.getHour() < timeB.getHour())
 			return true;
@@ -117,6 +129,7 @@ public class Utility {
 	}
 
 	/**
+	 * Check if an activity's period fully overlap an interval.
 	 * 
 	 * @param startActivity
 	 * @param endActivity
@@ -135,8 +148,7 @@ public class Utility {
 	}
 
 	/**
-	 * Get all the free periods from the schedule(except some periods that are
-	 * constrained).
+	 * Get all the free periods from the current schedule.
 	 * 
 	 * @param activitySchedule
 	 * @param activityEntity
@@ -151,7 +163,7 @@ public class Utility {
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 					activityEntity.getActivityDuration());
 
-			if (activityPeriod.getPeriodHour() >= 6) {
+			if (activityPeriod.getPeriodHour() >= activitySchedule.getScoreParametrization().getEarlyHour()) {
 
 				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
@@ -163,6 +175,10 @@ public class Utility {
 		return activityPeriodList;
 	}
 
+	/**
+	 * * Get all the free periods from the current schedule that are in the
+	 * specified interval.
+	 */
 	public static List<ActivityPeriod> getFreePeriodsInInterval(ActivitySchedule activitySchedule,
 			Activity activityEntity, TimeInterval timeInterval, int dayIndex) {
 
@@ -175,7 +191,8 @@ public class Utility {
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 					activityEntity.getActivityDuration());
 
-			if (activityPeriod.getWeekDayIndex() == dayIndex && activityPeriod.getPeriodHour() >= 6
+			if (activityPeriod.getWeekDayIndex() == dayIndex
+					&& activityPeriod.getPeriodHour() >= activitySchedule.getScoreParametrization().getEarlyHour()
 					&& fullOverlap(activityPeriod.getTime(), activityEndPeriod.getTime(), timeInterval.getMinStart(),
 							timeInterval.getMaxEnd())) {
 
@@ -196,7 +213,8 @@ public class Utility {
 
 		for (ActivityPeriod activityPeriod : activitySchedule.getActivityPeriodList()) {
 
-			if (activityPeriod.getWeekDayIndex() > dayIndex && activityPeriod.getPeriodHour() >= 6) {
+			if (activityPeriod.getWeekDayIndex() > dayIndex
+					&& activityPeriod.getPeriodHour() >= activitySchedule.getScoreParametrization().getEarlyHour()) {
 
 				ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 						activityEntity.getActivityDuration());
@@ -209,6 +227,15 @@ public class Utility {
 		return activityPeriodList;
 	}
 
+	/**
+	 * Get the next free period after activityPeriod.
+	 * 
+	 * @param activitySchedule
+	 * @param relativeActivityEntity
+	 * @param activityPeriod
+	 * @param increment
+	 * @return {@link ActivityPeriod}
+	 */
 	public static ActivityPeriod getRelativeActivityPeriod(ActivitySchedule activitySchedule,
 			Activity relativeActivityEntity, ActivityPeriod activityPeriod, int increment) {
 
@@ -227,6 +254,11 @@ public class Utility {
 
 	}
 
+	/**
+	 * Checks if the specified time interval (activityPeriod, activityEndPeriod)
+	 * is free.
+	 * 
+	 */
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
 			ActivityPeriod activityEndPeriod) {
 
@@ -245,6 +277,16 @@ public class Utility {
 		return false;
 	}
 
+	/**
+	 * Checks if the activityPeriod is in an excluded period interval.
+	 * 
+	 * @param activityPeriod
+	 * @param excludedPeriodInterval
+	 * @param activityDuration
+	 * @param sameStartDay
+	 * @param sameEndDay
+	 * @return
+	 */
 	public static Boolean checkTimeslots(ActivityPeriod activityPeriod, PeriodInterval excludedPeriodInterval,
 			int activityDuration, boolean sameStartDay, boolean sameEndDay) {
 
@@ -274,6 +316,13 @@ public class Utility {
 		return false;
 	}
 
+	/**
+	 * Get {@link ScoreParametrization} from inputFile.
+	 * 
+	 * @param activitySchedule
+	 * @param inputFile
+	 * @return
+	 */
 	public static ScoreParametrization getScoreParametrization(ActivitySchedule activitySchedule, File inputFile) {
 		XStream xStream = new XStream();
 		xStream.alias("ScoreParametrization", ScoreParametrization.class);

@@ -12,6 +12,7 @@ import org.optaplanner.core.api.domain.variable.PlanningVariableReference;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * An activity that is planned depending on other's activity period.
  * 
  * @author Bogdan
  *
@@ -25,7 +26,7 @@ public class NormalRelativeActivity extends Activity {
 	// according to it
 	private ActivityPeriod activityPeriod;
 
-	private int offset; // in minutes
+	private int offset; // offset (in minutes) - distance between an activity and an activity relative to it
 	private boolean assigned;
 
 	@Override

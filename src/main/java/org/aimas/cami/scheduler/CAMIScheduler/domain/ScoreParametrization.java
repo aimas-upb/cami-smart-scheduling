@@ -5,6 +5,8 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * Class that contains the preffered parameters / penalties that are used in
+ * score calculation.
  * 
  * @author Bogdan
  *

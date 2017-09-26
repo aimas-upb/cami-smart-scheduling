@@ -63,9 +63,6 @@ public class SolutionBusiness<Solution_> {
 	private final CommonApp app;
 	private SolutionDao<Solution_> solutionDao;
 
-	private AbstractSolutionImporter<Solution_>[] importers;
-	private AbstractSolutionExporter<Solution_> exporter;
-
 	private File importDataDir;
 	private File unsolvedDataDir;
 	private File solvedDataDir;
@@ -99,39 +96,12 @@ public class SolutionBusiness<Solution_> {
 		this.solutionDao = solutionDao;
 	}
 
-	public AbstractSolutionImporter<Solution_>[] getImporters() {
-		return importers;
-	}
-
-	public void setImporters(AbstractSolutionImporter<Solution_>[] importers) {
-		this.importers = importers;
-	}
-
-	public void setExporter(AbstractSolutionExporter<Solution_> exporter) {
-		this.exporter = exporter;
-	}
-
 	public String getDirName() {
 		return solutionDao.getDirName();
 	}
 
-	public boolean hasImporter() {
-		return importers.length > 0;
-	}
-
-	public boolean hasExporter() {
-		return exporter != null;
-	}
-
 	public void updateDataDirs() {
 		File dataDir = solutionDao.getDataDir();
-		if (hasImporter()) {
-			importDataDir = new File(dataDir, "import");
-			if (!importDataDir.exists()) {
-				throw new IllegalStateException(
-						"The directory importDataDir (" + importDataDir.getAbsolutePath() + ") does not exist.");
-			}
-		}
 		unsolvedDataDir = new File(dataDir, "unsolved");
 		if (!unsolvedDataDir.exists()) {
 			throw new IllegalStateException(
@@ -141,13 +111,6 @@ public class SolutionBusiness<Solution_> {
 		if (!solvedDataDir.exists() && !solvedDataDir.mkdir()) {
 			throw new IllegalStateException("The directory solvedDataDir (" + solvedDataDir.getAbsolutePath()
 					+ ") does not exist and could not be created.");
-		}
-		if (hasExporter()) {
-			exportDataDir = new File(dataDir, "export");
-			if (!exportDataDir.exists() && !exportDataDir.mkdir()) {
-				throw new IllegalStateException("The directory exportDataDir (" + exportDataDir.getAbsolutePath()
-						+ ") does not exist and could not be created.");
-			}
 		}
 	}
 
@@ -165,10 +128,6 @@ public class SolutionBusiness<Solution_> {
 
 	public File getExportDataDir() {
 		return exportDataDir;
-	}
-
-	public String getExportFileSuffix() {
-		return exporter.getOutputFileSuffix();
 	}
 
 	public void setSolver(Solver<Solution_> solver) {
@@ -255,22 +214,6 @@ public class SolutionBusiness<Solution_> {
 		return guiScoreDirector.getIndictmentMap();
 	}
 
-	public void importSolution(File file) {
-		AbstractSolutionImporter<Solution_> importer = determineImporter(file);
-		Solution_ solution = importer.readSolution(file);
-		solutionFileName = file.getName();
-		guiScoreDirector.setWorkingSolution(solution);
-	}
-
-	private AbstractSolutionImporter<Solution_> determineImporter(File file) {
-		for (AbstractSolutionImporter<Solution_> importer : importers) {
-			if (importer.acceptInputFile(file)) {
-				return importer;
-			}
-		}
-		return importers[0];
-	}
-
 	public void openSolution(File file) {
 		Solution_ solution = solutionDao.readSolution(file);
 		solutionFileName = file.getName();
@@ -280,11 +223,6 @@ public class SolutionBusiness<Solution_> {
 	public void saveSolution(File file) {
 		Solution_ solution = guiScoreDirector.getWorkingSolution();
 		solutionDao.writeSolution(solution, file);
-	}
-
-	public void exportSolution(File file) {
-		Solution_ solution = guiScoreDirector.getWorkingSolution();
-		exporter.writeSolution(solution, file);
 	}
 
 	public void doMove(Move<Solution_> move) {

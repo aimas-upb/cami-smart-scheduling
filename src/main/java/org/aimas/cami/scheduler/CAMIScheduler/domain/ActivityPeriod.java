@@ -6,6 +6,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * An activity is planned using periods as values for its variable.
  * 
  * @author Bogdan
  *

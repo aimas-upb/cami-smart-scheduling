@@ -9,6 +9,12 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamInclude;
 
+/**
+ * Class that abstract an "activity".
+ * 
+ * @author Bogdan
+ *
+ */
 @XStreamAlias("Activity")
 @XStreamInclude({ NormalActivity.class, NormalRelativeActivity.class })
 public abstract class Activity extends AbstractPersistable {

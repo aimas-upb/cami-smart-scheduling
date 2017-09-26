@@ -7,8 +7,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * pentru timeslot exclus de forma e.g. "dupa ora 4", as putea seta o valoare
- * mare pentru ora(e.g. ora 24), pentru capatul max
+ * An activity should not be planned on specified intervals.
  * 
  * @author Bogdan
  *

@@ -5,6 +5,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * An interval of time e.g. [12:00, 13:00]
  * 
  * @author Bogdan
  *

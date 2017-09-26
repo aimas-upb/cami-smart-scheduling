@@ -67,6 +67,12 @@ import org.optaplanner.swing.impl.TangoColorFactory;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
 
+/**
+ * Class that implements your personalized GUI panel.
+ * 
+ * @author Bogdan
+ *
+ */
 public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	private final TimeTablePanel<WeekDay, Time> schedulePanel;
@@ -659,8 +665,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			LabeledComboBoxRenderer.applyToComboBox(periodListField);
 
 			periodListField.setSelectedItem((activity instanceof NormalRelativeActivity)
-					? ((NormalRelativeActivity) activity).getActivityPeriod()
-					: activity.getActivityPeriod());
+					? ((NormalRelativeActivity) activity).getActivityPeriod() : activity.getActivityPeriod());
 			listFieldsPanel.add(periodListField);
 
 			listFieldsPanel.add(new JLabel("Immovable:"));
@@ -1869,7 +1874,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		doProblemFactChange(scoreDirector -> {
 
-			// restrict the value range for the postponed activity -> later this day means
+			// restrict the value range for the postponed activity -> later this
+			// day means
 			// at least over 1 hour
 			List<ActivityPeriod> restrictedPeriodDomain = getRestrictedPeriodDomainForLaterThisDayPostpone(
 					activitySchedule, AdjustActivityPeriod.getAdjustedPeriod(workingActivity.getActivityPeriod(), 60));

@@ -33,87 +33,79 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.LoggerContext;
 
 /**
- * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Solution_>
+ *            the solution type, the class with the {@link PlanningSolution}
+ *            annotation
  */
 public abstract class CommonApp<Solution_> extends LoggingMain {
 
-    protected static final Logger logger = LoggerFactory.getLogger(CommonApp.class);
+	protected static final Logger logger = LoggerFactory.getLogger(CommonApp.class);
 
-    /**
-     * Some examples are not compatible with every native LookAndFeel.
-     * For example, NurseRosteringPanel is incompatible with Mac.
-     */
-    public static void prepareSwingEnvironment() {
-    	LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-    	loggerContext.stop();
-        SwingUncaughtExceptionHandler.register();
-        SwingUtils.fixateLookAndFeel();
-    }
+	/**
+	 * Some examples are not compatible with every native LookAndFeel. For
+	 * example, NurseRosteringPanel is incompatible with Mac.
+	 */
+	public static void prepareSwingEnvironment() {
+		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+		loggerContext.stop();
+		SwingUncaughtExceptionHandler.register();
+		SwingUtils.fixateLookAndFeel();
+	}
 
-    protected final String name;
-    protected final String description;
-    protected final String solverConfig;
-    protected final String iconResource;
+	protected final String name;
+	protected final String description;
+	protected final String solverConfig;
+	protected final String iconResource;
 
-    protected SolverAndPersistenceFrame<Solution_> solverAndPersistenceFrame;
-    protected SolutionBusiness<Solution_> solutionBusiness;
+	protected SolverAndPersistenceFrame<Solution_> solverAndPersistenceFrame;
+	protected SolutionBusiness<Solution_> solutionBusiness;
 
-    protected CommonApp(String name, String description, String solverConfig, String iconResource) {
-        this.name = name;
-        this.description = description;
-        this.solverConfig = solverConfig;
-        this.iconResource = iconResource;
-    }
+	protected CommonApp(String name, String description, String solverConfig, String iconResource) {
+		this.name = name;
+		this.description = description;
+		this.solverConfig = solverConfig;
+		this.iconResource = iconResource;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getDescription() {
-        return description;
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public String getIconResource() {
-        return iconResource;
-    }
+	public String getIconResource() {
+		return iconResource;
+	}
 
-    public void init() {
-        init(null, true);
-    }
+	public void init() {
+		init(null, true);
+	}
 
-    public void init(Component centerForComponent, boolean exitOnClose) {
-        solutionBusiness = createSolutionBusiness();
-        solverAndPersistenceFrame = new SolverAndPersistenceFrame<>(solutionBusiness, createSolutionPanel());
-        solverAndPersistenceFrame.setDefaultCloseOperation(exitOnClose ? WindowConstants.EXIT_ON_CLOSE : WindowConstants.DISPOSE_ON_CLOSE);
-        solverAndPersistenceFrame.init(centerForComponent);
-        solverAndPersistenceFrame.setVisible(true);
-    }
+	public void init(Component centerForComponent, boolean exitOnClose) {
+		solutionBusiness = createSolutionBusiness();
+		solverAndPersistenceFrame = new SolverAndPersistenceFrame<>(solutionBusiness, createSolutionPanel());
+		solverAndPersistenceFrame.setDefaultCloseOperation(
+				exitOnClose ? WindowConstants.EXIT_ON_CLOSE : WindowConstants.DISPOSE_ON_CLOSE);
+		solverAndPersistenceFrame.init(centerForComponent);
+		solverAndPersistenceFrame.setVisible(true);
+	}
 
-    public SolutionBusiness<Solution_> createSolutionBusiness() {
-        SolutionBusiness<Solution_> solutionBusiness = new SolutionBusiness<>(this);
-        solutionBusiness.setSolutionDao(createSolutionDao());
-        solutionBusiness.setImporters(createSolutionImporters());
-        solutionBusiness.setExporter(createSolutionExporter());
-        solutionBusiness.updateDataDirs();
-        solutionBusiness.setSolver(createSolver());
-        return solutionBusiness;
-    }
+	public SolutionBusiness<Solution_> createSolutionBusiness() {
+		SolutionBusiness<Solution_> solutionBusiness = new SolutionBusiness<>(this);
+		solutionBusiness.setSolutionDao(createSolutionDao());
+		solutionBusiness.updateDataDirs();
+		solutionBusiness.setSolver(createSolver());
+		return solutionBusiness;
+	}
 
-    protected Solver<Solution_> createSolver() {
-        SolverFactory<Solution_> solverFactory = SolverFactory.createFromXmlResource(solverConfig);
-        return solverFactory.buildSolver();
-    }
+	protected Solver<Solution_> createSolver() {
+		SolverFactory<Solution_> solverFactory = SolverFactory.createFromXmlResource(solverConfig);
+		return solverFactory.buildSolver();
+	}
 
-    protected abstract SolutionPanel<Solution_> createSolutionPanel();
+	protected abstract SolutionPanel<Solution_> createSolutionPanel();
 
-    protected abstract SolutionDao createSolutionDao();
-
-    protected AbstractSolutionImporter[] createSolutionImporters() {
-        return new AbstractSolutionImporter[]{};
-    }
-
-    protected AbstractSolutionExporter createSolutionExporter() {
-        return null;
-    }
-
+	protected abstract SolutionDao createSolutionDao();
 }

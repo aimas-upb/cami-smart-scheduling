@@ -16,6 +16,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamInclude;
 
 /**
+ * An activity to be planned.
  * 
  * @author Bogdan
  *
@@ -27,7 +28,11 @@ public class NormalActivity extends Activity {
 	// planning variable, changes during planning
 	protected ActivityPeriod activityPeriod;
 
+	// map that keeps count of the assigned (relative) activities to this
+	// activity
 	Map<String, Long> assignedToRelativeActivityMap;
+
+	// custom value range for the planning variable
 	List<ActivityPeriod> periodDomainRangeList;
 
 	@Override
