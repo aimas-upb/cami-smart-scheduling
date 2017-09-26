@@ -45,7 +45,7 @@ global HardSoftScoreHolder scoreHolder;
 
 // HARD CONSTRAINTS
 
-// a rule for activity periods conflict
+// check activity periods conflict
 rule "periodConflict"
 	when
 		$scoreParametrization : ScoreParametrization()
@@ -73,6 +73,7 @@ rule "periodConflict"
 				scoreHolder.addHardConstraintMatch(kcontext, (-$scoreParametrization.getPeriodConflictPenalty()));
 end
 
+// an activity must be planned in the permitted interval
 rule "overlapPermittedInterval"
 	when
 		$activity : Activity(
@@ -220,7 +221,6 @@ rule "instancesPerWeekAssigned"
 			)
 		exists Activity(activityType.code == $activityType.code, activityPeriod != null)
 	then
-		//help(drools, "instancesPerWeekAssigned");
 
 		int indictments = 0;
 		String[] resultSplit = $result.split(":");
@@ -234,6 +234,7 @@ rule "instancesPerWeekAssigned"
 			}
 		});
 
+		// check if the activities "respect" the gap
 		int gap = 7 / $instancesPerWeek;
 		for (int i = 0; i < weekSpreadArray.length - 1; i++)
 			if (Integer.valueOf(weekSpreadArray[i + 1]) - Integer.valueOf(weekSpreadArray[i]) < gap)
@@ -274,7 +275,6 @@ rule "instancesPerDayNormalActivity"
 			)
 		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
 	then
-		//help(drools, "instancesPerDay");
 
 		int indictments = 0;
 		String[] resultSplit = $result.split(":");
@@ -288,6 +288,7 @@ rule "instancesPerDayNormalActivity"
 			}
 		});
 
+		// check if the activities "respect" the gap
 		int gap = $instancesPerDay > 1 ? (24 / $instancesPerDay) : 0;
 		for (int i = 0; i < hours.length - 1; i++)
 			if (Integer.valueOf(hours[i + 1]) - Integer.valueOf(hours[i]) < gap)
@@ -321,7 +322,6 @@ rule "instancesPerDayNormalRelativeActivity"
 			)
 		exists NormalRelativeActivity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
 	then
-		//help(drools, "instancesPerDay");
 		int occurences = $result.intValue();
 
 		if (occurences != $instancesPerDay)
@@ -429,6 +429,7 @@ rule "postponeActivity"
 		)
 	then
 
+		// the activity must be planned after the postpone period
 		if ($postpone.getPostponeType() == PostponeType.POSTPONE_15MIN) {
 			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())) {
 				scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 

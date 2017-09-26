@@ -4,7 +4,10 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.optaplanner.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
+
 /**
+ * Filter used by the solver to not select some activities based on some
+ * condition.
  * 
  * @author Bogdan
  *

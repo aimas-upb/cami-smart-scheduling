@@ -15,6 +15,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("Postpone")
 public class Postpone extends AbstractPersistable {
 
+	// the period that the activity had when it was postponed
 	private ActivityPeriod postponePeriod;
 	private PostponeType postponeType;
 

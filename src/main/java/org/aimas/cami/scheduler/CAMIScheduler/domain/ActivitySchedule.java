@@ -17,6 +17,9 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 /**
+ * The solution class used to serialize(using CAMITaskSchedulerGenerator) the
+ * activity model. Also, it's used to load all the generated information in
+ * memory(drools).
  * 
  * @author Bogdan
  *

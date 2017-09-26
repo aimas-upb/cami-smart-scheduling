@@ -5,7 +5,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * Add a new activity from an xml input using this serializer.
+ * Add a new activity from an xml using this serializer.
  * 
  * @author Bogdan
  *

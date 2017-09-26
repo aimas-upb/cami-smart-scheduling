@@ -13,6 +13,10 @@ import org.optaplanner.core.impl.domain.variable.listener.VariableListener;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
 /**
+ * To update a shadow variable, the planner uses a VariableListener. It assures
+ * that every relative activity is set to a specified activity. The
+ * randomization is made by setting <selectionOrder>SHUFFLED</selectionOrder> in
+ * solver config file.
  * 
  * @author Bogdan
  *
@@ -21,10 +25,14 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 
 	protected void updatePeriod(ScoreDirector scoreDirector, NormalActivity activityEntity) {
 
+		// the solution
 		ActivitySchedule activitySchedule = (ActivitySchedule) scoreDirector.getWorkingSolution();
 
+		// iterate through RelativeActivityPenalty list, and pick a
+		// NormalRelativeActivity that can be assigned to this activityEntity.
 		for (RelativeActivityPenalty rap : activitySchedule.getRelativeActivityPenaltyList()) {
 
+			// if it is the right activityEntity
 			boolean rightEntity = activityEntity.getActivityTypeCode().equals(rap.getNormalActivityType());
 
 			if (activityEntity.getActivityCategory() != null
@@ -33,6 +41,7 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 
 			if (rightEntity) {
 
+				// pick a NormalRelativeActivity that can be assigned to this activityEntity using a map
 				for (Activity activity : activitySchedule.getActivityList()) {
 					if (activity instanceof NormalRelativeActivity) {
 						NormalRelativeActivity relativeActivity = (NormalRelativeActivity) activity;
@@ -43,6 +52,7 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 									.containsKey(relativeActivity.getActivityTypeCode())
 									&& !relativeActivity.isAssigned()) {
 
+								// scoreDirector is used to notify the solver about the changes
 								scoreDirector.beforeProblemPropertyChanged(activityEntity);
 								activityEntity.getAssignedToRelativeActivityMap()
 										.put(relativeActivity.getActivityTypeCode(), relativeActivity.getId());
@@ -54,6 +64,8 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 
 							}
 
+							// and set it's period
+							// scoreDirector is used to notify the solver about the changes
 							if (relativeActivity != null && activityEntity.getActivityPeriod() != null) {
 
 								if (activityEntity.getAssignedToRelativeActivityMap()
