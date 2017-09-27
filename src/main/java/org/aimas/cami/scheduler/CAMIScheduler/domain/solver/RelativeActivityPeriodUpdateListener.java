@@ -1,35 +1,39 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain.solver;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.optaplanner.core.impl.domain.variable.listener.VariableListener;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
 /**
+ * To update a shadow variable, the planner uses a VariableListener. It assures
+ * that every relative activity is set to a specified activity. The
+ * randomization is made by setting <selectionOrder>SHUFFLED</selectionOrder> in
+ * solver config file.
  * 
  * @author Bogdan
  *
  */
-public class RelativeActivityPeriodUpdateListener implements VariableListener<Activity> {
+public class RelativeActivityPeriodUpdateListener implements VariableListener<NormalActivity> {
 
-	protected void updatePeriod(ScoreDirector scoreDirector, Activity activityEntity) {
+	protected void updatePeriod(ScoreDirector scoreDirector, NormalActivity activityEntity) {
 
+		// the solution
 		ActivitySchedule activitySchedule = (ActivitySchedule) scoreDirector.getWorkingSolution();
 
+		// iterate through RelativeActivityPenalty list, and pick a
+		// NormalRelativeActivity that can be assigned to this activityEntity.
 		for (RelativeActivityPenalty rap : activitySchedule.getRelativeActivityPenaltyList()) {
 
-			boolean rightEntity = activityEntity.getActivityTypeCode().equals(rap.getStaticActivityType());
+			// if it is the right activityEntity
+			boolean rightEntity = activityEntity.getActivityTypeCode().equals(rap.getNormalActivityType());
 
 			if (activityEntity.getActivityCategory() != null
 					&& activityEntity.getActivityCategory().getCode().equals(rap.getCategory()))
@@ -37,9 +41,10 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 
 			if (rightEntity) {
 
+				// pick a NormalRelativeActivity that can be assigned to this activityEntity using a map
 				for (Activity activity : activitySchedule.getActivityList()) {
-					if (activity instanceof RelativeActivity) {
-						RelativeActivity relativeActivity = (RelativeActivity) activity;
+					if (activity instanceof NormalRelativeActivity) {
+						NormalRelativeActivity relativeActivity = (NormalRelativeActivity) activity;
 
 						if (relativeActivity.getActivityTypeCode().equals(rap.getRelativeActivityType())) {
 
@@ -47,6 +52,7 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 									.containsKey(relativeActivity.getActivityTypeCode())
 									&& !relativeActivity.isAssigned()) {
 
+								// scoreDirector is used to notify the solver about the changes
 								scoreDirector.beforeProblemPropertyChanged(activityEntity);
 								activityEntity.getAssignedToRelativeActivityMap()
 										.put(relativeActivity.getActivityTypeCode(), relativeActivity.getId());
@@ -58,6 +64,8 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 
 							}
 
+							// and set it's period
+							// scoreDirector is used to notify the solver about the changes
 							if (relativeActivity != null && activityEntity.getActivityPeriod() != null) {
 
 								if (activityEntity.getAssignedToRelativeActivityMap()
@@ -66,19 +74,19 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 												.get(relativeActivity.getActivityTypeCode())
 												.equals(relativeActivity.getId())) {
 
-									if (relativeActivity.getOffset() < 0) {
+									if (rap.getRelativeType().equals(RelativeType.BEFORE)) {
 
 										ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
 												relativeActivity,
 												AdjustActivityPeriod.getAdjustedPeriod(
 														activityEntity.getActivityPeriod(),
-														relativeActivity.getOffset()
+														Math.abs(relativeActivity.getOffset()) * (-1)
 																- relativeActivity.getActivityType().getDuration()),
 												-5);
 
-										scoreDirector.beforeVariableChanged(relativeActivity, "relativeActivityPeriod");
-										relativeActivity.setRelativeActivityPeriod(period);
-										scoreDirector.afterVariableChanged(relativeActivity, "relativeActivityPeriod");
+										scoreDirector.beforeVariableChanged(relativeActivity, "activityPeriod");
+										relativeActivity.setActivityPeriod(period);
+										scoreDirector.afterVariableChanged(relativeActivity, "activityPeriod");
 
 									} else {
 
@@ -89,9 +97,9 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 														relativeActivity.getOffset()),
 												5);
 
-										scoreDirector.beforeVariableChanged(relativeActivity, "relativeActivityPeriod");
-										relativeActivity.setRelativeActivityPeriod(period);
-										scoreDirector.afterVariableChanged(relativeActivity, "relativeActivityPeriod");
+										scoreDirector.beforeVariableChanged(relativeActivity, "activityPeriod");
+										relativeActivity.setActivityPeriod(period);
+										scoreDirector.afterVariableChanged(relativeActivity, "activityPeriod");
 
 									}
 								}
@@ -104,34 +112,34 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<Ac
 	}
 
 	@Override
-	public void beforeEntityAdded(ScoreDirector scoreDirector, Activity entity) {
+	public void beforeEntityAdded(ScoreDirector scoreDirector, NormalActivity entity) {
 
 	}
 
 	@Override
-	public void afterEntityAdded(ScoreDirector scoreDirector, Activity entity) {
+	public void afterEntityAdded(ScoreDirector scoreDirector, NormalActivity entity) {
 
 	}
 
 	@Override
-	public void beforeVariableChanged(ScoreDirector scoreDirector, Activity entity) {
+	public void beforeVariableChanged(ScoreDirector scoreDirector, NormalActivity entity) {
 		updatePeriod(scoreDirector, entity);
 
 	}
 
 	@Override
-	public void afterVariableChanged(ScoreDirector scoreDirector, Activity entity) {
+	public void afterVariableChanged(ScoreDirector scoreDirector, NormalActivity entity) {
 		updatePeriod(scoreDirector, entity);
 
 	}
 
 	@Override
-	public void beforeEntityRemoved(ScoreDirector scoreDirector, Activity entity) {
+	public void beforeEntityRemoved(ScoreDirector scoreDirector, NormalActivity entity) {
 
 	}
 
 	@Override
-	public void afterEntityRemoved(ScoreDirector scoreDirector, Activity entity) {
+	public void afterEntityRemoved(ScoreDirector scoreDirector, NormalActivity entity) {
 
 	}
 

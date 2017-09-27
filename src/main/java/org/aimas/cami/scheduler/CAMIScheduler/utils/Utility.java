@@ -1,5 +1,10 @@
 package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -9,10 +14,13 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.drools.core.spi.KnowledgeHelper;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.XStreamException;
 
 /**
  * 
@@ -34,9 +42,22 @@ public class Utility {
 		System.out.println("\nrule triggered: " + drools.getRule().getName());
 	}
 
+	/**
+	 * Distance between two {@link Time} values.
+	 */
 	public static Integer getNumberOfMinutesInInterval(Time left, Time right) {
 
 		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
+	}
+
+	/**
+	 * Distance between two {@link ActivityPeriod} values.
+	 */
+	public static Integer getNumberOfMinutesInPeriodInterval(int dayIndexLeft, int dayIndexRight, Time left,
+			Time right) {
+
+		return ((dayIndexRight - dayIndexLeft) * 24 + (right.getHour() - left.getHour())) * 60 + right.getMinutes()
+				- left.getMinutes();
 	}
 
 	public static Set<Character> stringToCharacterSet(String s) {
@@ -83,6 +104,9 @@ public class Utility {
 		return false;
 	}
 
+	/**
+	 * like {@link #before}, but strict less
+	 */
 	public static boolean exclusiveBefore(Time timeA, Time timeB) {
 		if (timeA.getHour() < timeB.getHour())
 			return true;
@@ -92,6 +116,9 @@ public class Utility {
 		return false;
 	}
 
+	/**
+	 * like {@link #after}, but strict less
+	 */
 	public static boolean exclusiveAfter(Time timeA, Time timeB) {
 		if (timeA.getHour() < timeB.getHour())
 			return true;
@@ -102,6 +129,7 @@ public class Utility {
 	}
 
 	/**
+	 * Check if an activity's period fully overlap an interval.
 	 * 
 	 * @param startActivity
 	 * @param endActivity
@@ -120,8 +148,7 @@ public class Utility {
 	}
 
 	/**
-	 * Get all the free periods from the schedule(except some periods that are
-	 * constrained).
+	 * Get all the free periods from the current schedule.
 	 * 
 	 * @param activitySchedule
 	 * @param activityEntity
@@ -136,7 +163,7 @@ public class Utility {
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 					activityEntity.getActivityDuration());
 
-			if (activityPeriod.getPeriodHour() >= 6) {
+			if (activityPeriod.getPeriodHour() >= activitySchedule.getScoreParametrization().getEarlyHour()) {
 
 				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
 
@@ -148,6 +175,10 @@ public class Utility {
 		return activityPeriodList;
 	}
 
+	/**
+	 * * Get all the free periods from the current schedule that are in the
+	 * specified interval.
+	 */
 	public static List<ActivityPeriod> getFreePeriodsInInterval(ActivitySchedule activitySchedule,
 			Activity activityEntity, TimeInterval timeInterval, int dayIndex) {
 
@@ -160,7 +191,8 @@ public class Utility {
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 					activityEntity.getActivityDuration());
 
-			if (activityPeriod.getWeekDayIndex() == dayIndex && activityPeriod.getPeriodHour() >= 6
+			if (activityPeriod.getWeekDayIndex() == dayIndex
+					&& activityPeriod.getPeriodHour() >= activitySchedule.getScoreParametrization().getEarlyHour()
 					&& fullOverlap(activityPeriod.getTime(), activityEndPeriod.getTime(), timeInterval.getMinStart(),
 							timeInterval.getMaxEnd())) {
 
@@ -178,20 +210,16 @@ public class Utility {
 			Activity activityEntity, int dayIndex) {
 
 		List<ActivityPeriod> activityPeriodList = new ArrayList<>();
-		boolean overlapFound = false;
 
 		for (ActivityPeriod activityPeriod : activitySchedule.getActivityPeriodList()) {
 
-			overlapFound = false;
-
-			if (activityPeriod.getWeekDayIndex() > dayIndex && activityPeriod.getPeriodHour() >= 6) {
+			if (activityPeriod.getWeekDayIndex() > dayIndex
+					&& activityPeriod.getPeriodHour() >= activitySchedule.getScoreParametrization().getEarlyHour()) {
 
 				ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
 						activityEntity.getActivityDuration());
 
-				overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
-
-				if (!overlapFound) {
+				if (!findOverlap(activitySchedule, activityPeriod, activityEndPeriod)) {
 					activityPeriodList.add(activityPeriod);
 				}
 			}
@@ -199,53 +227,49 @@ public class Utility {
 		return activityPeriodList;
 	}
 
-	public static ActivityPeriod getRelativeActivityPeriod(ActivitySchedule activitySchedule, Activity activityEntity,
-			ActivityPeriod activityPeriod, int increment) {
-
-		boolean overlapFound = false;
+	/**
+	 * Get the next free period after activityPeriod.
+	 * 
+	 * @param activitySchedule
+	 * @param relativeActivityEntity
+	 * @param activityPeriod
+	 * @param increment
+	 * @return {@link ActivityPeriod}
+	 */
+	public static ActivityPeriod getRelativeActivityPeriod(ActivitySchedule activitySchedule,
+			Activity relativeActivityEntity, ActivityPeriod activityPeriod, int increment) {
 
 		while (true) {
 
-			overlapFound = false;
 			ActivityPeriod activityEndPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
-					activityEntity.getActivityDuration());
+					relativeActivityEntity.getActivityDuration());
 
-			overlapFound = findOverlap(activitySchedule, activityPeriod, activityEndPeriod);
-
-			if (!overlapFound) {
+			if (!findOverlap(activitySchedule, activityPeriod, activityEndPeriod)) {
 				return activityPeriod;
 			}
 
 			activityPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, increment);
+
 		}
 
 	}
 
+	/**
+	 * Checks if the specified time interval (activityPeriod, activityEndPeriod)
+	 * is free.
+	 * 
+	 */
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
 			ActivityPeriod activityEndPeriod) {
+
 		for (Activity activity : activitySchedule.getActivityList()) {
-			if (!(activity instanceof RelativeActivity)) {
-				if (activity.getActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
+			if (activity.getActivityPeriod() != null
+					&& activityPeriod.getWeekDayIndex() == activity.getActivityPeriodWeekday().getDayIndex()) {
 
-					if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
-							&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
-						return true;
+				if (Utility.before(activityPeriod.getTime(), activity.getActivityEndPeriod().getTime())
+						&& Utility.after(activity.getActivityPeriodTime(), activityEndPeriod.getTime())) {
+					return true;
 
-					}
-				}
-			} else {
-				if (((RelativeActivity) activity).getRelativeActivityPeriod() != null
-						&& activityPeriod.getWeekDayIndex() == ((RelativeActivity) activity)
-								.getRelativeActivityWeekDay().getDayIndex()) {
-
-					if (Utility.before(activityPeriod.getTime(),
-							((RelativeActivity) activity).getRelativeActivityEndPeriod().getTime())
-							&& Utility.after(((RelativeActivity) activity).getRelativeActivityPeriod().getTime(),
-									activityEndPeriod.getTime())) {
-						return true;
-
-					}
 				}
 			}
 		}
@@ -253,6 +277,16 @@ public class Utility {
 		return false;
 	}
 
+	/**
+	 * Checks if the activityPeriod is in an excluded period interval.
+	 * 
+	 * @param activityPeriod
+	 * @param excludedPeriodInterval
+	 * @param activityDuration
+	 * @param sameStartDay
+	 * @param sameEndDay
+	 * @return
+	 */
 	public static Boolean checkTimeslots(ActivityPeriod activityPeriod, PeriodInterval excludedPeriodInterval,
 			int activityDuration, boolean sameStartDay, boolean sameEndDay) {
 
@@ -262,37 +296,15 @@ public class Utility {
 		Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
 		Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
 
-		if (((activityStartTime.getHour() > excludedStartTime.getHour()
-				|| activityEndTime.getHour() > excludedStartTime.getHour()) && sameStartDay)
-				|| (activityStartTime.getHour() < excludedEndTime.getHour() && sameEndDay)) {
+		if (sameStartDay) {
 
-			return true;
-
-		} else if (sameStartDay) {
-
-			if (activityStartTime.getHour() == excludedStartTime.getHour()) {
-
-				if ((activityStartTime.getMinutes() + activityDuration) >= excludedStartTime.getMinutes()) {
-					return true;
-				}
-
-			} else if (activityEndTime.getHour() == excludedStartTime.getHour()) {
-
-				if (activityEndTime.getMinutes() > excludedStartTime.getMinutes()) {
-					return true;
-				}
-
-			}
+			if (before(activityStartTime, new Time(24, 0)) && after(excludedStartTime, activityEndTime))
+				return true;
 
 		} else if (sameEndDay) {
 
-			if (activityStartTime.getHour() == excludedEndTime.getHour()) {
-
-				if (activityStartTime.getMinutes() < excludedEndTime.getMinutes()) {
-					return true;
-				}
-
-			}
+			if (before(activityStartTime, excludedEndTime) && after(new Time(0, 0), activityEndTime))
+				return true;
 
 		} else {
 
@@ -302,6 +314,27 @@ public class Utility {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get {@link ScoreParametrization} from inputFile.
+	 * 
+	 * @param activitySchedule
+	 * @param inputFile
+	 * @return
+	 */
+	public static ScoreParametrization getScoreParametrization(ActivitySchedule activitySchedule, File inputFile) {
+		XStream xStream = new XStream();
+		xStream.alias("ScoreParametrization", ScoreParametrization.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
+			ScoreParametrization scoreParametrization = (ScoreParametrization) xStream.fromXML(reader);
+			return scoreParametrization;
+		} catch (XStreamException | IOException e) {
+			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
+		}
 	}
 
 }

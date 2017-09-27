@@ -5,6 +5,8 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * Class that contains the preffered parameters / penalties that are used in
+ * score calculation.
  * 
  * @author Bogdan
  *
@@ -15,6 +17,7 @@ public class ScoreParametrization extends AbstractPersistable {
 	private int instancesPerDayPenalty;
 	private int instancesPerWeekPenalty;
 	private int periodConflictPenalty;
+	private int postponeLaterThisDayAndThisWeekPenalty;
 	private int earlyHour;
 	private int distanceBetweenExerciseAndMeal;
 	private int distanceBetweenExercises;
@@ -42,6 +45,14 @@ public class ScoreParametrization extends AbstractPersistable {
 
 	public void setPeriodConflictPenalty(int periodConflictPenalty) {
 		this.periodConflictPenalty = periodConflictPenalty;
+	}
+
+	public int getPostponeLaterThisDayAndThisWeekPenalty() {
+		return postponeLaterThisDayAndThisWeekPenalty;
+	}
+
+	public void setPostponeLaterThisDayAndThisWeekPenalty(int postponeLaterThisDayAndThisWeekPenaltyField) {
+		this.postponeLaterThisDayAndThisWeekPenalty = postponeLaterThisDayAndThisWeekPenaltyField;
 	}
 
 	public int getEarlyHour() {
@@ -74,6 +85,16 @@ public class ScoreParametrization extends AbstractPersistable {
 
 	public void setHardExerciseLateHour(int hardExerciseLateHour) {
 		this.hardExerciseLateHour = hardExerciseLateHour;
+	}
+
+	@Override
+	public String toString() {
+		return "ScoreParametrization [instancesPerDayPenalty=" + instancesPerDayPenalty + ", instancesPerWeekPenalty="
+				+ instancesPerWeekPenalty + ", periodConflictPenalty=" + periodConflictPenalty
+				+ ", postponeLaterThisDayAndThisWeekPenalty=" + postponeLaterThisDayAndThisWeekPenalty + ", earlyHour="
+				+ earlyHour + ", distanceBetweenExerciseAndMeal=" + distanceBetweenExerciseAndMeal
+				+ ", distanceBetweenExercises=" + distanceBetweenExercises + ", hardExerciseLateHour="
+				+ hardExerciseLateHour + "]";
 	}
 
 }

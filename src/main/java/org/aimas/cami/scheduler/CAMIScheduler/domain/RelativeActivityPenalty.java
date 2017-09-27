@@ -7,6 +7,8 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * Which activity is relative to which. An activity can be relative to a
+ * specified activity or to an activity that is part of a category.
  * 
  * @author Bogdan
  *
@@ -15,8 +17,10 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 public class RelativeActivityPenalty extends AbstractPersistable {
 
 	private RelativeType relativeType;
+	// activity names
 	private String relativeActivityType;
-	private String staticActivityType;
+	private String normalActivityType;
+	// activity category
 	private String category;
 
 	public RelativeType getRelativeType() {
@@ -35,12 +39,12 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 		this.relativeActivityType = relativeActivityType;
 	}
 
-	public String getStaticActivityType() {
-		return staticActivityType;
+	public String getNormalActivityType() {
+		return normalActivityType;
 	}
 
-	public void setStaticActivityType(String staticActivityType) {
-		this.staticActivityType = staticActivityType;
+	public void setNormalActivityType(String normalActivityType) {
+		this.normalActivityType = normalActivityType;
 	}
 
 	public String getCategory() {
@@ -54,7 +58,7 @@ public class RelativeActivityPenalty extends AbstractPersistable {
 	@Override
 	public String toString() {
 		return "RelativeActivityPenalty [relativeType=" + relativeType + ", relativeActivityType="
-				+ relativeActivityType + ", staticActivityType=" + staticActivityType + "]";
+				+ relativeActivityType + ", staticActivityType=" + normalActivityType + "]";
 	}
 
 }

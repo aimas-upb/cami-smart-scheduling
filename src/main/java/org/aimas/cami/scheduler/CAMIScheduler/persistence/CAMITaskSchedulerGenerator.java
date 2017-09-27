@@ -1,6 +1,10 @@
 package org.aimas.cami.scheduler.CAMIScheduler.persistence;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,8 +17,10 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Difficulty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NewActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
@@ -24,7 +30,10 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.LoggingMain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
 
+import com.thoughtworks.xstream.XStream;
+
 /**
+ * Class used to generate input for solver.
  * 
  * @author Bogdan
  *
@@ -39,6 +48,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	public static void main(String[] args) {
 		CAMITaskSchedulerGenerator camiTSG = new CAMITaskSchedulerGenerator();
 		camiTSG.writeActivitySchedule();
+		camiTSG.generateNewActivityExampleInput();
 	}
 
 	protected final SolutionDao solutionDao;
@@ -52,11 +62,18 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	private void writeActivitySchedule() {
 		String filename = "cami-scenario";
 		File outputFile = new File(outputDir, filename + ".xml");
-		logger.info("Create an Activity Schedule");
+
 		ActivitySchedule activitySchedule = createActivitySchedule();
+
+		// write the schedule to the file
 		solutionDao.writeSolution(activitySchedule, outputFile);
 	}
 
+	/**
+	 * Create a new schedule.
+	 * 
+	 * @return {@link ActivitySchedule}
+	 */
 	private ActivitySchedule createActivitySchedule() {
 		ActivitySchedule activitySchedule = new ActivitySchedule();
 		activitySchedule.setId(0L);
@@ -71,6 +88,62 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		setPeriodDomainRange(activitySchedule);
 
 		return activitySchedule;
+	}
+
+	/**
+	 * Generate a new activity and serialize it into XML.
+	 */
+	private void generateNewActivityExampleInput() {
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activity" + ".xml");
+
+		NewActivity na = new NewActivity();
+		na.setId(0L);
+
+		// generate a new activity
+
+		// set its properties here
+		NormalActivity normalActivity = new NormalActivity();
+
+		ActivityType activityType = new ActivityType();
+		activityType.setActivityCategory(
+				new ActivityCategory("Indoor physical exercises", new ActivityDomain("Health Related Activities")));
+		activityType.setCode("Yoga");
+		activityType.setDuration(30);
+		activityType.setId(0L);
+		List<TimeInterval> permittedIntervalListBreakfast = new ArrayList<>();
+		permittedIntervalListBreakfast.add(new TimeInterval(new Time(7, 0), new Time(10, 0)));
+		permittedIntervalListBreakfast.add(new TimeInterval(new Time(14, 0), new Time(18, 0)));
+		activityType.setPermittedIntervals(permittedIntervalListBreakfast);
+
+		normalActivity.setActivityType(activityType);
+
+		ExcludedTimePeriodsPenalty etpp = new ExcludedTimePeriodsPenalty();
+		etpp.setActivityType(activityType);
+
+		PeriodInterval pi = new PeriodInterval();
+		WeekDay wd = new WeekDay(6);
+		pi.setStartPeriod(new ActivityPeriod(new Time(0, 0), wd));
+		pi.setEndPeriod(new ActivityPeriod(new Time(24, 0), wd));
+		List<PeriodInterval> excludedActivityPeriods = new ArrayList<>();
+
+		excludedActivityPeriods.add(pi);
+		etpp.setExcludedActivityPeriods(excludedActivityPeriods);
+
+		na.setActivity(normalActivity);
+		na.setExcludedTimePeriodsPenalty(etpp);
+
+		// serialize the new activity
+		XStream xStream = new XStream();
+		xStream.alias("NewActivity", NewActivity.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
+			xStream.toXML(na, writer);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
+		}
+
 	}
 
 	private void createActivityDomainList(ActivitySchedule activitySchedule) {
@@ -109,13 +182,17 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activitySchedule.setActivityDomainList(activityDomainList);
 	}
 
+	/**
+	 * Create all the activities you want to be planned.
+	 * 
+	 * @param activitySchedule
+	 *            {@link ActivitySchedule}
+	 */
 	private void createActivityList(ActivitySchedule activitySchedule) {
 		long id = 0L;
 		long typeId = 0L;
 		long exccludedId = 0L;
-		// long relativeId = 0L;
 		long relativeActivityPenaltyId = 0L;
-		long relativeActivityToCategoryId = 0L;
 
 		List<ExcludedTimePeriodsPenalty> excludedTimePeriodsPenaltyList = new ArrayList<>();
 		List<RelativeActivityPenalty> relativeActivityPenaltyList = new ArrayList<>();
@@ -135,11 +212,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activityTypeList.add(breakfast);
 
 		for (int i = 0; i < breakfast.getInstancesPerDay() * 7; i++) {
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(breakfast);
 			activity.setId(id++);
 			activity.setImmovable(false);
-			activity.setIndex(i);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -157,11 +233,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activityTypeList.add(lunch);
 
 		for (int i = 0; i < lunch.getInstancesPerDay() * 7; i++) {
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(lunch);
 			activity.setId(id++);
 			activity.setImmovable(false);
-			activity.setIndex(i);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -179,11 +254,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activityTypeList.add(dinner);
 
 		for (int i = 0; i < dinner.getInstancesPerDay() * 7; i++) {
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(dinner);
 			activity.setId(id++);
 			activity.setImmovable(false);
-			activity.setIndex(i);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -205,7 +279,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityTypeList.add(stretches);
 
 			for (int i = 0; i < stretches.getInstancesPerWeek(); i++) {
-				Activity activity = new Activity();
+				NormalActivity activity = new NormalActivity();
 				activity.setActivityType(stretches);
 				activity.setId(id++);
 				activity.setImmovable(false);
@@ -243,7 +317,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityTypeList.add(armRotations);
 
 			for (int i = 0; i < armRotations.getInstancesPerWeek(); i++) {
-				Activity activity = new Activity();
+				NormalActivity activity = new NormalActivity();
 				activity.setActivityType(armRotations);
 				activity.setId(id++);
 				activity.setImmovable(false);
@@ -281,7 +355,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityTypeList.add(bodyWorkout);
 
 			for (int i = 0; i < bodyWorkout.getInstancesPerWeek(); i++) {
-				Activity activity = new Activity();
+				NormalActivity activity = new NormalActivity();
 				activity.setActivityType(bodyWorkout);
 				activity.setId(id++);
 				activity.setImmovable(false);
@@ -322,7 +396,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			activityTypeList.add(walkInPark1);
 
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(walkInPark1);
 			activity.setId(id++);
 			activity.setImmovable(true);
@@ -340,7 +414,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			activityTypeList.add(walkInPark2);
 
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(walkInPark2);
 			activity.setId(id++);
 			activity.setImmovable(true);
@@ -358,7 +432,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			activityTypeList.add(walkInPark3);
 
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(walkInPark3);
 			activity.setId(id++);
 			activity.setImmovable(true);
@@ -376,7 +450,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			activityTypeList.add(bikeRide);
 
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(bikeRide);
 			activity.setId(id++);
 			activity.setImmovable(true);
@@ -399,11 +473,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityTypeList.add(weightMeasurement);
 
 			for (int i = 0; i < weightMeasurement.getInstancesPerDay() * 7; i++) {
-				RelativeActivity relativeActivity = new RelativeActivity();
+				NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 				relativeActivity.setActivityType(weightMeasurement);
-				relativeActivity.setOffset(-15);
+				relativeActivity.setOffset(15);
 				relativeActivity.setId(id++);
-				relativeActivity.setIndex(i);
 
 				activityList.add(relativeActivity);
 			}
@@ -411,7 +484,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
 			relativeActivityPenalty.setRelativeType(RelativeType.BEFORE);
 			relativeActivityPenalty.setRelativeActivityType("Weight measurement");
-			relativeActivityPenalty.setStaticActivityType("Breakfast");
+			relativeActivityPenalty.setNormalActivityType("Breakfast");
 
 			relativeActivityPenalty.setId(relativeActivityPenaltyId++);
 			relativeActivityPenaltyList.add(relativeActivityPenalty);
@@ -430,7 +503,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityTypeList.add(bloodPressurehMeasurement);
 
 			for (int i = 0; i < bloodPressurehMeasurement.getInstancesPerDay() * 7; i++) {
-				Activity activity = new Activity();
+				NormalActivity activity = new NormalActivity();
 				activity.setActivityType(bloodPressurehMeasurement);
 				activity.setId(id++);
 				activity.setImmovable(false);
@@ -454,11 +527,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityTypeList.add(heartMedication);
 
 			for (int i = 0; i < heartMedication.getInstancesPerDay() * 7; i++) {
-				RelativeActivity relativeActivity = new RelativeActivity();
+				NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 				relativeActivity.setActivityType(heartMedication);
 				relativeActivity.setOffset(15);
 				relativeActivity.setId(id++);
-				relativeActivity.setIndex(i);
 
 				activityList.add(relativeActivity);
 
@@ -467,7 +539,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			RelativeActivityPenalty relativeActivityPenalty = new RelativeActivityPenalty();
 			relativeActivityPenalty.setRelativeType(RelativeType.AFTER);
 			relativeActivityPenalty.setRelativeActivityType("Heart medication");
-			relativeActivityPenalty.setStaticActivityType("Breakfast");
+			relativeActivityPenalty.setNormalActivityType("Breakfast");
 			relativeActivityPenalty.setId(relativeActivityPenaltyId++);
 
 			relativeActivityPenaltyList.add(relativeActivityPenalty);
@@ -486,11 +558,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityTypeList.add(antibiotic);
 
 			for (int i = 0; i < antibiotic.getInstancesPerDay() * 7; i++) {
-				RelativeActivity relativeActivity = new RelativeActivity();
+				NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 				relativeActivity.setActivityType(antibiotic);
 				relativeActivity.setOffset(15);
 				relativeActivity.setId(id++);
-				relativeActivity.setIndex(i % 7);
 
 				activityList.add(relativeActivity);
 
@@ -535,7 +606,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			activityTypeList.add(tvSeries);
 
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(tvSeries);
 			activity.setId(id++);
 			activity.setImmovable(true);
@@ -555,7 +626,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				tvSeries.setImposedPeriod(new ActivityPeriod(new Time(16, 0), new WeekDay(i)));
 
 				activityTypeList.add(tvSeries);
-				Activity activity = new Activity();
+				NormalActivity activity = new NormalActivity();
 				activity.setActivityType(tvSeries);
 				activity.setId(id++);
 				activity.setImmovable(true);
@@ -574,7 +645,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			activityTypeList.add(hairCuttingAppointment);
 
-			Activity activity = new Activity();
+			NormalActivity activity = new NormalActivity();
 			activity.setActivityType(hairCuttingAppointment);
 			activity.setId(id++);
 			activity.setImmovable(true);
@@ -587,6 +658,10 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activitySchedule.setRelativeActivityPenaltyList(relativeActivityPenaltyList);
 	}
 
+	/**
+	 * Generate all the time periods.
+	 * 
+	 */
 	private void createActivityPeriodList(ActivitySchedule activitySchedule) {
 		List<ActivityPeriod> activityPeriodList = new ArrayList<>();
 		long id = 0L;
@@ -604,18 +679,27 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activitySchedule.setActivityPeriodList(activityPeriodList);
 	}
 
+	/**
+	 * Set imposed activities' period. Also, these activities are immovable.
+	 */
 	private void setImposedActivities(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
-			if (activity.getImposedPeriod() != null)
-				activity.setActivityPeriod(activity.getImposedPeriod());
+			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null)
+				((NormalActivity) activity).setActivityPeriod(activity.getImposedPeriod());
 	}
 
+	/**
+	 * Generate a predefined Score Parametrization input and write it to a file.
+	 */
 	private void predefinedScoreParametrization(ActivitySchedule activitySchedule) {
 		ScoreParametrization scoreParametrization = new ScoreParametrization();
+
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Score parametrization" + ".xml");
 
 		scoreParametrization.setInstancesPerDayPenalty(2);
 		scoreParametrization.setInstancesPerWeekPenalty(1);
 		scoreParametrization.setPeriodConflictPenalty(3);
+		scoreParametrization.setPostponeLaterThisDayAndThisWeekPenalty(30);
 		scoreParametrization.setEarlyHour(6);
 		scoreParametrization.setDistanceBetweenExerciseAndMeal(120);
 		scoreParametrization.setDistanceBetweenExercises(180);
@@ -623,7 +707,16 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		scoreParametrization.setId(0L);
 
-		activitySchedule.setScoreParametrization(scoreParametrization);
+		XStream xStream = new XStream();
+		xStream.alias("ScoreParametrization", ScoreParametrization.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
+			xStream.toXML(scoreParametrization, writer);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
+		}
 
 	}
 
@@ -634,7 +727,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	 */
 	private void setPeriodDomainRange(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
-			activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+			if (activity instanceof NormalActivity)
+				((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 	}
 
 	private void createTimeList(ActivitySchedule activitySchedule) {

@@ -1,6 +1,6 @@
 package org.aimas.cami.scheduler.CAMIScheduler.postpone;
 
-import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
@@ -15,6 +15,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("Postpone")
 public class Postpone extends AbstractPersistable {
 
+	// the period that the activity had when it was postponed
 	private ActivityPeriod postponePeriod;
 	private PostponeType postponeType;
 

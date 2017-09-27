@@ -3,6 +3,7 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 
 /**
+ * Difficulty level an activity can have.
  * 
  * @author Bogdan
  *

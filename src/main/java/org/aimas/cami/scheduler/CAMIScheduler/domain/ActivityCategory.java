@@ -5,6 +5,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * Category of activities. One or many categories are part of a domain.
  * 
  * @author Bogdan
  *
@@ -12,9 +13,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("ActivityCategory")
 public class ActivityCategory extends AbstractPersistable implements Labeled {
 
-	private String code;
-	private int index;
-	private Activity activity;
+	private String code; // category's name
 
 	/*
 	 * used when need to compare the domain when are overlapped activities(e.g.
@@ -29,6 +28,12 @@ public class ActivityCategory extends AbstractPersistable implements Labeled {
 		this.id = id;
 	}
 
+	public ActivityCategory(String code, ActivityDomain domain) {
+		super();
+		this.code = code;
+		this.domain = domain;
+	}
+
 	public String getCode() {
 		return code;
 	}
@@ -37,28 +42,12 @@ public class ActivityCategory extends AbstractPersistable implements Labeled {
 		this.code = code;
 	}
 
-	public int getIndex() {
-		return index;
-	}
-
-	public void setIndex(int index) {
-		this.index = index;
-	}
-
-	public Activity getActivity() {
-		return activity;
-	}
-
 	public ActivityDomain getDomain() {
 		return domain;
 	}
 
 	public void setDomain(ActivityDomain domain) {
 		this.domain = domain;
-	}
-
-	public void setActivity(Activity activity) {
-		this.activity = activity;
 	}
 
 	@Override
