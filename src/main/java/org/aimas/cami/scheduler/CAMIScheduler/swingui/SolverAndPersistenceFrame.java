@@ -59,15 +59,15 @@ import javax.swing.filechooser.FileFilter;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
-import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractSolutionImporter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionBusiness;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.apache.commons.io.FilenameUtils;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.score.FeasibilityScore;
 import org.optaplanner.core.api.score.Score;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.swing.impl.SwingUtils;
 import org.optaplanner.swing.impl.TangoColorFactory;
 import org.slf4j.Logger;
@@ -97,8 +97,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	private List<Action> quickOpenSolvedActionList;
 	private Action openAction;
 	private Action saveAction;
-	private Action importAction;
-	private Action exportAction;
 	private JToggleButton refreshScreenDuringSolvingToggleButton;
 	private JToggleButton indictmentHeatMapToggleButton;
 	private Action solveAction;
@@ -268,6 +266,26 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		}
 	}
 
+	private void setScoreParametrization() {
+		solutionPanel.doProblemFactChange(scoreDirector -> {
+
+			ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+
+			ScoreParametrization scoreParamertization = Utility.getScoreParametrization(
+					(ActivitySchedule) solutionBusiness.getSolution(),
+					new File(new File(solutionBusiness.getUnsolvedDataDir().getParentFile(), ""),
+							"Score parametrization" + ".xml"));
+
+			scoreParamertization.setId(activitySchedule.getScoreParametrization() == null ? scoreParamertization.getId()
+					: (activitySchedule.getScoreParametrization().getId() + 1));
+
+			scoreDirector.beforeProblemFactAdded(scoreParamertization);
+			activitySchedule.setScoreParametrization(scoreParamertization);
+			scoreDirector.afterProblemFactAdded(scoreParamertization);
+
+		});
+	}
+
 	private class QuickOpenAction extends AbstractAction {
 
 		private File file;
@@ -286,6 +304,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				setSolutionLoaded();
 
 				resetValueRange();
+				setScoreParametrization();
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
 			}
@@ -299,18 +318,12 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		GroupLayout toolBarLayout = new GroupLayout(toolBar);
 		toolBar.setLayout(toolBarLayout);
 
-		importAction = new ImportAction();
-		importAction.setEnabled(solutionBusiness.hasImporter());
-		JButton importButton = new JButton(importAction);
 		openAction = new OpenAction();
 		openAction.setEnabled(true);
 		JButton openButton = new JButton(openAction);
 		saveAction = new SaveAction();
 		saveAction.setEnabled(false);
 		JButton saveButton = new JButton(saveAction);
-		exportAction = new ExportAction();
-		exportAction.setEnabled(false);
-		JButton exportButton = new JButton(exportAction);
 
 		progressBar = new JProgressBar(0, 100);
 
@@ -327,14 +340,13 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		solveButton.setMinimumSize(terminateSolvingEarlyButton.getMinimumSize());
 		solveButton.setPreferredSize(terminateSolvingEarlyButton.getPreferredSize());
 
-		toolBarLayout.setHorizontalGroup(toolBarLayout.createSequentialGroup().addComponent(importButton)
-				.addComponent(openButton).addComponent(saveButton).addComponent(exportButton).addGap(10)
-				.addComponent(solvePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
-						GroupLayout.PREFERRED_SIZE)
-				.addComponent(progressBar, 20, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE));
+		toolBarLayout.setHorizontalGroup(
+				toolBarLayout.createSequentialGroup().addComponent(openButton).addComponent(saveButton).addGap(10)
+						.addComponent(solvePanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+								GroupLayout.PREFERRED_SIZE)
+						.addComponent(progressBar, 20, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE));
 		toolBarLayout.setVerticalGroup(toolBarLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
-				.addComponent(importButton).addComponent(openButton).addComponent(saveButton).addComponent(exportButton)
-				.addComponent(solvePanel).addComponent(progressBar));
+				.addComponent(openButton).addComponent(saveButton).addComponent(solvePanel).addComponent(progressBar));
 		return toolBar;
 	}
 
@@ -354,7 +366,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
-	public void activityPostponedAction() {
+	public void startSolveAction() {
 		if (solveButton.isEnabled()) {
 			setSolvingState(true);
 			Solution_ planningProblem = solutionBusiness.getSolution();
@@ -416,7 +428,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 		public OpenAction() {
 			super(NAME, new ImageIcon(SolverAndPersistenceFrame.class.getResource("")));
-			
+
 			solutionWasOpened = true;
 			fileChooser = new JFileChooser(solutionBusiness.getSolvedDataDir());
 			fileChooser.setFileFilter(new FileFilter() {
@@ -443,6 +455,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					setSolutionLoaded();
 
 					resetValueRange();
+					setScoreParametrization();
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
 				}
@@ -457,9 +470,11 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 		solutionPanel.doProblemFactChange(scoreDirector -> {
 			for (Activity activity : activitySchedule.getActivityList()) {
-				scoreDirector.beforeProblemPropertyChanged(activity);
-				activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-				scoreDirector.afterProblemPropertyChanged(activity);
+				if (activity instanceof NormalActivity) {
+					scoreDirector.beforeProblemPropertyChanged(activity);
+					((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+					scoreDirector.afterProblemPropertyChanged(activity);
+				}
 			}
 		});
 	}
@@ -494,6 +509,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			if (approved == JFileChooser.APPROVE_OPTION) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				try {
+					setScoreParametrization();
 					solutionBusiness.saveSolution(fileChooser.getSelectedFile());
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
@@ -508,117 +524,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
-	private class ImportAction extends AbstractAction {
-
-		private static final String NAME = "Import...";
-		private JFileChooser fileChooser;
-
-		public ImportAction() {
-			super(NAME, new ImageIcon(SolverAndPersistenceFrame.class.getResource("")));
-			if (!solutionBusiness.hasImporter()) {
-				fileChooser = null;
-				return;
-			}
-			fileChooser = new JFileChooser(solutionBusiness.getImportDataDir());
-			boolean firstFilter = true;
-			for (final AbstractSolutionImporter importer : solutionBusiness.getImporters()) {
-				FileFilter filter;
-				if (importer.isInputFileDirectory()) {
-					filter = new FileFilter() {
-						@Override
-						public boolean accept(File file) {
-							return file.isDirectory();
-						}
-
-						@Override
-						public String getDescription() {
-							return "Import directory";
-						}
-					};
-					fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				} else {
-					filter = new FileFilter() {
-						@Override
-						public boolean accept(File file) {
-							return file.isDirectory() || importer.acceptInputFile(file);
-						}
-
-						@Override
-						public String getDescription() {
-							return "Import files (*." + importer.getInputFileSuffix() + ")";
-						}
-					};
-				}
-				fileChooser.addChoosableFileFilter(filter);
-				if (firstFilter) {
-					fileChooser.setFileFilter(filter);
-					firstFilter = false;
-				}
-			}
-			fileChooser.setDialogTitle(NAME);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			int approved = fileChooser.showOpenDialog(SolverAndPersistenceFrame.this);
-			if (approved == JFileChooser.APPROVE_OPTION) {
-				File file = fileChooser.getSelectedFile();
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				try {
-					solutionBusiness.importSolution(file);
-					setSolutionLoaded();
-				} finally {
-					setCursor(Cursor.getDefaultCursor());
-				}
-			}
-		}
-
-	}
-
-	private class ExportAction extends AbstractAction {
-
-		private static final String NAME = "Export as...";
-		private final JFileChooser fileChooser;
-
-		public ExportAction() {
-			super(NAME, new ImageIcon(SolverAndPersistenceFrame.class.getResource("")));
-			if (!solutionBusiness.hasExporter()) {
-				fileChooser = null;
-				return;
-			}
-			fileChooser = new JFileChooser(solutionBusiness.getExportDataDir());
-			fileChooser.setFileFilter(new FileFilter() {
-				@Override
-				public boolean accept(File file) {
-					return file.isDirectory() || file.getName().endsWith("." + solutionBusiness.getExportFileSuffix());
-				}
-
-				@Override
-				public String getDescription() {
-					return "Export files (*." + solutionBusiness.getExportFileSuffix() + ")";
-				}
-			});
-			fileChooser.setDialogTitle(NAME);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			fileChooser.setSelectedFile(new File(solutionBusiness.getExportDataDir(),
-					FilenameUtils.getBaseName(solutionBusiness.getSolutionFileName()) + "."
-							+ solutionBusiness.getExportFileSuffix()));
-			int approved = fileChooser.showSaveDialog(SolverAndPersistenceFrame.this);
-			if (approved == JFileChooser.APPROVE_OPTION) {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				try {
-					solutionBusiness.exportSolution(fileChooser.getSelectedFile());
-				} finally {
-					setCursor(Cursor.getDefaultCursor());
-				}
-			}
-		}
-
-	}
-
 	private JPanel createMiddlePanel() {
 		middlePanel = new JPanel(new CardLayout());
 		JPanel usageExplanationPanel = new JPanel(new BorderLayout(5, 5));
@@ -627,7 +532,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		// JLabel usageExplanationLabel = new JLabel(usageExplanationIcon);
 		// Allow splitPane divider to be moved to the right
 		// usageExplanationLabel.setMinimumSize(new Dimension(100, 100));
-		// usageExplanationPanel.add(usageExplanationLabel, BorderLayout.CENTER);
+		// usageExplanationPanel.add(usageExplanationLabel,
+		// BorderLayout.CENTER);
 		JPanel descriptionPanel = new JPanel(new BorderLayout(2, 2));
 		descriptionPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		descriptionPanel.add(new JLabel("Example description"), BorderLayout.NORTH);
@@ -675,9 +581,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingToggleButton = new JToggleButton(refreshScreenDuringSolvingTrueIcon, true);
 		refreshScreenDuringSolvingToggleButton.setToolTipText("Refresh screen during solving");
 		refreshScreenDuringSolvingToggleButton.addActionListener(e -> {
-			refreshScreenDuringSolvingToggleButton
-					.setIcon(refreshScreenDuringSolvingToggleButton.isSelected() ? refreshScreenDuringSolvingTrueIcon
-							: refreshScreenDuringSolvingFalseIcon);
+			refreshScreenDuringSolvingToggleButton.setIcon(refreshScreenDuringSolvingToggleButton.isSelected()
+					? refreshScreenDuringSolvingTrueIcon : refreshScreenDuringSolvingFalseIcon);
 		});
 		scorePanel.add(refreshScreenDuringSolvingToggleButton, BorderLayout.EAST);
 		return scorePanel;
@@ -711,10 +616,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		for (Action action : quickOpenSolvedActionList) {
 			action.setEnabled(!solving);
 		}
-		importAction.setEnabled(!solving && solutionBusiness.hasImporter());
 		openAction.setEnabled(!solving);
 		saveAction.setEnabled(!solving);
-		exportAction.setEnabled(!solving && solutionBusiness.hasExporter());
 		solveAction.setEnabled(!solving);
 		solveButton.setVisible(!solving);
 		terminateSolvingEarlyAction.setEnabled(solving);
@@ -724,6 +627,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			terminateSolvingEarlyButton.requestFocus();
 		} else {
 			solveButton.requestFocus();
+
+			setScoreParametrization();
 
 			boolean postponeFound = false;
 
@@ -736,10 +641,10 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				}
 			}
 
-			if (postponeFound && !solutionWasOpened)
-				JOptionPane.showMessageDialog(null, "This is the best solution found.",
-						"Activity postpone notification", JOptionPane.INFORMATION_MESSAGE);
-			
+			if (postponeFound || !solutionWasOpened)
+				JOptionPane.showMessageDialog(null, "This is the best solution found.", "Solver notification",
+						JOptionPane.INFORMATION_MESSAGE);
+
 			solutionWasOpened = false;
 		}
 
@@ -755,6 +660,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		Solution_ solution = solutionBusiness.getSolution();
 		Score score = solutionBusiness.getScore();
 		solutionPanel.resetPanel(solution);
+		setScoreParametrization();
 		validate();
 		refreshScoreField(score);
 	}

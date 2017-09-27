@@ -21,6 +21,6 @@ package org.aimas.cami.scheduler.CAMIScheduler.swingui;
  */
 public interface Labeled {
 
-    String getLabel();
+	String getLabel();
 
 }

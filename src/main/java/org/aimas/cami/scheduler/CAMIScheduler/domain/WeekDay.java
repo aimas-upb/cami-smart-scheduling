@@ -6,6 +6,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * How a day is represented in our schedule.
  * 
  * @author Bogdan
  *

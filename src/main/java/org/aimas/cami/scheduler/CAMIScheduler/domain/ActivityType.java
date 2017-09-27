@@ -8,6 +8,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * Stores all the information about an activity.
  * 
  * @author Bogdan
  *
@@ -15,14 +16,13 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("ActivityType")
 public class ActivityType extends AbstractPersistable implements Labeled {
 
-	private String code;
-	private int index;
+	private String code; // activity's name
 	private int duration; // expressed in minutes
 	private Difficulty difficulty; // EASY, HARD, MEDIUM
 	private int calories; // expressed in kcal
-	private int instancesPerDay, instancesPerWeek;
-	private ActivityPeriod imposedTime;
-	private List<TimeInterval> permittedIntervals;
+	private int instancesPerDay, instancesPerWeek; // instances an activity has on a week
+	private ActivityPeriod imposedPeriod; // an activity must be planned on this period
+	private List<TimeInterval> permittedIntervals; // an activity should be planned in this intervals
 	private ActivityCategory activityCategory;
 	private String description;
 
@@ -40,14 +40,6 @@ public class ActivityType extends AbstractPersistable implements Labeled {
 
 	public void setCode(String code) {
 		this.code = code;
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
-	public void setIndex(int index) {
-		this.index = index;
 	}
 
 	public int getDuration() {
@@ -91,11 +83,11 @@ public class ActivityType extends AbstractPersistable implements Labeled {
 	}
 
 	public ActivityPeriod getImposedPeriod() {
-		return imposedTime;
+		return imposedPeriod;
 	}
 
 	public void setImposedPeriod(ActivityPeriod imposedTimeslot) {
-		this.imposedTime = imposedTimeslot;
+		this.imposedPeriod = imposedTimeslot;
 	}
 
 	public List<TimeInterval> getPermittedIntervals() {

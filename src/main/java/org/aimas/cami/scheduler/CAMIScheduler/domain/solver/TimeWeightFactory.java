@@ -9,6 +9,8 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.optaplanner.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 /**
+ * Used to sort the period values that can be assigned to activities used by
+ * solver based on excluded periods.
  * 
  * @author Bogdan
  *
@@ -31,7 +33,8 @@ public class TimeWeightFactory implements SelectionSorterWeightFactory<ActivityS
 			// bigger penalty -> weaker
 			return new CompareToBuilder().append(other.penalty, this.penalty)
 					.append(period.getWeekDay().getDayIndex(), other.period.getWeekDay().getDayIndex())
-					.append(period.getTime(), other.period.getTime())
+					.append(period.getTime().getHour(), other.period.getTime().getHour())
+					.append(period.getTime().getMinutes(), other.period.getTime().getMinutes())
 					.append(period.getId(), other.period.getId()).toComparison();
 		}
 
@@ -42,18 +45,42 @@ public class TimeWeightFactory implements SelectionSorterWeightFactory<ActivityS
 		int penalty = 0;
 		for (ExcludedTimePeriodsPenalty etp : solution.getExcludedTimePeriodsList()) {
 			for (PeriodInterval excludedPeriod : etp.getExcludedActivityPeriods()) {
+
+				// excluded just on a specific day or everyday
 				if ((excludedPeriod.getStartPeriod().getWeekDay() == null
 						&& excludedPeriod.getEndPeriod().getWeekDay() == null)
-						|| (activityPeriod.getWeekDay().getDayIndex() == excludedPeriod.getStartPeriod().getWeekDay()
-								.getDayIndex()
-								&& activityPeriod.getWeekDay().getDayIndex() == excludedPeriod.getEndPeriod()
-										.getWeekDay().getDayIndex())) {
+						|| (activityPeriod.getWeekDayIndex() == excludedPeriod.getStartPeriod().getWeekDayIndex()
+								&& activityPeriod.getWeekDayIndex() == excludedPeriod.getEndPeriod()
+										.getWeekDayIndex())) {
 
-					if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
-							false, false)) {
+					penalty++;
+
+				} else { // excluded between some specific days
+
+					if (activityPeriod.getWeekDayIndex() > excludedPeriod.getStartPeriod().getWeekDayIndex()
+							&& activityPeriod.getWeekDayIndex() < excludedPeriod.getEndPeriod().getWeekDayIndex()) {
+
 						penalty++;
-					}
 
+					} else if (activityPeriod.getWeekDayIndex() == excludedPeriod.getStartPeriod().getWeekDayIndex()) {
+
+						if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
+								true, false)) {
+
+							penalty++;
+
+						}
+
+					} else if (activityPeriod.getWeekDayIndex() == excludedPeriod.getEndPeriod().getWeekDayIndex()) {
+
+						if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
+								false, true)) {
+
+							penalty++;
+
+						}
+
+					}
 				}
 			}
 		}

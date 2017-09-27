@@ -6,6 +6,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * A domain contains a list of categories.
  * 
  * @author Bogdan
  *
@@ -14,9 +15,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 public class ActivityDomain extends AbstractPersistable {
 
 	private List<ActivityCategory> categories;
-	private String code;
+	private String code; // domain's name
 	private String description;
-	private int index;
 
 	public ActivityDomain(String code) {
 		super();
@@ -37,14 +37,6 @@ public class ActivityDomain extends AbstractPersistable {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
-	public void setIndex(int index) {
-		this.index = index;
 	}
 
 	public List<ActivityCategory> getCategories() {

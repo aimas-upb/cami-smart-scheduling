@@ -5,6 +5,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
+ * How time is represented in our schedule.
  * 
  * @author Bogdan
  *
