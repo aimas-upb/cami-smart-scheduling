@@ -46,14 +46,18 @@ public class TimeWeightFactory implements SelectionSorterWeightFactory<ActivityS
 		for (ExcludedTimePeriodsPenalty etp : solution.getExcludedTimePeriodsList()) {
 			for (PeriodInterval excludedPeriod : etp.getExcludedActivityPeriods()) {
 
-				// excluded just on a specific day or everyday
+				// excluded on a period interval just on a specific day or everyday
 				if ((excludedPeriod.getStartPeriod().getWeekDay() == null
 						&& excludedPeriod.getEndPeriod().getWeekDay() == null)
 						|| (activityPeriod.getWeekDayIndex() == excludedPeriod.getStartPeriod().getWeekDayIndex()
 								&& activityPeriod.getWeekDayIndex() == excludedPeriod.getEndPeriod()
 										.getWeekDayIndex())) {
 
-					penalty++;
+					if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
+							true, true)) {
+
+						penalty++;
+					}
 
 				} else { // excluded between some specific days
 

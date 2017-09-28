@@ -132,6 +132,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		timer.start();
 	}
 
+	/**
+	 * Event notification using a time listener.
+	 */
 	class TimerActionListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
@@ -141,6 +144,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 				ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
 
+				// notify the user if there is a nearby activity by 15 minutes
 				for (Activity activity : solution.getActivityList()) {
 					if (activity.getActivityPeriod() != null) {
 						if ((LocalDateTime.now().getDayOfWeek().getValue() - 1) == activity.getActivityPeriodWeekday()
@@ -266,6 +270,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		}
 	}
 
+	/**
+	 * Get the {@link ScoreParametrization} from file and update it in solution.
+	 */
 	private void setScoreParametrization() {
 		solutionPanel.doProblemFactChange(scoreDirector -> {
 
@@ -366,6 +373,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
+	/**
+	 * Start a new solving(when reschedule)
+	 */
 	public void startSolveAction() {
 		if (solveButton.isEnabled()) {
 			setSolvingState(true);
@@ -464,6 +474,12 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
+	/**
+	 * When a new schedule is opened from file, reset all the activity domain value
+	 * ranges. In real time rescheduling, activities after the current time will
+	 * have a more restricted value range, and activities before the current time
+	 * will be immovable.
+	 */
 	protected void resetValueRange() {
 
 		ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
@@ -581,8 +597,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingToggleButton = new JToggleButton(refreshScreenDuringSolvingTrueIcon, true);
 		refreshScreenDuringSolvingToggleButton.setToolTipText("Refresh screen during solving");
 		refreshScreenDuringSolvingToggleButton.addActionListener(e -> {
-			refreshScreenDuringSolvingToggleButton.setIcon(refreshScreenDuringSolvingToggleButton.isSelected()
-					? refreshScreenDuringSolvingTrueIcon : refreshScreenDuringSolvingFalseIcon);
+			refreshScreenDuringSolvingToggleButton
+					.setIcon(refreshScreenDuringSolvingToggleButton.isSelected() ? refreshScreenDuringSolvingTrueIcon
+							: refreshScreenDuringSolvingFalseIcon);
 		});
 		scorePanel.add(refreshScreenDuringSolvingToggleButton, BorderLayout.EAST);
 		return scorePanel;
@@ -641,6 +658,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				}
 			}
 
+			// notify that the best solution was found
 			if (postponeFound || !solutionWasOpened)
 				JOptionPane.showMessageDialog(null, "This is the best solution found.", "Solver notification",
 						JOptionPane.INFORMATION_MESSAGE);
