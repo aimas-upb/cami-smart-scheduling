@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -335,6 +336,59 @@ public class Utility {
 		} catch (XStreamException | IOException e) {
 			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
 		}
+	}
+
+	/**
+	 * Get the current time in pretty format.
+	 * 
+	 * @return {@link LocalDateTime}
+	 */
+	public static LocalDateTime getCurrentTime() {
+		return LocalDateTime.now();
+	}
+
+	public static boolean isBeforeTheCurrentTime(Time activityTime, LocalDateTime currentTime) {
+		if (activityTime.getHour() < currentTime.getHour())
+			return true;
+		else if (activityTime.getHour() == currentTime.getHour())
+			if (activityTime.getMinutes() < currentTime.getMinute())
+				return true;
+		return false;
+	}
+
+	public static boolean isAfterTheCurrentTime(Time activityTime, LocalDateTime currentTime) {
+		if (activityTime.getHour() > currentTime.getHour())
+			return true;
+		else if (activityTime.getHour() == currentTime.getHour())
+			if (activityTime.getMinutes() > currentTime.getMinute())
+				return true;
+		return false;
+	}
+
+	public static boolean isBeforeTheCurrentPeriod(ActivityPeriod activityPeriod) {
+		if (activityPeriod != null) {
+			LocalDateTime currentTime = getCurrentTime();
+			if (activityPeriod.getWeekDayIndex() < currentTime.getDayOfWeek().getValue() - 1)
+				return true;
+			else if (activityPeriod.getWeekDayIndex() == currentTime.getDayOfWeek().getValue() - 1) {
+				if (isBeforeTheCurrentTime(activityPeriod.getTime(), currentTime))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isAfterTheCurrentPeriod(ActivityPeriod activityPeriod) {
+		if (activityPeriod != null) {
+			LocalDateTime currentTime = getCurrentTime();
+			if (activityPeriod.getWeekDayIndex() > currentTime.getDayOfWeek().getValue() - 1)
+				return true;
+			else if (activityPeriod.getWeekDayIndex() == currentTime.getDayOfWeek().getValue() - 1) {
+				if (isAfterTheCurrentTime(activityPeriod.getTime(), currentTime))
+					return true;
+			}
+		}
+		return false;
 	}
 
 }
