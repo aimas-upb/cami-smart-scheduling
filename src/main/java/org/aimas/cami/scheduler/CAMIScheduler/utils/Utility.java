@@ -255,8 +255,8 @@ public class Utility {
 	}
 
 	/**
-	 * Checks if the specified time interval (activityPeriod, activityEndPeriod)
-	 * is free.
+	 * Checks if the specified time interval (activityPeriod, activityEndPeriod) is
+	 * free.
 	 * 
 	 */
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
@@ -296,7 +296,12 @@ public class Utility {
 		Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
 		Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
 
-		if (sameStartDay) {
+		if (sameStartDay && sameEndDay) {
+
+			if (before(activityStartTime, excludedEndTime) && after(excludedStartTime, activityEndTime))
+				return true;
+
+		} else if (sameStartDay) {
 
 			if (before(activityStartTime, new Time(24, 0)) && after(excludedStartTime, activityEndTime))
 				return true;
@@ -304,11 +309,6 @@ public class Utility {
 		} else if (sameEndDay) {
 
 			if (before(activityStartTime, excludedEndTime) && after(new Time(0, 0), activityEndTime))
-				return true;
-
-		} else {
-
-			if (before(activityStartTime, excludedEndTime) && after(excludedStartTime, activityEndTime))
 				return true;
 
 		}

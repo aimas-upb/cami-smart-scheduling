@@ -10,7 +10,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamInclude;
 
 /**
- * Class that abstract an "activity".
+ * Class that abstracts an "activity".
  * 
  * @author Bogdan
  *
@@ -19,8 +19,10 @@ import com.thoughtworks.xstream.annotations.XStreamInclude;
 @XStreamInclude({ NormalActivity.class, NormalRelativeActivity.class })
 public abstract class Activity extends AbstractPersistable {
 
+	// type of activity(name, duration etc.)
 	private ActivityType activityType;
 
+	// stores the period when an activity was postponed and the postpone type
 	private Postpone postpone;
 
 	// if an activity is immovable or not

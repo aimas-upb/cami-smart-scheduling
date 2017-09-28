@@ -145,7 +145,7 @@ rule "excludedTimeslots"
 				($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getStartPeriod().getWeekDayIndex() && 
 					$activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getEndPeriod().getWeekDayIndex())) {
 
-				if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), false, false)) {
+				if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), true, true)) {
 
 					if (fullOverlap(activityStartTime, activityEndTime, excludedStartTime, excludedEndTime)) {
 
@@ -415,7 +415,7 @@ rule "hardExerciseNotTooLateInDay"
 		scoreHolder.addSoftConstraintMatch(kcontext, $scoreParametrization.getHardExerciseLateHour() - $exercisePeriod.getPeriodHour());
 end
 
-// postpone a normal relative activity
+// postpone a normal relative activity(relative activities don't have value range on their variable)
 rule "postponeActivity"
 	when
 		$scoreParametrization : ScoreParametrization()
@@ -429,7 +429,7 @@ rule "postponeActivity"
 		)
 	then
 
-		// the activity must be planned after the postpone period
+		// the activity must be planned after the postpone period + offset
 		if ($postpone.getPostponeType() == PostponeType.POSTPONE_15MIN) {
 			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())) {
 				scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
