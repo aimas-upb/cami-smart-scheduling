@@ -108,7 +108,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	private JTextField scoreField;
 	private ShowConstraintMatchesDialogAction showConstraintMatchesDialogAction;
 
-	private Timer timer;
+	private Timer notificationTimer;
+	private Timer activityTimer;
 	protected boolean solutionWasOpened;
 
 	public SolverAndPersistenceFrame(SolutionBusiness<Solution_> solutionBusiness,
@@ -128,8 +129,11 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	}
 
 	private void createTimer() {
-		timer = new Timer(60000, new TimerActionListener());
-		timer.start();
+		notificationTimer = new Timer(300000, new TimerActionListener());
+		activityTimer = new Timer(300000, new ActivityTimerActionListener());
+
+		notificationTimer.start();
+		activityTimer.start();
 	}
 
 	/**
@@ -165,6 +169,38 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
+	class ActivityTimerActionListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+
+			ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
+
+			if (solution != null && solution.getScore().isSolutionInitialized() && solveButton.isEnabled()) {
+
+				for (Activity activity : solution.getActivityList()) {
+					if (activity.getActivityPeriod() != null && !activity.isPastActivity()
+							&& Utility.isBeforeTheCurrentPeriod(activity.getActivityPeriod())) {
+
+						solutionPanel.doProblemFactChange(scoreDirector -> {
+							scoreDirector.beforeProblemPropertyChanged(activity);
+							activity.setPastActivity(true);
+							scoreDirector.afterProblemPropertyChanged(activity);
+
+							scoreDirector.triggerVariableListeners();
+						});
+
+					}
+				}
+
+				resetScreen();
+
+			}
+
+		}
+
+	}
+
 	private void registerListeners() {
 		solutionBusiness.registerForBestSolutionChanges(this);
 		addWindowListener(new WindowAdapter() {
@@ -173,8 +209,11 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				// This async, so it doesn't stop the solving immediately
 				solutionBusiness.terminateSolvingEarly();
 
-				if (timer.isRunning())
-					timer.stop();
+				if (notificationTimer.isRunning())
+					notificationTimer.stop();
+
+				if (activityTimer.isRunning())
+					activityTimer.stop();
 			}
 		});
 	}
@@ -277,18 +316,26 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		solutionPanel.doProblemFactChange(scoreDirector -> {
 
 			ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+			ScoreParametrization solutionScoreParametrization = activitySchedule.getScoreParametrization();
 
-			ScoreParametrization scoreParamertization = Utility.getScoreParametrization(
+			ScoreParametrization scoreParametrization = Utility.getScoreParametrization(
 					(ActivitySchedule) solutionBusiness.getSolution(),
 					new File(new File(solutionBusiness.getUnsolvedDataDir().getParentFile(), ""),
 							"Score parametrization" + ".xml"));
 
-			scoreParamertization.setId(activitySchedule.getScoreParametrization() == null ? scoreParamertization.getId()
-					: (activitySchedule.getScoreParametrization().getId() + 1));
+			scoreParametrization.setId(0L);
 
-			scoreDirector.beforeProblemFactAdded(scoreParamertization);
-			activitySchedule.setScoreParametrization(scoreParamertization);
-			scoreDirector.afterProblemFactAdded(scoreParamertization);
+			if (solutionScoreParametrization != null) {
+				scoreDirector.beforeProblemFactRemoved(solutionScoreParametrization);
+				activitySchedule.setScoreParametrization(null);
+				scoreDirector.afterProblemFactRemoved(solutionScoreParametrization);
+			}
+
+			scoreDirector.beforeProblemFactAdded(scoreParametrization);
+			activitySchedule.setScoreParametrization(scoreParametrization);
+			scoreDirector.afterProblemFactAdded(scoreParametrization);
+
+			scoreDirector.triggerVariableListeners();
 
 		});
 	}

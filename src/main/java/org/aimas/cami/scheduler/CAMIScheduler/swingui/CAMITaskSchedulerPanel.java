@@ -648,6 +648,25 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 			if (activity.getActivityPeriod() == null)
 				addPostponeButton.setEnabled(false);
+			else if (activity.getActivityPeriod() != null) {
+
+				if (Utility.isBeforeTheCurrentPeriod(activity.getActivityPeriod())) {
+					addPostponeButton.setEnabled(false);
+				} else {
+					Time currentTime = new Time(Utility.getCurrentTime().getHour(),
+							Utility.getCurrentTime().getMinute());
+
+					if (activity.getActivityPeriodWeekday()
+							.getDayIndex() > (Utility.getCurrentTime().getDayOfWeek().getValue() - 1))
+						addPostponeButton.setEnabled(false);
+					else if (Utility.getNumberOfMinutesInInterval(currentTime, activity.getActivityPeriodTime()) > 60)
+						addPostponeButton.setEnabled(false);
+				}
+
+			}
+
+			if (activity.isImmovable())
+				addPostponeButton.setEnabled(false);
 
 			int result = JOptionPane.showConfirmDialog(CAMITaskSchedulerPanel.this.getRootPane(), listFieldsPanel,
 					"Select an option for \"" + activity.getActivityTypeCode() + "\"", JOptionPane.OK_CANCEL_OPTION);

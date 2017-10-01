@@ -28,6 +28,8 @@ public abstract class Activity extends AbstractPersistable {
 	// if an activity is immovable or not
 	private boolean immovable;
 
+	private boolean isPastActivity;
+
 	public ActivityType getActivityType() {
 		return activityType;
 	}
@@ -53,6 +55,14 @@ public abstract class Activity extends AbstractPersistable {
 	}
 
 	// other useful methods
+
+	public boolean isPastActivity() {
+		return isPastActivity;
+	}
+
+	public void setPastActivity(boolean isPastActivity) {
+		this.isPastActivity = isPastActivity;
+	}
 
 	public abstract ActivityPeriod getActivityPeriod();
 

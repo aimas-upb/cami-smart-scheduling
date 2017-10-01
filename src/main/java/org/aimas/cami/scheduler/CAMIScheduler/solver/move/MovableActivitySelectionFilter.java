@@ -16,7 +16,7 @@ public class MovableActivitySelectionFilter implements SelectionFilter<ActivityS
 
 	@Override
 	public boolean accept(ScoreDirector<ActivitySchedule> scoreDirector, Activity activity) {
-		return !activity.isImmovable();
+		return !activity.isImmovable() && !activity.isPastActivity();
 	}
 
 }
