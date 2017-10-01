@@ -702,7 +702,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		scoreParametrization.setPostponeLaterThisDayAndThisWeekPenalty(30);
 		scoreParametrization.setEarlyHour(6);
 		scoreParametrization.setDistanceBetweenExerciseAndMeal(120);
-		scoreParametrization.setDistanceBetweenExercises(180);
+		scoreParametrization.setDistanceBetweenExercises(120);
 		scoreParametrization.setHardExerciseLateHour(20);
 
 		scoreParametrization.setId(0L);
