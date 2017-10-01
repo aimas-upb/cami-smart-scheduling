@@ -358,6 +358,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				setSolutionLoaded();
 
 				resetValueRange();
+				resetIsPastActivity();
 				setScoreParametrization();
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
@@ -512,6 +513,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					setSolutionLoaded();
 
 					resetValueRange();
+					resetIsPastActivity();
 					setScoreParametrization();
 				} finally {
 					setCursor(Cursor.getDefaultCursor());
@@ -538,6 +540,21 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 					((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 					scoreDirector.afterProblemPropertyChanged(activity);
 				}
+			}
+		});
+	}
+
+	protected void resetIsPastActivity() {
+
+		ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+
+		solutionPanel.doProblemFactChange(scoreDirector -> {
+			for (Activity activity : activitySchedule.getActivityList()) {
+
+				scoreDirector.beforeProblemPropertyChanged(activity);
+				activity.setPastActivity(false);
+				scoreDirector.afterProblemPropertyChanged(activity);
+
 			}
 		});
 	}
