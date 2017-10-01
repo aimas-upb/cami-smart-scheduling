@@ -277,18 +277,26 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		solutionPanel.doProblemFactChange(scoreDirector -> {
 
 			ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+			ScoreParametrization solutionScoreParametrization = activitySchedule.getScoreParametrization();
 
-			ScoreParametrization scoreParamertization = Utility.getScoreParametrization(
+			ScoreParametrization scoreParametrization = Utility.getScoreParametrization(
 					(ActivitySchedule) solutionBusiness.getSolution(),
 					new File(new File(solutionBusiness.getUnsolvedDataDir().getParentFile(), ""),
 							"Score parametrization" + ".xml"));
 
-			scoreParamertization.setId(activitySchedule.getScoreParametrization() == null ? scoreParamertization.getId()
-					: (activitySchedule.getScoreParametrization().getId() + 1));
+			scoreParametrization.setId(0L);
 
-			scoreDirector.beforeProblemFactAdded(scoreParamertization);
-			activitySchedule.setScoreParametrization(scoreParamertization);
-			scoreDirector.afterProblemFactAdded(scoreParamertization);
+			if (solutionScoreParametrization != null) {
+				scoreDirector.beforeProblemFactRemoved(solutionScoreParametrization);
+				activitySchedule.setScoreParametrization(null);
+				scoreDirector.afterProblemFactRemoved(solutionScoreParametrization);
+			}
+
+			scoreDirector.beforeProblemFactAdded(scoreParametrization);
+			activitySchedule.setScoreParametrization(scoreParametrization);
+			scoreDirector.afterProblemFactAdded(scoreParametrization);
+
+			scoreDirector.triggerVariableListeners();
 
 		});
 	}
