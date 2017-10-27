@@ -18,6 +18,13 @@ public class CAMITaskSchedulerApp extends CommonApp<ActivitySchedule> {
 	public static final String SOLVER_CONFIG = "solver/CAMITaskSchedulerSolverConfig.xml";
 
 	public static void main(String[] args) {
+		runApp();
+	}
+
+	/**
+	 * Run the application.
+	 */
+	public static void runApp() {
 		prepareSwingEnvironment();
 		new CAMITaskSchedulerApp().init();
 	}
