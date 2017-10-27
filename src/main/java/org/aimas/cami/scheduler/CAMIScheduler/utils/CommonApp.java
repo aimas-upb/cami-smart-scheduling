@@ -108,4 +108,9 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 	protected abstract SolutionPanel<Solution_> createSolutionPanel();
 
 	protected abstract SolutionDao createSolutionDao();
+
+	public SolutionBusiness<Solution_> getSolutionBusiness() {
+		return solutionBusiness;
+	}
+
 }
