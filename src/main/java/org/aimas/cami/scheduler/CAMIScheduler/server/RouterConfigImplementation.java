@@ -1,6 +1,6 @@
 package org.aimas.cami.scheduler.CAMIScheduler.server;
 
-import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
@@ -8,13 +8,12 @@ import io.vertx.ext.web.Router;
 public class RouterConfigImplementation extends RouterConfig {
 
 	@Override
-	public Router createRouterNewActivity(Vertx vertx, ActivitySchedule activitySchedule) {
+	public Router createRouterNewActivity(Vertx vertx, CAMITaskSchedulerApp camiTaskSchedulerApp) {
 		Router router = this.createRouter(vertx);
-		RouterConfigScheduleInterrogation scheduleInterrogation = new RouterConfigScheduleInterrogation(
-				activitySchedule);
+		RouterConfigAddNewActivity addNewActivityRoute = new RouterConfigAddNewActivity(camiTaskSchedulerApp);
 
-		router.put(RouterConfig.API_ROUTE + RouterConfig.SCHEDULE_INTERROGATION_ROUTE)
-				.handler(scheduleInterrogation::putNewActivity);
+		// add a 'add a new activity' route to router
+		router.post(RoutePaths.API_ROUTE + RoutePaths.NEW_ACTIVITY_ROUTE).handler(addNewActivityRoute::putNewActivity);
 		return router;
 	}
 
