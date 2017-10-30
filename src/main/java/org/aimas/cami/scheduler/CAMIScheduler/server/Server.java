@@ -29,7 +29,7 @@ public class Server extends AbstractVerticle {
 		vertx.createHttpServer().requestHandler(router::accept).listen(SERVER_PORT, SERVER_HOST, res -> {
 			if (res.succeeded()) {
 				System.out.println("Server is now listening!");
-				camiTaskSchedulerApp.runApp();
+				CAMITaskSchedulerApp.runApp(camiTaskSchedulerApp);
 			} else {
 				System.out.println("Failed to bind!");
 			}
