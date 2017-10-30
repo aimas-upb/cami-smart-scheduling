@@ -1,12 +1,15 @@
 package org.aimas.cami.scheduler.CAMIScheduler.server;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
 
 public class Client extends AbstractVerticle {
 
@@ -30,6 +33,16 @@ public class Client extends AbstractVerticle {
 	}
 
 	private void postNewActivity(HttpClient client) {
+
+		String newActivityFilePath = "data\\activityschedule\\New Activity.xml";
+		String newActivity = null;
+		try {
+			newActivity = new String(Files.readAllBytes(Paths.get(newActivityFilePath)));
+			// System.out.println(newActivity);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		client.post(SERVER_PORT, SERVER_HOST, RoutePaths.API_ROUTE + RoutePaths.NEW_ACTIVITY_ROUTE, response -> {
 
 			System.out.println("Received response with status code " + response.statusCode());
@@ -41,6 +54,7 @@ public class Client extends AbstractVerticle {
 					System.out.println("Got the event: " + event);
 				}
 			});
-		}).end();
+		}).end(newActivity);
+
 	}
 }
