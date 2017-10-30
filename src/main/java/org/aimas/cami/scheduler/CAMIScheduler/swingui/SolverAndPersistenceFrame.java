@@ -627,7 +627,10 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
-	private void setSolutionLoaded() {
+	/**
+	 * Change it back to 'private' when done!
+	 */
+	public void setSolutionLoaded() {
 		setTitle(solutionBusiness.getAppName() + " - " + solutionBusiness.getSolutionFileName());
 		((CardLayout) middlePanel.getLayout()).show(middlePanel, "solutionPanel");
 		setSolvingState(false);
