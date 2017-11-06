@@ -17,6 +17,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
@@ -351,6 +352,40 @@ public class Utility {
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
 		}
+	}
+
+	/**
+	 * Get the offset sign for a relative (activity) type.
+	 * 
+	 * @return 1 if the relative activity is AFTER, else -1.
+	 */
+	public static int getRelativeTypeSign(RelativeType relativeType) {
+		return relativeType.equals(RelativeType.AFTER) ? 1 : (-1);
+	}
+
+	/**
+	 * Check for activity periods equivalence.
+	 * 
+	 * @param activity1
+	 * @param activity2
+	 * @return true if the activities have the same defined period.
+	 */
+	public static boolean compareActivityPeriods(Activity activity1, Activity activity2) {
+		ActivityPeriod activity1Period = activity1.getActivityPeriod();
+		ActivityPeriod activity2Period = activity1.getActivityPeriod();
+
+		if (activity1Period.getWeekDayIndex() != activity2Period.getWeekDayIndex()) {
+			return true;
+		} else {
+			if (activity1Period.getPeriodHour() != activity2Period.getPeriodHour())
+				return true;
+			else {
+				if (activity1Period.getPeriodMinutes() != activity2Period.getPeriodMinutes())
+					return true;
+			}
+		}
+
+		return false;
 	}
 
 }
