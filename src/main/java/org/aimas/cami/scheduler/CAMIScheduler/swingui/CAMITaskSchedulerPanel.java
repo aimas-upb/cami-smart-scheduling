@@ -61,6 +61,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
 import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
 import org.aimas.cami.scheduler.CAMIScheduler.postpone.PostponeType;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionUtils;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.optaplanner.swing.impl.SwingUtils;
 import org.optaplanner.swing.impl.TangoColorFactory;
@@ -98,7 +99,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	private ScoreParametrizationDialog scoreParametrizationDialog;
 	private AbstractAction scoreParametrizationAction;
 
+	private SolutionUtils solutionUtils;
+
 	public CAMITaskSchedulerPanel() {
+
+		solutionUtils = new SolutionUtils();
 
 		setLayout(new BorderLayout());
 		JTabbedPane tabbedPane = new JTabbedPane();
@@ -202,210 +207,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				// deserialize the new activity added
-				XStream xStream = new XStream();
-				xStream.alias("NewActivity", NewActivity.class);
-				xStream.setMode(XStream.ID_REFERENCES);
-				xStream.autodetectAnnotations(true);
-
 				try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
 
-					// get its properties
-					NewActivity na = (NewActivity) xStream.fromXML(reader);
-					Activity newActivity = na.getActivity();
-					ExcludedTimePeriodsPenalty excludedTimePeriodsPenalty = na.getExcludedTimePeriodsPenalty();
-					RelativeActivityPenalty relativeActivityPenalty = na.getRelativeActivityPenalty();
-
-					ActivitySchedule activitySchedule = getSolution();
-
-					if (newActivity instanceof NormalActivity) {
-
-						doProblemFactChange(scoreDirector -> {
-
-							List<Activity> activityList = new ArrayList<>(activitySchedule.getActivityList());
-							activitySchedule.setActivityList(activityList);
-
-							List<ActivityType> activityTypeList = new ArrayList<>(
-									activitySchedule.getActivityTypeList());
-							activitySchedule.setActivityTypeList(activityTypeList);
-
-							// get activity instances
-							int instances = 1;
-							if (newActivity.getActivityType().getInstancesPerDay() != 0)
-								instances = newActivity.getActivityType().getInstancesPerDay() * 7;
-							else if (newActivity.getActivityType().getInstancesPerWeek() != 0)
-								instances = newActivity.getActivityType().getInstancesPerWeek();
-
-							// set activity type id
-							newActivity.getActivityType()
-									.setId(activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
-
-							// create instances of this type of activity
-							for (int i = 0; i < instances; i++) {
-								NormalActivity activity = new NormalActivity();
-
-								activity.setActivityType(newActivity.getActivityType());
-								activity.setImmovable(newActivity.isImmovable());
-								activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-								activity.setId(activityList.get(activityList.size() - 1).getId() + 1);
-
-								scoreDirector.beforeEntityAdded(activity);
-								activityList.add(activity);
-								scoreDirector.afterEntityAdded(activity);
-
-								// if its period is imposed
-								if (activity.getActivityType().getImposedPeriod() != null) {
-									scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-									activity.setActivityPeriod(activity.getActivityType().getImposedPeriod());
-									scoreDirector.afterVariableChanged(activity, "activityPeriod");
-
-									activity.setImmovable(true);
-								}
-							}
-
-							scoreDirector.beforeProblemFactAdded(newActivity.getActivityType());
-							activityTypeList.add(newActivity.getActivityType());
-							scoreDirector.afterProblemFactAdded(newActivity.getActivityType());
-
-							scoreDirector.triggerVariableListeners();
-
-						});
-					} else if (newActivity instanceof NormalRelativeActivity) {
-
-						if (relativeActivityPenalty != null) {
-							doProblemFactChange(scoreDirector -> {
-								List<Activity> activityList = new ArrayList<>(activitySchedule.getActivityList());
-								activitySchedule.setActivityList(activityList);
-
-								List<ActivityType> activityTypeList = new ArrayList<>(
-										activitySchedule.getActivityTypeList());
-								activitySchedule.setActivityTypeList(activityTypeList);
-
-								List<RelativeActivityPenalty> relativeActivityPenaltyList = new ArrayList<>(
-										activitySchedule.getRelativeActivityPenaltyList());
-								activitySchedule.setRelativeActivityPenaltyList(relativeActivityPenaltyList);
-
-								newActivity.getActivityType()
-										.setId(activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
-
-								// if the activity is relative to a specific activity
-								if (relativeActivityPenalty.getNormalActivityType() != null) {
-
-									int instances = 1;
-
-									// get activity instances(activity to which newActivity is relative)
-									for (ActivityType activityType : activityTypeList) {
-										if (activityType.getCode()
-												.equals(relativeActivityPenalty.getNormalActivityType())) {
-
-											if (activityType.getInstancesPerDay() != 0) {
-												instances = activityType.getInstancesPerDay() * 7;
-												newActivity.getActivityType().setInstancesPerDay(instances / 7);
-											} else if (activityType.getInstancesPerWeek() != 0) {
-												instances = activityType.getInstancesPerWeek();
-												newActivity.getActivityType().setInstancesPerWeek(instances);
-											}
-
-											break;
-										}
-									}
-
-									// create instances of this type of activity
-									for (int i = 0; i < instances; i++) {
-										NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
-										relativeActivity.setActivityType(newActivity.getActivityType());
-										relativeActivity.setOffset(((NormalRelativeActivity) newActivity).getOffset()
-												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
-										relativeActivity.setImmovable(newActivity.isImmovable());
-										relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
-
-										scoreDirector.beforeEntityAdded(relativeActivity);
-										activityList.add(relativeActivity);
-										scoreDirector.afterEntityAdded(relativeActivity);
-									}
-
-								} else if (relativeActivityPenalty.getCategory() != null) { // else if this activity is
-																							// relative to a category of
-																							// activities
-
-									int instances = 1;
-
-									// get the imposed instances
-									if (newActivity.getActivityType().getInstancesPerDay() != 0) {
-										instances = newActivity.getActivityType().getInstancesPerDay() * 7;
-									} else if (newActivity.getActivityType().getInstancesPerWeek() != 0) {
-										instances = newActivity.getActivityType().getInstancesPerWeek();
-									}
-
-									// create instances of this type of activity
-									for (int i = 0; i < instances; i++) {
-										NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
-										relativeActivity.setActivityType(newActivity.getActivityType());
-										relativeActivity.setOffset(((NormalRelativeActivity) newActivity).getOffset()
-												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
-										relativeActivity.setImmovable(newActivity.isImmovable());
-										relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
-
-										scoreDirector.beforeEntityAdded(relativeActivity);
-										activityList.add(relativeActivity);
-										scoreDirector.afterEntityAdded(relativeActivity);
-									}
-
-								}
-
-								// add relativeActivityPenalty fact to the solution
-								relativeActivityPenalty.setId(
-										relativeActivityPenaltyList.get(relativeActivityPenaltyList.size() - 1).getId()
-												+ 1);
-
-								scoreDirector.beforeProblemFactAdded(relativeActivityPenalty);
-								relativeActivityPenaltyList.add(relativeActivityPenalty);
-								scoreDirector.afterProblemFactAdded(relativeActivityPenalty);
-
-								scoreDirector.beforeProblemFactAdded(newActivity.getActivityType());
-								activityTypeList.add(newActivity.getActivityType());
-								scoreDirector.afterProblemFactAdded(newActivity.getActivityType());
-
-								// *****trigger the listener*****
-								// so the relative activity new created has its period set
-								if (relativeActivityPenalty.getNormalActivityType() != null) {
-
-									triggerListener(activityList, relativeActivityPenalty.getNormalActivityType(),
-											null);
-
-								} else if ((relativeActivityPenalty.getCategory() != null)) {
-
-									triggerListener(activityList, null, relativeActivityPenalty.getCategory());
-
-								}
-
-								scoreDirector.triggerVariableListeners();
-							});
-						}
-
-					}
-
-					// add excludedTimePeriodsPenalty to the solution
-					if (excludedTimePeriodsPenalty != null) {
-
-						List<ExcludedTimePeriodsPenalty> excludedTimePeriodsPenaltyList = new ArrayList<>(
-								activitySchedule.getExcludedTimePeriodsList());
-						activitySchedule.setExcludedTimePeriodsList(excludedTimePeriodsPenaltyList);
-
-						doProblemFactChange(scoreDirector -> {
-							excludedTimePeriodsPenalty.setId(excludedTimePeriodsPenaltyList
-									.get(excludedTimePeriodsPenaltyList.size() - 1).getId() + 1);
-
-							scoreDirector.beforeProblemFactAdded(excludedTimePeriodsPenalty);
-							excludedTimePeriodsPenaltyList.add(excludedTimePeriodsPenalty);
-							scoreDirector.afterProblemFactAdded(excludedTimePeriodsPenalty);
-
-							scoreDirector.triggerVariableListeners();
-						});
-
-					}
-
-					solverAndPersistenceFrame.startSolveAction();
+					solutionUtils.addNewActivityFromXML(solutionBusiness, reader, solverAndPersistenceFrame);
 
 				} catch (XStreamException | IOException exception) {
 					throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").",
@@ -416,47 +220,6 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			}
 		});
 		addActivityFromXMLPanel.add(addActivityFromXmlButton);
-	}
-
-	/**
-	 * Find all activities with their name equals to normalActivityType and reset
-	 * their period
-	 * 
-	 */
-	private void triggerListener(List<Activity> activityList, String normalActivityType, String category) {
-
-		doProblemFactChange(scoreDirector -> {
-			if (normalActivityType != null) {
-
-				for (Activity activity : activityList) {
-					if (activity instanceof NormalActivity) {
-						if (((NormalActivity) activity).getActivityTypeCode().equals(normalActivityType)) {
-
-							scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-							((NormalActivity) activity).setActivityPeriod(activity.getActivityPeriod());
-							scoreDirector.afterVariableChanged(activity, "activityPeriod");
-						}
-					}
-				}
-
-			} else if ((category != null)) {
-
-				for (Activity activity : activityList) {
-					if (activity instanceof NormalActivity) {
-						if (((NormalActivity) activity).getActivityCategory().getCode() != null
-								&& ((NormalActivity) activity).getActivityCategory().getCode().equals(category)) {
-
-							scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-							((NormalActivity) activity).setActivityPeriod(activity.getActivityPeriod());
-							scoreDirector.afterVariableChanged(activity, "activityPeriod");
-						}
-					}
-				}
-
-			}
-
-			scoreDirector.triggerVariableListeners();
-		});
 	}
 
 	private void defineGrid(ActivitySchedule activitySchedule) {
@@ -1024,9 +787,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 							for (int i = 0; i < instances; i++) {
 								NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 								relativeActivity.setActivityType(activityType);
-								relativeActivity.setOffset(
-										Integer.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
-												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
+								relativeActivity.setOffset(Integer
+										.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
+										* Utility.getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 								relativeActivity.setImmovable(false);
 								relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
@@ -1054,9 +817,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 							for (int i = 0; i < instances; i++) {
 								NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 								relativeActivity.setActivityType(activityType);
-								relativeActivity.setOffset(
-										Integer.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
-												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
+								relativeActivity.setOffset(Integer
+										.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
+										* Utility.getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 								relativeActivity.setImmovable(false);
 								relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
@@ -1085,12 +848,12 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 						// *****trigger the listener*****
 						if (activityTypeListListField.getSelectedItem() != null) {
 
-							triggerListener(activityList,
+							solutionUtils.triggerListener(solutionBusiness, activityList,
 									((ActivityType) activityTypeListListField.getSelectedItem()).getCode(), null);
 
 						} else if ((activityCategoryListField.getSelectedItem() != null)) {
 
-							triggerListener(activityList, null,
+							solutionUtils.triggerListener(solutionBusiness, activityList, null,
 									((ActivityCategory) activityCategoryListField.getSelectedItem()).getCode());
 						}
 
@@ -2018,10 +1781,6 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				}
 			}
 		});
-	}
-
-	private int getRelativeTypeSign(RelativeType relativeType) {
-		return relativeType.equals(RelativeType.AFTER) ? 1 : (-1);
 	}
 
 }
