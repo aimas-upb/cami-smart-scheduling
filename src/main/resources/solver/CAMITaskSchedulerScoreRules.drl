@@ -48,7 +48,7 @@ global HardSoftScoreHolder scoreHolder;
 // check activity periods conflict
 rule "periodConflict"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(periodConflictPenalty != null)
 
 		$activity1 : Activity(
 			activityPeriod != null, 
@@ -145,7 +145,7 @@ rule "excludedTimeslots"
 				($activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getStartPeriod().getWeekDayIndex() && 
 					$activityPeriod.getWeekDayIndex() == excludedPeriodInterval.getEndPeriod().getWeekDayIndex())) {
 
-				if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), false, false)) {
+				if (checkTimeslots($activityPeriod, excludedPeriodInterval, $activityType.getDuration(), true, true)) {
 
 					if (fullOverlap(activityStartTime, activityEndTime, excludedStartTime, excludedEndTime)) {
 
@@ -194,7 +194,7 @@ end
 // plan an activity "instancesPerWeek" instances in a week
 rule "instancesPerWeekAssigned"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(instancesPerWeekPenalty != null)
 
 		$activityType : ActivityType(
 			instancesPerWeek > 1, 
@@ -249,7 +249,7 @@ end
 // it's important that penalty to this constraint to be slight bigger than instancesPerDayNormalRelativeActivity
 rule "instancesPerDayNormalActivity"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(instancesPerDayPenalty != null)
 
 		$activityType : ActivityType(
 			instancesPerDay > 0, 
@@ -301,7 +301,7 @@ end
 
 rule "instancesPerDayNormalRelativeActivity"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(instancesPerDayPenalty != null)
 
 		$activityType : ActivityType(
 			instancesPerDay > 0, 
@@ -334,7 +334,7 @@ end
 // don't plan the activities too early in the morning
 rule "notSoEarly"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(earlyHour != null)
 
 		$activity : Activity(
 			$activityPeriod : activityPeriod, 
@@ -348,7 +348,7 @@ end
 // should be minutes between exercise and meal
 rule "distanceBetweenExerciseAndMeal"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(distanceBetweenExerciseAndMeal != null)
 
 		$exercise : Activity(
 			$exercisePeriod : activityPeriod, 
@@ -362,18 +362,38 @@ rule "distanceBetweenExerciseAndMeal"
 			$mealPeriod != null, 
 			activityType.activityCategory != null, 
 			activityType.activityCategory.code == "Meal", 
-			$mealPeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
-			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.time, $mealPeriod.time)) <= $scoreParametrization.distanceBetweenExerciseAndMeal
+			$mealPeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex()
 		)
 	then
-		scoreHolder.addSoftConstraintMatch(kcontext, 
-			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.getTime(), $mealPeriod.getTime())) - $scoreParametrization.getDistanceBetweenExerciseAndMeal());
+
+		if (after($exercisePeriod.getTime(), $mealPeriod.getTime())) {
+
+			if (Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $mealPeriod.getTime())) <= 
+				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
+
+				scoreHolder.addSoftConstraintMatch(kcontext, 
+					Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $mealPeriod.getTime())) - 
+						$scoreParametrization.getDistanceBetweenExerciseAndMeal());
+
+			}
+
+		} else if (after($mealPeriod.getTime(), $exercisePeriod.getTime())) {
+
+			if (Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) <= 
+				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
+
+				scoreHolder.addSoftConstraintMatch(kcontext, 
+					Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) - 
+						$scoreParametrization.getDistanceBetweenExerciseAndMeal());	
+			}		
+
+		}
 end
 
 // should be minutes between exercises
 rule "distanceBetweenExercises"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(distanceBetweenExercises != null)
 
 		$exercise : Activity(
 			$exercisePeriod : activityPeriod, 
@@ -381,26 +401,42 @@ rule "distanceBetweenExercises"
 			activityType.activityCategory != null, 
 			activityType.activityCategory.code == "Indoor physical exercises" || activityType.activityCategory.code == "Outdoor physical exercises"
 		)
-		
-		Activity(
+
+		$otherExercise : Activity(
 			$otherExercisePeriod : activityPeriod, 
 			$otherExercisePeriod != null, 
 			activityType.activityCategory != null, 
 			activityType.activityCategory.code == "Indoor physical exercises" || activityType.activityCategory.code == "Outdoor physical exercises", 
 			this != $exercise, 
 			$otherExercisePeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
-			$exercise.id < id, 
-			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.time, $otherExercisePeriod.time)) <= $scoreParametrization.distanceBetweenExercises
+			$exercise.id < id
 		)
 	then
-		scoreHolder.addSoftConstraintMatch(kcontext, 
-			Math.abs(getNumberOfMinutesInInterval($exercisePeriod.getTime(), $otherExercisePeriod.getTime())) - $scoreParametrization.getDistanceBetweenExercises());
+		if (after($exercisePeriod.getTime(), $otherExercisePeriod.getTime())) {
+
+			if (Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $otherExercisePeriod.getTime())) <= 
+				$scoreParametrization.getDistanceBetweenExercises())
+
+				scoreHolder.addSoftConstraintMatch(kcontext, 
+					Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $otherExercisePeriod.getTime())) - 
+						$scoreParametrization.getDistanceBetweenExercises());
+
+		} else if (after($otherExercisePeriod.getTime(), $exercisePeriod.getTime())) {
+
+			if (Math.abs(getNumberOfMinutesInInterval($otherExercise.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) <= 
+				$scoreParametrization.getDistanceBetweenExercises())
+
+				scoreHolder.addSoftConstraintMatch(kcontext, 
+					Math.abs(getNumberOfMinutesInInterval($otherExercise.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) - 
+						$scoreParametrization.getDistanceBetweenExercises());			
+
+		}
 end
 
 // don't plan a hard activity too late
 rule "hardExerciseNotTooLateInDay"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(hardExerciseLateHour != null)
 
 		$exercise : Activity(
 			$exercisePeriod : activityPeriod, 
@@ -415,10 +451,10 @@ rule "hardExerciseNotTooLateInDay"
 		scoreHolder.addSoftConstraintMatch(kcontext, $scoreParametrization.getHardExerciseLateHour() - $exercisePeriod.getPeriodHour());
 end
 
-// postpone a normal relative activity
+// postpone a normal relative activity(relative activities don't have value range on their variable)
 rule "postponeActivity"
 	when
-		$scoreParametrization : ScoreParametrization()
+		$scoreParametrization : ScoreParametrization(postponeLaterThisDayAndThisWeekPenalty != null)
 
 		$activity : Activity(
 			$postpone : postpone, 
@@ -429,7 +465,7 @@ rule "postponeActivity"
 		)
 	then
 
-		// the activity must be planned after the postpone period
+		// the activity must be planned after the postpone period + offset
 		if ($postpone.getPostponeType() == PostponeType.POSTPONE_15MIN) {
 			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())) {
 				scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 

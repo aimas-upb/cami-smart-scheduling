@@ -54,6 +54,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
@@ -75,20 +76,30 @@ import com.thoughtworks.xstream.XStreamException;
  */
 public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
+	// map table that puts an object to a (x, y) coordinate
 	private final TimeTablePanel<WeekDay, Time> schedulePanel;
+
+	// "add a new activity" panel
 	private JPanel addActivityListPanel;
 	private final JPanel addActivityPanel;
 	private final JPanel addActivityFromXMLPanel;
+
+	// save the "original" time objects in these maps to avoid hash exceptions from
+	// TimeTablePanel
 	private Map<Integer, Time> timeMap;
 	private Map<Integer, WeekDay> weekDayMap;
+
 	private JButton addActivityButton;
 	private JButton addActivityFromXmlButton;
+
+	// serialization id
 	private long postponeId;
 
 	private ScoreParametrizationDialog scoreParametrizationDialog;
 	private AbstractAction scoreParametrizationAction;
 
 	public CAMITaskSchedulerPanel() {
+
 		setLayout(new BorderLayout());
 		JTabbedPane tabbedPane = new JTabbedPane();
 		schedulePanel = new TimeTablePanel<>();
@@ -98,6 +109,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		tabbedPane.add("Week Schedule", new JScrollPane(schedulePanel));
 
+		// add the panels to the frame
 		add(tabbedPane, BorderLayout.CENTER);
 		add(createScoreParametrizationPanel(), BorderLayout.SOUTH);
 		add(addActivityListPanel, BorderLayout.NORTH);
@@ -110,17 +122,24 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		addActivityListPanel.add(addActivityPanel, BorderLayout.WEST);
 		addActivityListPanel.add(addActivityFromXMLPanel, BorderLayout.CENTER);
 
+		// initialize maps and id
 		timeMap = new HashMap<>();
 		weekDayMap = new HashMap<>();
 		postponeId = 0L;
 	}
 
+	/**
+	 * Create a {@link ScoreParametrization} panel using the
+	 * {@link ScoreParametrizationDialog} created
+	 * 
+	 */
 	private JPanel createScoreParametrizationPanel() {
 		JPanel scoreParametrizationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		scoreParametrizationAction = new AbstractAction("Edit scoring parameters and preferences") {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				// not safe to change score calculation penalties/preferences during solving
 				if (solutionBusiness.isSolving()) {
 					JOptionPane.showMessageDialog(CAMITaskSchedulerPanel.this.getTopLevelAncestor(),
 							"The GUI does not support this action during solving.\n"
@@ -152,6 +171,10 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		return false;
 	}
 
+	/**
+	 * Reset panel components and redraw them every time a change in best solution
+	 * has occurred
+	 */
 	@Override
 	public void resetPanel(ActivitySchedule activitySchedule) {
 		schedulePanel.reset();
@@ -186,6 +209,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				xStream.autodetectAnnotations(true);
 
 				try (Reader reader = new InputStreamReader(new FileInputStream(inputFile), "UTF-8")) {
+
+					// get its properties
 					NewActivity na = (NewActivity) xStream.fromXML(reader);
 					Activity newActivity = na.getActivity();
 					ExcludedTimePeriodsPenalty excludedTimePeriodsPenalty = na.getExcludedTimePeriodsPenalty();
@@ -194,6 +219,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 					ActivitySchedule activitySchedule = getSolution();
 
 					if (newActivity instanceof NormalActivity) {
+
 						doProblemFactChange(scoreDirector -> {
 
 							List<Activity> activityList = new ArrayList<>(activitySchedule.getActivityList());
@@ -203,15 +229,18 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 									activitySchedule.getActivityTypeList());
 							activitySchedule.setActivityTypeList(activityTypeList);
 
+							// get activity instances
 							int instances = 1;
 							if (newActivity.getActivityType().getInstancesPerDay() != 0)
 								instances = newActivity.getActivityType().getInstancesPerDay() * 7;
 							else if (newActivity.getActivityType().getInstancesPerWeek() != 0)
 								instances = newActivity.getActivityType().getInstancesPerWeek();
 
+							// set activity type id
 							newActivity.getActivityType()
 									.setId(activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
 
+							// create instances of this type of activity
 							for (int i = 0; i < instances; i++) {
 								NormalActivity activity = new NormalActivity();
 
@@ -224,6 +253,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 								activityList.add(activity);
 								scoreDirector.afterEntityAdded(activity);
 
+								// if its period is imposed
 								if (activity.getActivityType().getImposedPeriod() != null) {
 									scoreDirector.beforeVariableChanged(activity, "activityPeriod");
 									activity.setActivityPeriod(activity.getActivityType().getImposedPeriod());
@@ -258,10 +288,12 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 								newActivity.getActivityType()
 										.setId(activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
 
+								// if the activity is relative to a specific activity
 								if (relativeActivityPenalty.getNormalActivityType() != null) {
 
 									int instances = 1;
 
+									// get activity instances(activity to which newActivity is relative)
 									for (ActivityType activityType : activityTypeList) {
 										if (activityType.getCode()
 												.equals(relativeActivityPenalty.getNormalActivityType())) {
@@ -278,6 +310,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 										}
 									}
 
+									// create instances of this type of activity
 									for (int i = 0; i < instances; i++) {
 										NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 										relativeActivity.setActivityType(newActivity.getActivityType());
@@ -291,16 +324,20 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 										scoreDirector.afterEntityAdded(relativeActivity);
 									}
 
-								} else if (relativeActivityPenalty.getCategory() != null) {
+								} else if (relativeActivityPenalty.getCategory() != null) { // else if this activity is
+																							// relative to a category of
+																							// activities
 
 									int instances = 1;
 
+									// get the imposed instances
 									if (newActivity.getActivityType().getInstancesPerDay() != 0) {
 										instances = newActivity.getActivityType().getInstancesPerDay() * 7;
 									} else if (newActivity.getActivityType().getInstancesPerWeek() != 0) {
 										instances = newActivity.getActivityType().getInstancesPerWeek();
 									}
 
+									// create instances of this type of activity
 									for (int i = 0; i < instances; i++) {
 										NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 										relativeActivity.setActivityType(newActivity.getActivityType());
@@ -316,6 +353,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 								}
 
+								// add relativeActivityPenalty fact to the solution
 								relativeActivityPenalty.setId(
 										relativeActivityPenaltyList.get(relativeActivityPenaltyList.size() - 1).getId()
 												+ 1);
@@ -329,6 +367,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 								scoreDirector.afterProblemFactAdded(newActivity.getActivityType());
 
 								// *****trigger the listener*****
+								// so the relative activity new created has its period set
 								if (relativeActivityPenalty.getNormalActivityType() != null) {
 
 									triggerListener(activityList, relativeActivityPenalty.getNormalActivityType(),
@@ -346,6 +385,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 					}
 
+					// add excludedTimePeriodsPenalty to the solution
 					if (excludedTimePeriodsPenalty != null) {
 
 						List<ExcludedTimePeriodsPenalty> excludedTimePeriodsPenaltyList = new ArrayList<>(
@@ -378,6 +418,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		addActivityFromXMLPanel.add(addActivityFromXmlButton);
 	}
 
+	/**
+	 * Find all activities with their name equals to normalActivityType and reset
+	 * their period
+	 * 
+	 */
 	private void triggerListener(List<Activity> activityList, String normalActivityType, String category) {
 
 		doProblemFactChange(scoreDirector -> {
@@ -441,6 +486,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Fill all cells and assign them to a header column/row on the table.
+	 */
 	private void fillCells(ActivitySchedule activitySchedule) {
 		schedulePanel.addCornerHeader(HEADER_COLUMN_GROUP1, HEADER_ROW, createTableHeader(new JLabel("Time")));
 		fillDayCells(activitySchedule);
@@ -478,9 +526,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				schedulePanel.addCell(weekDayMap.get(activity.getActivityPeriodWeekday().getDayIndex()),
 						timeMap.get(activity.getActivityPeriodTime().getHour()),
 						createButton(activity, color, toolTip));
-			} else
-				schedulePanel.addCell(activity.getActivityPeriodWeekday(), activity.getActivityPeriodTime(),
-						createButton(activity, color, toolTip));
+			} else // unassigned
+				schedulePanel.addCell(null, null, createButton(activity, color, toolTip));
 		}
 	}
 
@@ -499,7 +546,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		button.setBackground(color);
 
 		if (activity.isImmovable()) {
-			button.setIcon(new ImageIcon("locked.png"));
+			button.setIcon(new ImageIcon("immovable.png"));
 		}
 
 		if (activity.getActivityPeriod() == null)
@@ -508,6 +555,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			plannedTime = activity.getActivityPeriod().getLabel() + " - "
 					+ activity.getActivityEndPeriod().getTime().getLabel();
 
+		// text displayed when you hover the buton
 		button.setToolTipText("<html>" + activity.getActivityTypeCode() + ": " + activity.getId() + "<br/><br/>"
 				+ plannedTime + "<br/><br/>" + toolTip.substring(6));
 		return button;
@@ -576,6 +624,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Choose to change activity period or postpone it.
+	 */
 	private class ActivityOptionAction extends AbstractAction {
 
 		private Activity activity;
@@ -595,15 +646,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			JButton addPostponeButton = SwingUtils.makeSmallButton(new JButton(new AddPostponeAction(activity)));
 			listFieldsPanel.add(addPostponeButton);
 
-			if (activity instanceof NormalRelativeActivity) {
-				if (((NormalRelativeActivity) activity).getActivityPeriod() == null) {
-					addPostponeButton.setEnabled(false);
-				}
-			} else {
-				if (activity.getActivityPeriod() == null) {
-					addPostponeButton.setEnabled(false);
-				}
-			}
+			if (activity.getActivityPeriod() == null)
+				addPostponeButton.setEnabled(false);
 
 			int result = JOptionPane.showConfirmDialog(CAMITaskSchedulerPanel.this.getRootPane(), listFieldsPanel,
 					"Select an option for \"" + activity.getActivityTypeCode() + "\"", JOptionPane.OK_CANCEL_OPTION);
@@ -617,6 +661,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Add a new activity to schedule using the GUI.
+	 */
 	private class AddActivityOptionAction extends AbstractAction {
 
 		public AddActivityOptionAction() {
@@ -665,7 +712,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			LabeledComboBoxRenderer.applyToComboBox(periodListField);
 
 			periodListField.setSelectedItem((activity instanceof NormalRelativeActivity)
-					? ((NormalRelativeActivity) activity).getActivityPeriod() : activity.getActivityPeriod());
+					? ((NormalRelativeActivity) activity).getActivityPeriod()
+					: activity.getActivityPeriod());
 			listFieldsPanel.add(periodListField);
 
 			listFieldsPanel.add(new JLabel("Immovable:"));
@@ -682,10 +730,22 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 				if (!(activity instanceof NormalRelativeActivity)) {
 					if (activity.getActivityPeriod() != toActivityPeriod) {
+
+						if (solutionBusiness.isSolving()) {
+							logger.error("Not doing user change because the solver is solving.");
+							return;
+						}
+
 						solutionBusiness.doChangeMove(activity, "activityPeriod", toActivityPeriod);
 					}
 				} else {
 					if (((NormalRelativeActivity) activity).getActivityPeriod() != toActivityPeriod) {
+
+						if (solutionBusiness.isSolving()) {
+							logger.error("Not doing user change because the solver is solving.");
+							return;
+						}
+
 						doProblemFactChange(scoreDirector -> {
 							scoreDirector.beforeVariableChanged(((NormalRelativeActivity) activity), "activityPeriod");
 							((NormalRelativeActivity) activity).setActivityPeriod(toActivityPeriod);
@@ -712,6 +772,10 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Add a new activity using GUI components similarly to adding a new activity
+	 * using XML.
+	 */
 	private class AddActivityAction extends AbstractAction {
 
 		public AddActivityAction() {
@@ -804,6 +868,10 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Add a new relative activity using GUI components similarly to adding a new
+	 * activity using XML.
+	 */
 	private class AddRelativeActivityAction extends AbstractAction {
 
 		public AddRelativeActivityAction() {
@@ -1041,6 +1109,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Set activity properties.
+	 */
 	private class AddActivityTypeAction extends AbstractAction {
 
 		private ActivityType activityType;
@@ -1143,6 +1214,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Set activity properties.
+	 */
 	private class AddRelativeActivityTypeAction extends AbstractAction {
 
 		private ActivityType activityType;
@@ -1502,6 +1576,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Postpone a normal activity / normal relative activity.
+	 */
 	private class AddPostponeAction extends AbstractAction {
 
 		private Activity activity;
@@ -1531,6 +1608,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 					ActivitySchedule activitySchedule = getSolution();
 					Activity workingActivity = scoreDirector.lookUpWorkingObject(activity);
 
+					// normal activities have their period and value range changed
+					// for 15, 30, 60 min postpones, value range list will have just the postponed
+					// period included(activity period when it was postponed + 15/30/60 min)
+					// for the other postpones, the value range is changed accordingly and period is
+					// set to null
 					if (workingActivity instanceof NormalActivity) {
 
 						if (workingActivity.getActivityPeriod() != null) {
@@ -1538,7 +1620,13 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 							if ((PostponeType) postponeTypeListField
 									.getSelectedItem() == PostponeType.POSTPONE_LATER_THIS_WEEK) {
 
+								// *in real time rescheduling these will be updated relative to the current
+								// period of the week*
+
+								// the future activities have their value range changed
 								setValueRangeForFutureActivities(activitySchedule, workingActivity.getActivityPeriod());
+
+								// the past activities have their value range changed
 								setValueRangeForPastActivities(activitySchedule, workingActivity.getActivityPeriod());
 
 								setValueRangeForLaterThisWeekPostponedActivity(activitySchedule, workingActivity);
@@ -1620,6 +1708,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 							solverAndPersistenceFrame.startSolveAction();
 						}
 
+						// normal relative activities have their period changed
 					} else if (workingActivity instanceof NormalRelativeActivity) {
 
 						Postpone postpone = new Postpone();

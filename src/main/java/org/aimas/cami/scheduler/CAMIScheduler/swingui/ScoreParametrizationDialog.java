@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -17,6 +18,7 @@ import javax.swing.SpinnerNumberModel;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 
 public class ScoreParametrizationDialog extends JDialog {
 
@@ -143,6 +145,10 @@ public class ScoreParametrizationDialog extends JDialog {
 			scoreParametrization.setHardExerciseLateHour(hardExerciseLateHour);
 
 			scoreDirector.afterProblemPropertyChanged(scoreParametrization);
+
+			Utility.setScoreParametrization(activitySchedule, new File(
+					new File(camiTaskSchedulerPanel.getSolutionBusiness().getUnsolvedDataDir().getParentFile(), ""),
+					"Score parametrization" + ".xml"));
 		}, true);
 	}
 }
