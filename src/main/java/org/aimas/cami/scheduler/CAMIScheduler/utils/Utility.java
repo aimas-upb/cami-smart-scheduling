@@ -2,9 +2,12 @@ package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -255,8 +258,8 @@ public class Utility {
 	}
 
 	/**
-	 * Checks if the specified time interval (activityPeriod, activityEndPeriod)
-	 * is free.
+	 * Checks if the specified time interval (activityPeriod, activityEndPeriod) is
+	 * free.
 	 * 
 	 */
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
@@ -296,7 +299,12 @@ public class Utility {
 		Time excludedStartTime = excludedPeriodInterval.getStartPeriod().getTime();
 		Time excludedEndTime = excludedPeriodInterval.getEndPeriod().getTime();
 
-		if (sameStartDay) {
+		if (sameStartDay && sameEndDay) {
+
+			if (before(activityStartTime, excludedEndTime) && after(excludedStartTime, activityEndTime))
+				return true;
+
+		} else if (sameStartDay) {
 
 			if (before(activityStartTime, new Time(24, 0)) && after(excludedStartTime, activityEndTime))
 				return true;
@@ -304,11 +312,6 @@ public class Utility {
 		} else if (sameEndDay) {
 
 			if (before(activityStartTime, excludedEndTime) && after(new Time(0, 0), activityEndTime))
-				return true;
-
-		} else {
-
-			if (before(activityStartTime, excludedEndTime) && after(excludedStartTime, activityEndTime))
 				return true;
 
 		}
@@ -334,6 +337,19 @@ public class Utility {
 			return scoreParametrization;
 		} catch (XStreamException | IOException e) {
 			throw new IllegalArgumentException("Failed reading inputSolutionFile (" + inputFile + ").", e);
+		}
+	}
+
+	public static void setScoreParametrization(ActivitySchedule activitySchedule, File outputFile) {
+		XStream xStream = new XStream();
+		xStream.alias("ScoreParametrization", ScoreParametrization.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
+			xStream.toXML(activitySchedule.getScoreParametrization(), writer);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
 		}
 	}
 
