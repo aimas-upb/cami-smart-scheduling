@@ -416,6 +416,12 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			} catch (ExecutionException e) {
 				throw new IllegalStateException("Solving failed.", e.getCause());
 			} finally {
+
+				// notify the thread that is waiting that the solving has ended
+				synchronized (SolverAndPersistenceFrame.this) {
+					SolverAndPersistenceFrame.this.notify();
+				}
+
 				setSolvingState(false);
 				resetScreen();
 			}
@@ -627,10 +633,11 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	}
 
-	/**
-	 * Change it back to 'private' when done!
-	 */
-	public void setSolutionLoaded() {
+	public void loadSolution() {
+		setSolutionLoaded();
+	}
+
+	private void setSolutionLoaded() {
 		setTitle(solutionBusiness.getAppName() + " - " + solutionBusiness.getSolutionFileName());
 		((CardLayout) middlePanel.getLayout()).show(middlePanel, "solutionPanel");
 		setSolvingState(false);
