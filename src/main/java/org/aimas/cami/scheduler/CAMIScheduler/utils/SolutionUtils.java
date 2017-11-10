@@ -269,15 +269,24 @@ public class SolutionUtils<Solution_> {
 	public List<String> getChangedActivites(List<Activity> beforeAddActivityList, List<Activity> afterAddActivityList) {
 
 		List<String> changedActivities = new ArrayList<>();
+		boolean foundSameActivity = false;
 
 		for (Activity activity1 : beforeAddActivityList) {
+			foundSameActivity = false;
 			for (Activity activity2 : afterAddActivityList) {
-				if (activity1.getId() == activity2.getId()) {
-					if (Utility.compareActivityPeriods(activity1, activity2))
-						changedActivities.add(activity1.getActivityTypeCode()); // add the name of the changed activity
-																				// to list
+
+				if (activity1.getActivityTypeCode() == activity2.getActivityTypeCode()) {
+
+					// if we found an activity with the same name in the same period
+					// even if it has different id(this is the case of many-instances activities)
+					if (!Utility.compareActivityPeriods(activity1, activity2))
+						foundSameActivity = true;
+
 				}
 			}
+
+			if (!foundSameActivity)
+				changedActivities.add(activity1.getActivityTypeCode()); // add the name of the activity
 		}
 
 		return changedActivities;
