@@ -7,16 +7,19 @@ import org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionUtils;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 
 public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 
 	private CAMITaskSchedulerApp camiTaskSchedulerApp;
+	private Vertx vertx;
 	private SolutionUtils solutionUtils;
 
-	public RouterConfigAddNewActivity(CAMITaskSchedulerApp camiTaskSchedulerApp) {
+	public RouterConfigAddNewActivity(Vertx vertx, CAMITaskSchedulerApp camiTaskSchedulerApp) {
 		super();
+		this.vertx = vertx;
 		this.camiTaskSchedulerApp = camiTaskSchedulerApp;
 		solutionUtils = new SolutionUtils<>();
 	}
@@ -44,30 +47,49 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 		camiTaskSchedulerApp.getSolutionBusiness().openSolution(solvedSchedule);
 
 		// just to confirm(GUI) that the solution was loaded
-		camiTaskSchedulerApp.getSolverAndPersistenceFrame().setSolutionLoaded();
+		camiTaskSchedulerApp.getSolverAndPersistenceFrame().loadSolution();
 
 		List<Activity> beforeAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
 				.getActivityList();
 
-		// add the new activity to the schedule
-		solutionUtils.addNewActivityFromXML(camiTaskSchedulerApp.getSolutionBusiness(), xmlActivity,
-				camiTaskSchedulerApp.getSolverAndPersistenceFrame());
+		vertx.executeBlocking(future -> {
 
-		List<Activity> afterAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
-				.getActivityList();
+			// add the new activity to the schedule
+			solutionUtils.addNewActivityFromXML(camiTaskSchedulerApp.getSolutionBusiness(), xmlActivity,
+					camiTaskSchedulerApp.getSolverAndPersistenceFrame());
 
-		List<String> changedActivitiesList = solutionUtils.getChangedActivites(beforeAddActivityList,
-				afterAddActivityList);
+			// wait on solving
+			synchronized (camiTaskSchedulerApp.getSolverAndPersistenceFrame()) {
+				try {
+					camiTaskSchedulerApp.getSolverAndPersistenceFrame().wait();
+				} catch (InterruptedException e) {
+					// happens if someone interrupts your thread
+				}
+			}
 
-		StringBuilder changedActivities = new StringBuilder();
+			// get the new solution
+			List<Activity> afterAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
+					.getActivityList();
 
-		for (String activity : changedActivitiesList) {
-			changedActivities.append(activity + "||");
-		}
+			// get the modified activities(activity names)
+			List<String> changedActivitiesList = solutionUtils.getChangedActivites(beforeAddActivityList,
+					afterAddActivityList);
 
-		// System.out.println(camiTaskSchedulerApp.getSolutionBusiness() == null);
+			StringBuilder changedActivities = new StringBuilder();
 
-		// send the response back to client
-		response.end(changedActivities.toString());
+			System.out.println(
+					"How many activities have modified? Answer: " + changedActivitiesList.size() + " activities.");
+
+			for (String activity : changedActivitiesList) {
+				changedActivities.append(activity + "||");
+			}
+
+			// send the response(modified activities) back to client
+			response.end(changedActivities.toString());
+
+		}, handler -> {
+			System.out.println("The result is: " + handler.result());
+		});
+
 	}
 }
