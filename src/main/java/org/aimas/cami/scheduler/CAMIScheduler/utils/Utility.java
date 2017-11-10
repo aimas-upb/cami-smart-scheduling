@@ -368,11 +368,11 @@ public class Utility {
 	 * 
 	 * @param activity1
 	 * @param activity2
-	 * @return true if the activities have the same defined period.
+	 * @return false if the activities have the same defined period.
 	 */
 	public static boolean compareActivityPeriods(Activity activity1, Activity activity2) {
 		ActivityPeriod activity1Period = activity1.getActivityPeriod();
-		ActivityPeriod activity2Period = activity1.getActivityPeriod();
+		ActivityPeriod activity2Period = activity2.getActivityPeriod();
 
 		if (activity1Period.getWeekDayIndex() != activity2Period.getWeekDayIndex()) {
 			return true;
