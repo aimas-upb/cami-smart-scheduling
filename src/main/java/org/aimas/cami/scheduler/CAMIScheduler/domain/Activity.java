@@ -3,6 +3,7 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
+import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 
@@ -17,7 +18,7 @@ import com.thoughtworks.xstream.annotations.XStreamInclude;
  */
 @XStreamAlias("Activity")
 @XStreamInclude({ NormalActivity.class, NormalRelativeActivity.class })
-public abstract class Activity extends AbstractPersistable {
+public abstract class Activity extends AbstractPersistable implements Labeled {
 
 	// type of activity(name, duration etc.)
 	private ActivityType activityType;
@@ -27,6 +28,8 @@ public abstract class Activity extends AbstractPersistable {
 
 	// if an activity is immovable or not
 	private boolean immovable;
+
+	private boolean wantedToBePlanned;
 
 	public ActivityType getActivityType() {
 		return activityType;
@@ -53,6 +56,14 @@ public abstract class Activity extends AbstractPersistable {
 	}
 
 	// other useful methods
+
+	public boolean isWantedToBePlanned() {
+		return wantedToBePlanned;
+	}
+
+	public void setWantedToBePlanned(boolean wantToBePlanned) {
+		this.wantedToBePlanned = wantToBePlanned;
+	}
 
 	public abstract ActivityPeriod getActivityPeriod();
 
