@@ -492,3 +492,18 @@ rule "postponeActivity"
 				}
 		}
 end
+
+// activities can now be "initialized" with null values to variables
+// when an activity(it's activityPeriod is null) from drop-down is selected by user, then it must be planned
+// it must be imposed a penalty so the solver can plan this activity
+rule "wantToPlanAnActivity"
+	when
+		$activity : Activity(
+			activityPeriod == null, 
+			wantedToBePlanned == true
+		)
+	then
+		// System.out.println($activity.getActivityTypeCode());
+		// "-10" -> just testing for now
+		scoreHolder.addHardConstraintMatch(kcontext, -10);
+end
