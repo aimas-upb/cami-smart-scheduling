@@ -110,6 +110,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	private Timer timer;
 	protected boolean solutionWasOpened;
+	protected boolean createdDropDown;
 
 	public SolverAndPersistenceFrame(SolutionBusiness<Solution_> solutionBusiness,
 			SolutionPanel<Solution_> solutionPanel) {
@@ -125,6 +126,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		registerListeners();
 		constraintMatchesDialog = new ConstraintMatchesDialog(this, solutionBusiness);
 		solutionWasOpened = false;
+		createdDropDown = false;
 	}
 
 	private void createTimer() {
@@ -483,10 +485,10 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	}
 
 	/**
-	 * When a new schedule is opened from file, reset all the activity domain value
-	 * ranges. In real time rescheduling, activities after the current time will
-	 * have a more restricted value range, and activities before the current time
-	 * will be immovable.
+	 * When a new schedule is opened from file, reset all the activity domain
+	 * value ranges. In real time rescheduling, activities after the current
+	 * time will have a more restricted value range, and activities before the
+	 * current time will be immovable.
 	 */
 	protected void resetValueRange() {
 
@@ -605,9 +607,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingToggleButton = new JToggleButton(refreshScreenDuringSolvingTrueIcon, true);
 		refreshScreenDuringSolvingToggleButton.setToolTipText("Refresh screen during solving");
 		refreshScreenDuringSolvingToggleButton.addActionListener(e -> {
-			refreshScreenDuringSolvingToggleButton
-					.setIcon(refreshScreenDuringSolvingToggleButton.isSelected() ? refreshScreenDuringSolvingTrueIcon
-							: refreshScreenDuringSolvingFalseIcon);
+			refreshScreenDuringSolvingToggleButton.setIcon(refreshScreenDuringSolvingToggleButton.isSelected()
+					? refreshScreenDuringSolvingTrueIcon : refreshScreenDuringSolvingFalseIcon);
 		});
 		scorePanel.add(refreshScreenDuringSolvingToggleButton, BorderLayout.EAST);
 		return scorePanel;
@@ -628,6 +629,13 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	}
 
 	private void setSolutionLoaded() {
+		// load the activities in drop-down when the solution is loaded
+		// otherwise, the solution is null
+		if (!createdDropDown) {
+			((CAMITaskSchedulerPanel) solutionPanel).createDropDown();
+			createdDropDown = true;
+		}
+
 		setTitle(solutionBusiness.getAppName() + " - " + solutionBusiness.getSolutionFileName());
 		((CardLayout) middlePanel.getLayout()).show(middlePanel, "solutionPanel");
 		setSolvingState(false);
