@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -83,6 +84,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	private JPanel addActivityListPanel;
 	private final JPanel addActivityPanel;
 	private final JPanel addActivityFromXMLPanel;
+	private final JPanel dropDownPanel;
 
 	// save the "original" time objects in these maps to avoid hash exceptions from
 	// TimeTablePanel
@@ -103,7 +105,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		setLayout(new BorderLayout());
 		JTabbedPane tabbedPane = new JTabbedPane();
 		schedulePanel = new TimeTablePanel<>();
-		addActivityListPanel = new JPanel(new BorderLayout());
+
+		addActivityListPanel = new JPanel();
+		GroupLayout toolBarLayout = new GroupLayout(addActivityListPanel);
+		addActivityListPanel.setLayout(toolBarLayout);
+
 		addActivityPanel = new JPanel();
 		addActivityFromXMLPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
@@ -119,8 +125,24 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		createAddActivityButton();
 		createAddActivityFromXMLButton(new File("data\\activityschedule\\", "New Activity" + ".xml"));
 
-		addActivityListPanel.add(addActivityPanel, BorderLayout.WEST);
-		addActivityListPanel.add(addActivityFromXMLPanel, BorderLayout.CENTER);
+		dropDownPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		//createDropDown();
+
+		toolBarLayout.setHorizontalGroup(
+				toolBarLayout.createSequentialGroup()
+				.addComponent(addActivityPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+						GroupLayout.PREFERRED_SIZE)
+				.addComponent(addActivityFromXMLPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+						GroupLayout.PREFERRED_SIZE)
+				.addComponent(dropDownPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+						GroupLayout.PREFERRED_SIZE)
+				);
+		toolBarLayout.setVerticalGroup(
+				toolBarLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+				.addComponent(addActivityPanel)
+				.addComponent(addActivityFromXMLPanel)
+				.addComponent(dropDownPanel)
+				);
 
 		// initialize maps and id
 		timeMap = new HashMap<>();
@@ -416,6 +438,46 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			}
 		});
 		addActivityFromXMLPanel.add(addActivityFromXmlButton);
+	}
+	
+	private Set<String> filterDropDownActivities(List<Activity> activityList) {
+
+		Set<String> activitySet = new HashSet<>();
+
+		for(Activity activity: activityList) {
+			if (activity.getActivityPeriod() == null && !(activity instanceof NormalRelativeActivity)) {
+				activitySet.add(activity.getActivityTypeCode());
+			}
+		}
+
+		return activitySet;
+
+	}
+
+	protected void createDropDown() {
+		ActivitySchedule activitySchedule = getSolution();
+
+		Set<String> activitySet = filterDropDownActivities(activitySchedule.getActivityList());
+		JComboBox activityListField = new JComboBox<>(activitySet.toArray(new Object[activitySet.size() + 1]));
+		activityListField.setSelectedItem(null);
+		activityListField.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String activityCode = (String)activityListField.getSelectedItem();
+				System.out.println("Ai selectat " + activityCode);
+
+				// set "wantedToBePlanned" to true for each activityCode instance in the solution
+				for (Activity activity : activitySchedule.getActivityList()) {
+					if (activity.getActivityTypeCode().equals(activityCode)) {
+						//System.out.println(activity.getActivityPeriod());
+						activity.setWantedToBePlanned(true);
+					}
+				}
+			}
+		});
+
+		dropDownPanel.add(activityListField);
 	}
 
 	/**
