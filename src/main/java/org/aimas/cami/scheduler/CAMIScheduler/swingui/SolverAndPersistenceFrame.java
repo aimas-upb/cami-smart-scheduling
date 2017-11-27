@@ -110,7 +110,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 	private Timer timer;
 	protected boolean solutionWasOpened;
-	protected boolean createdDropDown;
 
 	public SolverAndPersistenceFrame(SolutionBusiness<Solution_> solutionBusiness,
 			SolutionPanel<Solution_> solutionPanel) {
@@ -126,7 +125,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		registerListeners();
 		constraintMatchesDialog = new ConstraintMatchesDialog(this, solutionBusiness);
 		solutionWasOpened = false;
-		createdDropDown = false;
 	}
 
 	private void createTimer() {
@@ -629,13 +627,6 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	}
 
 	private void setSolutionLoaded() {
-		// load the activities in drop-down when the solution is loaded
-		// otherwise, the solution is null
-		if (!createdDropDown) {
-			((CAMITaskSchedulerPanel) solutionPanel).createDropDown();
-			createdDropDown = true;
-		}
-
 		setTitle(solutionBusiness.getAppName() + " - " + solutionBusiness.getSolutionFileName());
 		((CardLayout) middlePanel.getLayout()).show(middlePanel, "solutionPanel");
 		setSolvingState(false);
