@@ -402,23 +402,6 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setImmovable(true);
 			activityList.add(activity);
 		}
-		
-		{
-			ActivityType test = new ActivityType();
-			test.setActivityCategory(activitySchedule.getActivityCategoryList().get(1));
-			test.setCode("TESTActivity");
-			test.setDuration(15);
-			test.setId(typeId++);
-
-			activityTypeList.add(test);
-
-			NormalActivity activity = new NormalActivity();
-			activity.setActivityType(test);
-			activity.setId(id++);
-			activity.setImmovable(false);
-			activity.setWantedToBePlanned(true);
-			activityList.add(activity);
-		}
 
 		{
 			ActivityType walkInPark2 = new ActivityType();
