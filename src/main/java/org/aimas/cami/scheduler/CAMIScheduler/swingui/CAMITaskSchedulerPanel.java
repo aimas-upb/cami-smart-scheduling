@@ -58,6 +58,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
+import org.aimas.cami.scheduler.CAMIScheduler.notification.client.Client;
 import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
 import org.aimas.cami.scheduler.CAMIScheduler.postpone.PostponeType;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
@@ -638,7 +639,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			JPanel listFieldsPanel = new JPanel(new GridLayout(1, 2));
+			JPanel listFieldsPanel = new JPanel(new GridLayout(1, 3));
 
 			JButton setPeriodButton = SwingUtils.makeSmallButton(new JButton(new ActivityAction(activity)));
 			listFieldsPanel.add(setPeriodButton);
@@ -646,8 +647,13 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			JButton addPostponeButton = SwingUtils.makeSmallButton(new JButton(new AddPostponeAction(activity)));
 			listFieldsPanel.add(addPostponeButton);
 
-			if (activity.getActivityPeriod() == null)
+			JButton addNotificationButton = SwingUtils.makeSmallButton(new JButton(new ActivityNotification(activity)));
+			listFieldsPanel.add(addNotificationButton);
+
+			if (activity.getActivityPeriod() == null) {
 				addPostponeButton.setEnabled(false);
+				addNotificationButton.setEnabled(false);
+			}
 
 			int result = JOptionPane.showConfirmDialog(CAMITaskSchedulerPanel.this.getRootPane(), listFieldsPanel,
 					"Select an option for \"" + activity.getActivityTypeCode() + "\"", JOptionPane.OK_CANCEL_OPTION);
@@ -656,6 +662,28 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 				solverAndPersistenceFrame.resetScreen();
 			}
+
+		}
+
+	}
+
+	private class ActivityNotification extends AbstractAction {
+
+		private Activity activity;
+
+		public ActivityNotification(Activity activity) {
+			super("Send notification");
+			this.activity = activity;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+
+			System.out.println("Sending notification for " + activity.getActivityTypeCode());
+
+			Client.runClient(activity);
+
+			System.out.println("Notification sent!");
 
 		}
 
