@@ -126,23 +126,16 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		createAddActivityFromXMLButton(new File("data\\activityschedule\\", "New Activity" + ".xml"));
 
 		dropDownPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-		//createDropDown();
 
-		toolBarLayout.setHorizontalGroup(
-				toolBarLayout.createSequentialGroup()
+		toolBarLayout.setHorizontalGroup(toolBarLayout.createSequentialGroup()
 				.addComponent(addActivityPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
 						GroupLayout.PREFERRED_SIZE)
 				.addComponent(addActivityFromXMLPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
 						GroupLayout.PREFERRED_SIZE)
 				.addComponent(dropDownPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
-						GroupLayout.PREFERRED_SIZE)
-				);
-		toolBarLayout.setVerticalGroup(
-				toolBarLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
-				.addComponent(addActivityPanel)
-				.addComponent(addActivityFromXMLPanel)
-				.addComponent(dropDownPanel)
-				);
+						GroupLayout.PREFERRED_SIZE));
+		toolBarLayout.setVerticalGroup(toolBarLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+				.addComponent(addActivityPanel).addComponent(addActivityFromXMLPanel).addComponent(dropDownPanel));
 
 		// initialize maps and id
 		timeMap = new HashMap<>();
@@ -202,6 +195,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		schedulePanel.reset();
 		defineGrid(activitySchedule);
 		fillCells(activitySchedule);
+		createDropDown();
 		scoreParametrizationAction.setEnabled(true);
 		repaint();
 	}
@@ -439,14 +433,19 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		});
 		addActivityFromXMLPanel.add(addActivityFromXmlButton);
 	}
-	
+
 	private Set<String> filterDropDownActivities(List<Activity> activityList) {
 
 		Set<String> activitySet = new HashSet<>();
 
-		for(Activity activity: activityList) {
-			if (activity.getActivityPeriod() == null && !(activity instanceof NormalRelativeActivity)) {
-				activitySet.add(activity.getActivityTypeCode());
+		// System.out.println("========================================================");
+
+		for (Activity activity : activityList) {
+			if (!(activity instanceof NormalRelativeActivity)) {
+				if (((NormalActivity) activity).getActivityPeriod() == null) {
+
+					activitySet.add(((NormalActivity) activity).getActivityTypeCode());
+				}
 			}
 		}
 
@@ -457,27 +456,52 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	protected void createDropDown() {
 		ActivitySchedule activitySchedule = getSolution();
 
-		Set<String> activitySet = filterDropDownActivities(activitySchedule.getActivityList());
-		JComboBox activityListField = new JComboBox<>(activitySet.toArray(new Object[activitySet.size() + 1]));
-		activityListField.setSelectedItem(null);
-		activityListField.addActionListener(new ActionListener() {
-			
+		JComboBox activityListDropDown;
+		if (activitySchedule == null) {
+			Set<String> activitySet = new HashSet<>();
+			activityListDropDown = new JComboBox<>(activitySet.toArray(new Object[activitySet.size() + 1]));
+		} else {
+			Set<String> activitySet = filterDropDownActivities(activitySchedule.getActivityList());
+			activityListDropDown = new JComboBox<>(activitySet.toArray(new Object[activitySet.size() + 1]));
+		}
+		activityListDropDown.setSelectedItem(null);
+		activityListDropDown.addActionListener(new ActionListener() {
+
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				String activityCode = (String)activityListField.getSelectedItem();
-				System.out.println("Ai selectat " + activityCode);
+				String activityCode = (String) activityListDropDown.getSelectedItem();
+				// System.out.println("Ai selectat " + activityCode);
 
-				// set "wantedToBePlanned" to true for each activityCode instance in the solution
-				for (Activity activity : activitySchedule.getActivityList()) {
-					if (activity.getActivityTypeCode().equals(activityCode)) {
-						//System.out.println(activity.getActivityPeriod());
-						activity.setWantedToBePlanned(true);
+				// set "wantedToBePlanned" to true for each activityCode instance in the
+				// solution
+				doProblemFactChange(scoreDirector -> {
+					for (Activity activity : activitySchedule.getActivityList()) {
+						if (activity.getActivityTypeCode().equals(activityCode)) {
+
+							Activity workingActivity = scoreDirector.lookUpWorkingObject(activity);
+							// System.out.println(activity.getActivityPeriod());
+
+							// System.out.println(workingActivity.getActivityTypeCode() + ":" +
+							// workingActivity.getId());
+
+							scoreDirector.beforeProblemPropertyChanged(((NormalActivity) workingActivity));
+							((NormalActivity) workingActivity).setWantedToBePlanned(true);
+							scoreDirector.afterProblemPropertyChanged(((NormalActivity) workingActivity));
+
+							// scoreDirector.triggerVariableListeners();
+
+						}
 					}
-				}
+					scoreDirector.triggerVariableListeners();
+					solverAndPersistenceFrame.startSolveAction();
+				});
+
+				solverAndPersistenceFrame.resetScreen();
 			}
 		});
 
-		dropDownPanel.add(activityListField);
+		dropDownPanel.removeAll();
+		dropDownPanel.add(activityListDropDown);
 	}
 
 	/**
@@ -535,7 +559,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		}
 
 		// unassigned
-		schedulePanel.defineColumnHeader(null, footprintWidth);
+		// schedulePanel.defineColumnHeader(null, footprintWidth);
 
 		schedulePanel.defineRowHeaderByKey(HEADER_ROW);
 		for (Time time : activitySchedule.getTimeList()) {
@@ -544,7 +568,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				timeMap.put(time.getHour(), time);
 			}
 		}
-		schedulePanel.defineRowHeader(null);
+		// schedulePanel.defineRowHeader(null);
 
 	}
 
@@ -564,8 +588,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 					createTableHeader(new JLabel(weekDay.getLabel(), SwingConstants.CENTER)));
 		}
 
-		schedulePanel.addColumnHeader(null, HEADER_ROW,
-				createTableHeader(new JLabel("Unassigned", SwingConstants.CENTER)));
+		// schedulePanel.addColumnHeader(null, HEADER_ROW,
+		// createTableHeader(new JLabel("Unassigned", SwingConstants.CENTER)));
 
 	}
 
@@ -575,7 +599,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				schedulePanel.addRowHeader(HEADER_COLUMN_GROUP1, time, createTableHeader(new JLabel(time.getLabel())));
 		}
 
-		schedulePanel.addRowHeader(HEADER_COLUMN_GROUP1, null, createTableHeader(new JLabel("Unassigned")));
+		// schedulePanel.addRowHeader(HEADER_COLUMN_GROUP1, null, createTableHeader(new
+		// JLabel("Unassigned")));
 	}
 
 	private void fillActivityCells(ActivitySchedule activitySchedule) {
@@ -588,8 +613,10 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				schedulePanel.addCell(weekDayMap.get(activity.getActivityPeriodWeekday().getDayIndex()),
 						timeMap.get(activity.getActivityPeriodTime().getHour()),
 						createButton(activity, color, toolTip));
-			} else // unassigned
-				schedulePanel.addCell(null, null, createButton(activity, color, toolTip));
+			} /*
+				 * else // unassigned schedulePanel.addCell(null, null, createButton(activity,
+				 * color, toolTip));
+				 */
 		}
 	}
 
