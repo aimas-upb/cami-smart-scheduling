@@ -273,7 +273,7 @@ rule "instancesPerDayNormalActivity"
 				),
 				result(hours + ":" + occurences)
 			)
-		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
+		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null)
 	then
 
 		int indictments = 0;
@@ -496,14 +496,13 @@ end
 // activities can now be "initialized" with null values to variables
 // when an activity(it's activityPeriod is null) from drop-down is selected by user, then it must be planned
 // it must be imposed a penalty so the solver can plan this activity
+// add a big negative score for every unplanned activities that have to be planned
 rule "wantToPlanAnActivity"
 	when
-		$activity : Activity(
+		$activity : NormalActivity(
 			activityPeriod == null, 
 			wantedToBePlanned == true
 		)
 	then
-		// System.out.println($activity.getActivityTypeCode());
-		// "-10" -> just testing for now
-		scoreHolder.addHardConstraintMatch(kcontext, -10);
+		scoreHolder.addHardConstraintMatch(kcontext, -9999);
 end
