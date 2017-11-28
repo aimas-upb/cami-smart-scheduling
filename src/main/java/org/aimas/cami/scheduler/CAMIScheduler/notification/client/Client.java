@@ -20,6 +20,9 @@ public class Client extends AbstractVerticle {
 
 	private String getType(Activity activity) {
 
+		if (activity.getActivityCategory() == null)
+			return "appointment";
+
 		if (activity.getActivityCategory().getCode().equals("Indoor physical exercises")
 				|| activity.getActivityCategory().getCode().equals("Outdoor physical exercises"))
 			return "exercise";
@@ -44,20 +47,24 @@ public class Client extends AbstractVerticle {
 
 	private void postActivityNotification(HttpClient client, Activity activity) {
 
-		System.out.println("What activity? " + activity);
+		// System.out.println("What activity? " + activity);
 
 		String journalPayload = "{\"description\": \"Do not forget your scheduled activity relating to: "
-				+ activity.getActivityTypeCode() + "\"," + "  \"message\": \"New Activity Reminder\","
-				+ "  \"severity\": \"none\"," + "  \"timestamp\": " + System.currentTimeMillis() / 1000L + ","
-				+ "  \"type\": \" " + getType(activity) + "\"," + "  \"user\": \"/api/v1/user/2/\"" + "}";
+				+ activity.getActivityTypeCode() + "!\"," + " \"message\": \"New Activity Reminder\","
+				+ " \"severity\": \"none\"," + " \"timestamp\": \"" + System.currentTimeMillis() / 1000L + "\","
+				+ " \"type\": \"" + getType(activity) + "\"," + " \"user\": \"/api/v1/user/2/\"" + "}";
 
 		String pushNotification = "{\"user_id\": 2,"
-				+ "  \"message\": \"Do not forget your scheduled activity relating to: "
-				+ activity.getActivityTypeCode() + "\"." + "}";
+				+ " \"message\": \"Do not forget your scheduled activity relating to: " + activity.getActivityTypeCode()
+				+ "!\"" + "}";
+
+		// System.out.println(journalPayload);
+		// System.out.println(pushNotification);
 
 		client.post(8008, SERVER_HOST, "/api" + "/v1" + "/journal_entries/", response -> {
 
 			System.out.println("Received response with status code " + response.statusCode());
+			System.out.println("Received response with status message " + response.statusMessage());
 
 			response.bodyHandler(new Handler<Buffer>() {
 
@@ -66,11 +73,12 @@ public class Client extends AbstractVerticle {
 					System.out.println("Got the event: " + event);
 				}
 			});
-		}).end(journalPayload);
+		}).putHeader("content-type", "application/json").end(journalPayload);
 
 		client.post(8010, SERVER_HOST, "/api" + "/v1" + "/insertion" + "/push_notifications/", response -> {
 
 			System.out.println("Received response with status code " + response.statusCode());
+			System.out.println("Received response with status message " + response.statusMessage());
 
 			response.bodyHandler(new Handler<Buffer>() {
 
@@ -79,7 +87,7 @@ public class Client extends AbstractVerticle {
 					System.out.println("Got the event: " + event);
 				}
 			});
-		}).end(pushNotification);
+		}).putHeader("content-type", "application/json").end(pushNotification);
 
 	}
 
