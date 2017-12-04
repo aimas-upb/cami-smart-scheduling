@@ -11,7 +11,7 @@
 
   <scoreDirectorFactory>
     <scoreDrl>solver/CAMITaskSchedulerScoreRules.drl</scoreDrl>
-    <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+    <initializingScoreTrend>ONLY_DOWN/ONLY_DOWN</initializingScoreTrend>
   </scoreDirectorFactory>
 
   <termination>
