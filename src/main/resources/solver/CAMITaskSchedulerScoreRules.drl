@@ -269,7 +269,8 @@ rule "instancesPerDayNormalActivity"
 					occurences++;
 
 					// add the activity hour to the list
-					hours += $activityPeriod.getPeriodHour() + " ";
+					if ($activityPeriod != null)
+						hours += $activityPeriod.getPeriodHour() + " ";
 				),
 				result(hours + ":" + occurences)
 			)
