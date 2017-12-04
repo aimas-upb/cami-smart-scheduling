@@ -322,6 +322,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				setScoreParametrization();
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
+				solutionWasOpened = true;
+				startSolveAction();
 			}
 		}
 
