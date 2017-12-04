@@ -516,6 +516,16 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		ActivitySchedule activitySchedule = getSolution();
 
+		RelativeActivityPenalty rap = getRelativeDependence(activityCode,
+				activitySchedule.getRelativeActivityPenaltyList());
+
+		if (rap != null) {
+			if (rap.getNormalActivityType() != null)
+				item.setToolTipText(activityCode + " is relative to the " + rap.getNormalActivityType() + " activity.");
+			else if (rap.getCategory() != null)
+				item.setToolTipText(activityCode + " is relative to the " + rap.getCategory() + " category.");
+		}
+
 		if (isActivityPlanned(activityCode, activitySchedule.getActivityList())) {
 			item.setEnabled(false);
 		}
@@ -549,15 +559,17 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 										workingActivity.getActivityTypeCode(),
 										activitySchedule.getRelativeActivityPenaltyList());
 
-								// *****trigger the listener*****
-								if (rap.getNormalActivityType() != null) {
+								if (rap != null) {
+									// *****trigger the listener*****
+									if (rap.getNormalActivityType() != null) {
 
-									triggerListener(activitySchedule.getActivityList(), rap.getNormalActivityType(),
-											null);
+										triggerListener(activitySchedule.getActivityList(), rap.getNormalActivityType(),
+												null);
 
-								} else if (rap.getCategory() != null) {
+									} else if (rap.getCategory() != null) {
 
-									triggerListener(activitySchedule.getActivityList(), null, rap.getCategory());
+										triggerListener(activitySchedule.getActivityList(), null, rap.getCategory());
+									}
 								}
 							}
 
@@ -652,7 +664,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				}
 			});
 
-			activityListDropDown.setRenderer(new MyComboBoxRenderer("Select an activity to plan"));
+			activityListDropDown.setRenderer(new MyComboBoxRenderer("Select an activity to be planned"));
 			activityListDropDown.setSelectedIndex(-1);
 		}
 
