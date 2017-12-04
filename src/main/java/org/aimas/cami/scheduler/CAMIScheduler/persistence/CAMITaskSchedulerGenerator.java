@@ -216,6 +216,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(breakfast);
 			activity.setId(id++);
 			activity.setImmovable(false);
+			activity.setOnDropdown(true);
+			activity.setWantedToBePlanned(true);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -237,6 +239,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(lunch);
 			activity.setId(id++);
 			activity.setImmovable(false);
+			activity.setOnDropdown(true);
+			activity.setWantedToBePlanned(true);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -258,6 +262,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(dinner);
 			activity.setId(id++);
 			activity.setImmovable(false);
+			activity.setOnDropdown(true);
+			activity.setWantedToBePlanned(true);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -283,6 +289,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				activity.setActivityType(stretches);
 				activity.setId(id++);
 				activity.setImmovable(false);
+				activity.setOnDropdown(true);
 				activityList.add(activity);
 			}
 
@@ -321,6 +328,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				activity.setActivityType(armRotations);
 				activity.setId(id++);
 				activity.setImmovable(false);
+				activity.setOnDropdown(true);
 				activityList.add(activity);
 			}
 
@@ -359,6 +367,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				activity.setActivityType(bodyWorkout);
 				activity.setId(id++);
 				activity.setImmovable(false);
+				activity.setOnDropdown(true);
 				activityList.add(activity);
 			}
 
@@ -400,6 +409,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(walkInPark1);
 			activity.setId(id++);
 			activity.setImmovable(true);
+			activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -418,6 +428,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(walkInPark2);
 			activity.setId(id++);
 			activity.setImmovable(true);
+			activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -436,6 +447,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(walkInPark3);
 			activity.setId(id++);
 			activity.setImmovable(true);
+			activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -454,6 +466,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(bikeRide);
 			activity.setId(id++);
 			activity.setImmovable(true);
+			activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -476,6 +489,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 				relativeActivity.setActivityType(weightMeasurement);
 				relativeActivity.setOffset(15);
+				relativeActivity.setOnDropdown(true);
 				relativeActivity.setId(id++);
 
 				activityList.add(relativeActivity);
@@ -507,6 +521,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				activity.setActivityType(bloodPressurehMeasurement);
 				activity.setId(id++);
 				activity.setImmovable(false);
+				activity.setOnDropdown(true);
 				activityList.add(activity);
 			}
 		}
@@ -530,6 +545,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 				relativeActivity.setActivityType(heartMedication);
 				relativeActivity.setOffset(15);
+				relativeActivity.setOnDropdown(true);
 				relativeActivity.setId(id++);
 
 				activityList.add(relativeActivity);
@@ -561,6 +577,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				NormalRelativeActivity relativeActivity = new NormalRelativeActivity();
 				relativeActivity.setActivityType(antibiotic);
 				relativeActivity.setOffset(15);
+				relativeActivity.setOnDropdown(true);
 				relativeActivity.setId(id++);
 
 				activityList.add(relativeActivity);
@@ -599,6 +616,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		// ---------------------------------------------------//
 		{
 			ActivityType tvSeries = new ActivityType();
+			tvSeries.setActivityCategory(activitySchedule.getActivityCategoryList().get(4));
 			tvSeries.setCode("Favorite TV Series 1");
 			tvSeries.setDuration(60);
 			tvSeries.setId(typeId++);
@@ -610,6 +628,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(tvSeries);
 			activity.setId(id++);
 			activity.setImmovable(true);
+			activity.setWantedToBePlanned(true);
+			// activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -619,6 +639,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			for (int i = 0; i < 7; i++) {
 				ActivityType tvSeries = new ActivityType();
+				tvSeries.setActivityCategory(activitySchedule.getActivityCategoryList().get(4));
 				tvSeries.setCode("Favorite TV Series 2");
 				tvSeries.setDuration(60);
 				tvSeries.setId(typeId++);
@@ -630,6 +651,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				activity.setActivityType(tvSeries);
 				activity.setId(id++);
 				activity.setImmovable(true);
+				activity.setWantedToBePlanned(true);
+				// activity.setOnDropdown(true);
 				activityList.add(activity);
 			}
 		}
@@ -638,6 +661,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		{
 			ActivityType hairCuttingAppointment = new ActivityType();
+			hairCuttingAppointment.setActivityCategory(activitySchedule.getActivityCategoryList().get(4));
 			hairCuttingAppointment.setCode("Hair cutting appointment");
 			hairCuttingAppointment.setDuration(90);
 			hairCuttingAppointment.setId(typeId++);
@@ -649,6 +673,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(hairCuttingAppointment);
 			activity.setId(id++);
 			activity.setImmovable(true);
+			activity.setWantedToBePlanned(true);
+			// activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -684,7 +710,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	 */
 	private void setImposedActivities(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
-			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null)
+			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null && !activity.isOnDropdown())
 				((NormalActivity) activity).setActivityPeriod(activity.getImposedPeriod());
 	}
 
