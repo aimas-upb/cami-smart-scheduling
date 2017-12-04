@@ -5,12 +5,15 @@ import static org.aimas.cami.scheduler.CAMIScheduler.swingui.TimeTablePanel.Head
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
@@ -33,12 +38,18 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -94,6 +105,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	private JButton addActivityButton;
 	private JButton addActivityFromXmlButton;
 
+	private JComboBox<String> activityListDropDown;
+	private JPopupMenu popupMenu;
+	private AbstractButton arrowButton;
+	private boolean dropdownCreated;
+
 	// serialization id
 	private long postponeId;
 
@@ -141,6 +157,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		timeMap = new HashMap<>();
 		weekDayMap = new HashMap<>();
 		postponeId = 0L;
+
+		dropdownCreated = false;
 	}
 
 	/**
@@ -262,6 +280,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 								activity.setActivityType(newActivity.getActivityType());
 								activity.setImmovable(newActivity.isImmovable());
+								activity.setOnDropdown(true);
 								activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 								activity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
@@ -271,9 +290,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 								// if its period is imposed
 								if (activity.getActivityType().getImposedPeriod() != null) {
-									scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-									activity.setActivityPeriod(activity.getActivityType().getImposedPeriod());
-									scoreDirector.afterVariableChanged(activity, "activityPeriod");
+									// scoreDirector.beforeVariableChanged(activity, "activityPeriod");
+									// activity.setActivityPeriod(activity.getActivityType().getImposedPeriod());
+									// scoreDirector.afterVariableChanged(activity, "activityPeriod");
 
 									activity.setImmovable(true);
 								}
@@ -333,6 +352,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 										relativeActivity.setOffset(((NormalRelativeActivity) newActivity).getOffset()
 												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 										relativeActivity.setImmovable(newActivity.isImmovable());
+										relativeActivity.setOnDropdown(true);
 										relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
 										scoreDirector.beforeEntityAdded(relativeActivity);
@@ -360,6 +380,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 										relativeActivity.setOffset(((NormalRelativeActivity) newActivity).getOffset()
 												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 										relativeActivity.setImmovable(newActivity.isImmovable());
+										relativeActivity.setOnDropdown(true);
 										relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
 										scoreDirector.beforeEntityAdded(relativeActivity);
@@ -441,54 +462,103 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		// System.out.println("========================================================");
 
 		for (Activity activity : activityList) {
-			if (!(activity instanceof NormalRelativeActivity)) {
-				if (((NormalActivity) activity).getActivityPeriod() == null) {
 
-					activitySet.add(((NormalActivity) activity).getActivityTypeCode());
-				}
-			}
+			if (activity.isOnDropdown() || activity.isWantedToBePlanned())
+				activitySet.add(activity.getActivityTypeCode());
+
 		}
 
 		return activitySet;
 
 	}
 
-	protected void createDropDown() {
+	private String getActivityCategory(String activityName, List<Activity> activityList) {
+
+		for (Activity activity : activityList) {
+			if (activity.getActivityTypeCode().equals(activityName))
+				return Utility.getActivityCategory(activity);
+		}
+
+		return null;
+	}
+
+	private boolean isActivityPlanned(String activityName, List<Activity> activityList) {
+
+		boolean allInstancesPlanned = true;
+		for (Activity activity : activityList) {
+			if (activity.getActivityTypeCode().equals(activityName))
+				if (!activity.isWantedToBePlanned()) {
+					allInstancesPlanned = false;
+					break;
+				} else if (activity.isWantedToBePlanned() && activity.getActivityPeriod() == null) {
+					allInstancesPlanned = false;
+					break;
+				}
+		}
+		return allInstancesPlanned;
+	}
+
+	private RelativeActivityPenalty getRelativeDependence(String activityName,
+			List<RelativeActivityPenalty> relativeActivityPenaltyList) {
+
+		for (RelativeActivityPenalty rap : relativeActivityPenaltyList) {
+			if (rap.getRelativeActivityType().equals(activityName))
+				return rap;
+
+		}
+
+		return null;
+	}
+
+	private JMenuItem createMenuItem(final String activityCode) {
+		JMenuItem item = new JMenuItem(activityCode);
+
 		ActivitySchedule activitySchedule = getSolution();
 
-		JComboBox activityListDropDown;
-		if (activitySchedule == null) {
-			Set<String> activitySet = new HashSet<>();
-			activityListDropDown = new JComboBox<>(activitySet.toArray(new Object[activitySet.size() + 1]));
-		} else {
-			Set<String> activitySet = filterDropDownActivities(activitySchedule.getActivityList());
-			activityListDropDown = new JComboBox<>(activitySet.toArray(new Object[activitySet.size() + 1]));
+		if (isActivityPlanned(activityCode, activitySchedule.getActivityList())) {
+			item.setEnabled(false);
 		}
-		activityListDropDown.setSelectedItem(null);
-		activityListDropDown.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				String activityCode = (String) activityListDropDown.getSelectedItem();
-				// System.out.println("Ai selectat " + activityCode);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				// System.out.println("Ai selectat -> " + activityCode);
 
-				// set "wantedToBePlanned" to true for each activityCode instance in the
-				// solution
+				// set "wantedToBePlanned" to true for each activityCode instance
 				doProblemFactChange(scoreDirector -> {
 					for (Activity activity : activitySchedule.getActivityList()) {
 						if (activity.getActivityTypeCode().equals(activityCode)) {
 
 							Activity workingActivity = scoreDirector.lookUpWorkingObject(activity);
-							// System.out.println(activity.getActivityPeriod());
 
-							// System.out.println(workingActivity.getActivityTypeCode() + ":" +
-							// workingActivity.getId());
+							scoreDirector.beforeProblemPropertyChanged(workingActivity);
+							workingActivity.setWantedToBePlanned(true);
+							scoreDirector.afterProblemPropertyChanged(workingActivity);
 
-							scoreDirector.beforeProblemPropertyChanged(((NormalActivity) workingActivity));
-							((NormalActivity) workingActivity).setWantedToBePlanned(true);
-							scoreDirector.afterProblemPropertyChanged(((NormalActivity) workingActivity));
+							if (workingActivity.getImposedPeriod() != null) {
+								scoreDirector.beforeVariableChanged(((NormalActivity) workingActivity),
+										"activityPeriod");
+								((NormalActivity) workingActivity)
+										.setActivityPeriod(((NormalActivity) workingActivity).getImposedPeriod());
+								scoreDirector.afterVariableChanged(((NormalActivity) workingActivity),
+										"activityPeriod");
+							}
 
-							// scoreDirector.triggerVariableListeners();
+							if (workingActivity instanceof NormalRelativeActivity) {
+								RelativeActivityPenalty rap = getRelativeDependence(
+										workingActivity.getActivityTypeCode(),
+										activitySchedule.getRelativeActivityPenaltyList());
+
+								// *****trigger the listener*****
+								if (rap.getNormalActivityType() != null) {
+
+									triggerListener(activitySchedule.getActivityList(), rap.getNormalActivityType(),
+											null);
+
+								} else if (rap.getCategory() != null) {
+
+									triggerListener(activitySchedule.getActivityList(), null, rap.getCategory());
+								}
+							}
 
 						}
 					}
@@ -499,6 +569,91 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				solverAndPersistenceFrame.resetScreen();
 			}
 		});
+		return item;
+	}
+
+	private void setPopupVisible(JPopupMenu popupMenu, boolean visible) {
+		if (visible) {
+			popupMenu.show(activityListDropDown, 0, activityListDropDown.getSize().height);
+		} else {
+			popupMenu.setVisible(false);
+		}
+	}
+
+	class MyComboBoxRenderer extends JLabel implements ListCellRenderer {
+		private String _title;
+
+		public MyComboBoxRenderer(String title) {
+			_title = title;
+		}
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean hasFocus) {
+			if (index == -1 && value == null)
+				setText(_title);
+			else
+				setText(value.toString());
+			return this;
+		}
+	}
+
+	protected void createDropDown() {
+		ActivitySchedule activitySchedule = getSolution();
+
+		Map<String, ArrayList<String>> menuData = new HashMap<>();
+
+		if (activitySchedule != null) {
+
+			popupMenu = new JPopupMenu();
+			popupMenu.setBorder(new MatteBorder(1, 1, 1, 1, Color.CYAN));
+
+			for (ActivityCategory activityCategory : activitySchedule.getActivityCategoryList()) {
+				menuData.put(Utility.getCategory(activityCategory.getCode()), new ArrayList<>());
+			}
+
+			Set<String> activitySet = filterDropDownActivities(activitySchedule.getActivityList());
+
+			for (String activity : activitySet) {
+				menuData.get(getActivityCategory(activity, activitySchedule.getActivityList())).add(activity);
+			}
+
+			List<String> categories = new ArrayList<String>(menuData.keySet());
+			Collections.sort(categories);
+
+			for (String category : categories) {
+				JMenu menu = new JMenu(category);
+				for (String itemName : menuData.get(category)) {
+					menu.add(createMenuItem(itemName));
+				}
+				popupMenu.add(menu);
+			}
+
+			activityListDropDown = new JComboBox<String>();
+			activityListDropDown.setPrototypeDisplayValue("123456789012345678901234567890");
+
+			for (Component comp : activityListDropDown.getComponents()) {
+				if (comp instanceof AbstractButton) {
+					arrowButton = (AbstractButton) comp;
+				}
+			}
+
+			arrowButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					setPopupVisible(popupMenu, !popupMenu.isVisible());
+				}
+			});
+
+			activityListDropDown.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					setPopupVisible(popupMenu, !popupMenu.isVisible());
+				}
+			});
+
+			activityListDropDown.setRenderer(new MyComboBoxRenderer("Select an activity to plan"));
+			activityListDropDown.setSelectedIndex(-1);
+		}
 
 		dropDownPanel.removeAll();
 		dropDownPanel.add(activityListDropDown);
@@ -529,7 +684,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 				for (Activity activity : activityList) {
 					if (activity instanceof NormalActivity) {
-						if (((NormalActivity) activity).getActivityCategory().getCode() != null
+						if (((NormalActivity) activity).getActivityCategory() != null
 								&& ((NormalActivity) activity).getActivityCategory().getCode().equals(category)) {
 
 							scoreDirector.beforeVariableChanged(activity, "activityPeriod");
@@ -559,7 +714,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		}
 
 		// unassigned
-		// schedulePanel.defineColumnHeader(null, footprintWidth);
+		schedulePanel.defineColumnHeader(null, footprintWidth);
 
 		schedulePanel.defineRowHeaderByKey(HEADER_ROW);
 		for (Time time : activitySchedule.getTimeList()) {
@@ -568,7 +723,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 				timeMap.put(time.getHour(), time);
 			}
 		}
-		// schedulePanel.defineRowHeader(null);
+		schedulePanel.defineRowHeader(null);
 
 	}
 
@@ -922,6 +1077,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 						NormalActivity activity = new NormalActivity();
 						activity.setActivityType(activityType);
 						activity.setImmovable(lockedField.isSelected());
+						activity.setOnDropdown(true);
 						activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 						activity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
@@ -930,9 +1086,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 						scoreDirector.afterEntityAdded(activity);
 
 						if (activityType.getImposedPeriod() != null) {
-							scoreDirector.beforeVariableChanged(activity, "activityPeriod");
-							activity.setActivityPeriod(activityType.getImposedPeriod());
-							scoreDirector.afterVariableChanged(activity, "activityPeriod");
+							// scoreDirector.beforeVariableChanged(activity, "activityPeriod");
+							// activity.setActivityPeriod(activityType.getImposedPeriod());
+							// scoreDirector.afterVariableChanged(activity, "activityPeriod");
 
 							activity.setImmovable(true);
 						}
@@ -1117,6 +1273,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 										Integer.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
 												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 								relativeActivity.setImmovable(false);
+								relativeActivity.setOnDropdown(true);
 								relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
 								scoreDirector.beforeEntityAdded(relativeActivity);
@@ -1147,6 +1304,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 										Integer.parseInt(offsetField.getText().equals("") ? "1" : offsetField.getText())
 												* getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 								relativeActivity.setImmovable(false);
+								relativeActivity.setOnDropdown(true);
 								relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
 
 								scoreDirector.beforeEntityAdded(relativeActivity);
