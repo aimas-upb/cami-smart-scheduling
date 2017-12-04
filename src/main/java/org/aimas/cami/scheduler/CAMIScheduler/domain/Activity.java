@@ -30,6 +30,7 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 	private boolean immovable;
 
 	private boolean wantedToBePlanned;
+	private boolean onDropdown;
 
 	public ActivityType getActivityType() {
 		return activityType;
@@ -63,6 +64,14 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 
 	public void setWantedToBePlanned(boolean wantToBePlanned) {
 		this.wantedToBePlanned = wantToBePlanned;
+	}
+
+	public boolean isOnDropdown() {
+		return onDropdown;
+	}
+
+	public void setOnDropdown(boolean onDropdown) {
+		this.onDropdown = onDropdown;
 	}
 
 	public abstract ActivityPeriod getActivityPeriod();
