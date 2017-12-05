@@ -4,16 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
-import org.aimas.cami.scheduler.CAMIScheduler.postpone.Postpone;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
-import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
-import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
+import org.aimas.cami.scheduler.CAMIScheduler.solver.move.ReinitializeActivityFilter;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamInclude;
 
 /**
  * An activity to be planned.
@@ -37,7 +34,7 @@ public class NormalActivity extends Activity {
 
 	@Override
 	@PlanningVariable(valueRangeProviderRefs = {
-			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class)
+			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class, nullable = true, reinitializeVariableEntityFilter = ReinitializeActivityFilter.class)
 	public ActivityPeriod getActivityPeriod() {
 		return activityPeriod;
 	}
@@ -66,6 +63,11 @@ public class NormalActivity extends Activity {
 	@Override
 	public String toString() {
 		return "Activity [activityType=" + getActivityType() + ", activityPeriod=" + activityPeriod + "]";
+	}
+
+	@Override
+	public String getLabel() {
+		return getActivityTypeCode();
 	}
 
 }
