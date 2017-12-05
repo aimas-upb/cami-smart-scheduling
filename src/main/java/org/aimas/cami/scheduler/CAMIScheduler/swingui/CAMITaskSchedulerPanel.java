@@ -140,7 +140,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		setPreferredSize(PREFERRED_SCROLLABLE_VIEWPORT_SIZE);
 
 		createAddActivityButton();
-		createAddActivityFromXMLButton(new File("data\\activityschedule\\", "New Activity" + ".xml"));
+		createAddActivityFromXMLButton(new File("data" + File.separator + "activityschedule" + File.separator + "New Activity" + ".xml"));
 
 		dropDownPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
