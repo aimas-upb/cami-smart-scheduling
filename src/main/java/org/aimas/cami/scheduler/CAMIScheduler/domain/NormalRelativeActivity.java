@@ -62,4 +62,9 @@ public class NormalRelativeActivity extends Activity {
 				+ ", offset=" + offset + "]";
 	}
 
+	@Override
+	public String getLabel() {
+		return getActivityTypeCode();
+	}
+
 }

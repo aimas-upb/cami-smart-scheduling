@@ -62,6 +62,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
+import org.aimas.cami.scheduler.CAMIScheduler.notification.client.Client;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionBusiness;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 import org.apache.commons.io.FilenameUtils;
@@ -125,6 +126,7 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		registerListeners();
 		constraintMatchesDialog = new ConstraintMatchesDialog(this, solutionBusiness);
 		solutionWasOpened = false;
+
 	}
 
 	private void createTimer() {
@@ -152,6 +154,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 							if (Utility.getNumberOfMinutesInInterval(
 									new Time(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute()),
 									activity.getActivityPeriodTime()) == 15) {
+
+								Client.runClient(activity);
+
 								JOptionPane.showMessageDialog(null,
 										activity.getActivityTypeCode() + " is in 15 minutes!", "Activity notification",
 										JOptionPane.INFORMATION_MESSAGE);
@@ -322,6 +327,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 				setScoreParametrization();
 			} finally {
 				setCursor(Cursor.getDefaultCursor());
+				solutionWasOpened = true;
+				startSolveAction();
 			}
 		}
 
@@ -483,10 +490,10 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	}
 
 	/**
-	 * When a new schedule is opened from file, reset all the activity domain value
-	 * ranges. In real time rescheduling, activities after the current time will
-	 * have a more restricted value range, and activities before the current time
-	 * will be immovable.
+	 * When a new schedule is opened from file, reset all the activity domain
+	 * value ranges. In real time rescheduling, activities after the current
+	 * time will have a more restricted value range, and activities before the
+	 * current time will be immovable.
 	 */
 	protected void resetValueRange() {
 
@@ -605,9 +612,8 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingToggleButton = new JToggleButton(refreshScreenDuringSolvingTrueIcon, true);
 		refreshScreenDuringSolvingToggleButton.setToolTipText("Refresh screen during solving");
 		refreshScreenDuringSolvingToggleButton.addActionListener(e -> {
-			refreshScreenDuringSolvingToggleButton
-					.setIcon(refreshScreenDuringSolvingToggleButton.isSelected() ? refreshScreenDuringSolvingTrueIcon
-							: refreshScreenDuringSolvingFalseIcon);
+			refreshScreenDuringSolvingToggleButton.setIcon(refreshScreenDuringSolvingToggleButton.isSelected()
+					? refreshScreenDuringSolvingTrueIcon : refreshScreenDuringSolvingFalseIcon);
 		});
 		scorePanel.add(refreshScreenDuringSolvingToggleButton, BorderLayout.EAST);
 		return scorePanel;
