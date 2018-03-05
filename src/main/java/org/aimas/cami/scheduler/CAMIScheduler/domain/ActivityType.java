@@ -20,9 +20,12 @@ public class ActivityType extends AbstractPersistable implements Labeled {
 	private int duration; // expressed in minutes
 	private Difficulty difficulty; // EASY, HARD, MEDIUM
 	private int calories; // expressed in kcal
-	private int instancesPerDay, instancesPerWeek; // instances an activity has on a week
-	private ActivityPeriod imposedPeriod; // an activity must be planned on this period
-	private List<TimeInterval> permittedIntervals; // an activity should be planned in this intervals
+	private int instancesPerDay, instancesPerWeek; // instances an activity has
+													// on a week
+	private ActivityPeriod imposedPeriod; // an activity must be planned on this
+											// period
+	private List<TimeInterval> permittedIntervals; // an activity should be
+													// planned in this intervals
 	private ActivityCategory activityCategory;
 	private String description;
 
@@ -114,6 +117,10 @@ public class ActivityType extends AbstractPersistable implements Labeled {
 	@Override
 	public String getLabel() {
 		return code;
+	}
+
+	public Long getDurationInMillis() {
+		return duration * 1000L;
 	}
 
 }

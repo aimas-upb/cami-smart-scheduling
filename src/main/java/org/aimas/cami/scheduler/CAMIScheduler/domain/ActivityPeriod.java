@@ -75,4 +75,8 @@ public class ActivityPeriod extends AbstractPersistable implements Labeled {
 		return weekDay.getLabel() + " " + time.getLabel();
 	}
 
+	public Long getTimeInMillis() {
+		return time.getHour() * time.getMinutes() * 1000L;
+	}
+
 }
