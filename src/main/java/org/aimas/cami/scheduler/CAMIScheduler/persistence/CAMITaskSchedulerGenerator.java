@@ -217,7 +217,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setOnDropdown(true);
-			activity.setWantedToBePlanned(true);
+			// activity.setWantedToBePlanned(true);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -240,7 +240,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setOnDropdown(true);
-			activity.setWantedToBePlanned(true);
+			// activity.setWantedToBePlanned(true);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -263,7 +263,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setId(id++);
 			activity.setImmovable(false);
 			activity.setOnDropdown(true);
-			activity.setWantedToBePlanned(true);
+			// activity.setWantedToBePlanned(true);
 			activity.setAssignedToRelativeActivityMap(new HashMap<>());
 			activityList.add(activity);
 		}
@@ -628,8 +628,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(tvSeries);
 			activity.setId(id++);
 			activity.setImmovable(true);
-			activity.setWantedToBePlanned(true);
-			// activity.setOnDropdown(true);
+			// activity.setWantedToBePlanned(true);
+			activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -651,8 +651,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				activity.setActivityType(tvSeries);
 				activity.setId(id++);
 				activity.setImmovable(true);
-				activity.setWantedToBePlanned(true);
-				// activity.setOnDropdown(true);
+				// activity.setWantedToBePlanned(true);
+				activity.setOnDropdown(true);
 				activityList.add(activity);
 			}
 		}
@@ -673,8 +673,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setActivityType(hairCuttingAppointment);
 			activity.setId(id++);
 			activity.setImmovable(true);
-			activity.setWantedToBePlanned(true);
-			// activity.setOnDropdown(true);
+			// activity.setWantedToBePlanned(true);
+			activity.setOnDropdown(true);
 			activityList.add(activity);
 		}
 
@@ -710,7 +710,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	 */
 	private void setImposedActivities(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
-			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null && !activity.isOnDropdown())
+			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null) //&& !activity.isOnDropdown())
 				((NormalActivity) activity).setActivityPeriod(activity.getImposedPeriod());
 	}
 
