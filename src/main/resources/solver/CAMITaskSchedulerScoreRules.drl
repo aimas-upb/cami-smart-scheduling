@@ -43,6 +43,13 @@ import java.util.HashMap;
 
 global HardSoftScoreHolder scoreHolder;
 
+// EVENTS
+declare Activity
+	@role(event)
+	@timestamp(activityPeriod.getTimeInMillis())
+	@duration(activityType.getDurationInMillis())
+end
+
 // HARD CONSTRAINTS
 
 // check activity periods conflict
@@ -62,15 +69,12 @@ rule "periodConflict"
 			$activityPeriod1 != null, 
 			$activityPeriod1.weekDay.dayIndex == activityPeriod.weekDay.dayIndex, 
 			this != $activity1, 
-			$id < id
+			$id < id, 
+			exclusiveBefore($activityPeriod1.getTime(), $activity2.getActivityEndPeriod().getTime()), 
+			exclusiveAfter($activityPeriod2.getTime(), $activity1.getActivityEndPeriod().getTime())
 		)
 	then
-
-		if (!($activity1.getImposedPeriod() != null && $activity2.getImposedPeriod() != null))
-			if (exclusiveBefore($activityPeriod1.getTime(), $activity2.getActivityEndPeriod().getTime()) && 
-				exclusiveAfter($activityPeriod2.getTime(), $activity1.getActivityEndPeriod().getTime()))
-	
-				scoreHolder.addHardConstraintMatch(kcontext, (-$scoreParametrization.getPeriodConflictPenalty()));
+			scoreHolder.addHardConstraintMatch(kcontext, (-$scoreParametrization.getPeriodConflictPenalty()));
 end
 
 // an activity must be planned in the permitted interval
@@ -363,36 +367,20 @@ rule "distanceBetweenExerciseAndMeal"
 			$mealPeriod != null, 
 			activityType.activityCategory != null, 
 			activityType.activityCategory.code == "Meal", 
-			$mealPeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex()
+			$mealPeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
+			this before[0s] $exercise, 
+			Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) <= 
+				$scoreParametrization.getDistanceBetweenExerciseAndMeal()
 		)
 	then
+			scoreHolder.addSoftConstraintMatch(kcontext, 
+				Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) - 
+					$scoreParametrization.getDistanceBetweenExerciseAndMeal());
 
-		/*if (after($exercisePeriod.getTime(), $mealPeriod.getTime())) {
-
-			if (Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $mealPeriod.getTime())) <= 
-				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
-
-				scoreHolder.addSoftConstraintMatch(kcontext, 
-					Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $mealPeriod.getTime())) - 
-						$scoreParametrization.getDistanceBetweenExerciseAndMeal());
-
-			}
-
-		} else */if (after($mealPeriod.getTime(), $exercisePeriod.getTime())) {
-
-			if (Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) <= 
-				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
-
-				scoreHolder.addSoftConstraintMatch(kcontext, 
-					Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) - 
-						$scoreParametrization.getDistanceBetweenExerciseAndMeal());	
-			}		
-
-		}
 end
 
 // should be minutes between exercises
-rule "distanceBetweenExercises"
+rule "distanceBetweenExercisesA"
 	when
 		$scoreParametrization : ScoreParametrization(distanceBetweenExercises != null)
 
@@ -410,28 +398,14 @@ rule "distanceBetweenExercises"
 			activityType.activityCategory.code == "Indoor physical exercises" || activityType.activityCategory.code == "Outdoor physical exercises", 
 			this != $exercise, 
 			$otherExercisePeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex(), 
-			$exercise.id < id
+			this after[0s] $exercise, 
+			Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $otherExercisePeriod.getTime())) <= 
+				$scoreParametrization.getDistanceBetweenExercises()
 		)
 	then
-		if (after($exercisePeriod.getTime(), $otherExercisePeriod.getTime())) {
-
-			if (Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $otherExercisePeriod.getTime())) <= 
-				$scoreParametrization.getDistanceBetweenExercises())
-
-				scoreHolder.addSoftConstraintMatch(kcontext, 
+		scoreHolder.addSoftConstraintMatch(kcontext, 
 					Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $otherExercisePeriod.getTime())) - 
 						$scoreParametrization.getDistanceBetweenExercises());
-
-		} else if (after($otherExercisePeriod.getTime(), $exercisePeriod.getTime())) {
-
-			if (Math.abs(getNumberOfMinutesInInterval($otherExercise.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) <= 
-				$scoreParametrization.getDistanceBetweenExercises())
-
-				scoreHolder.addSoftConstraintMatch(kcontext, 
-					Math.abs(getNumberOfMinutesInInterval($otherExercise.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) - 
-						$scoreParametrization.getDistanceBetweenExercises());			
-
-		}
 end
 
 // don't plan a hard activity too late
@@ -453,7 +427,8 @@ rule "hardExerciseNotTooLateInDay"
 end
 
 // postpone a normal relative activity(relative activities don't have value range on their variable)
-rule "postponeActivity"
+// the activity must be planned after the postpone period + offset
+rule "postponeActivity15MIN"
 	when
 		$scoreParametrization : ScoreParametrization(postponeLaterThisDayAndThisWeekPenalty != null)
 
@@ -462,36 +437,89 @@ rule "postponeActivity"
 			postpone != null, 
 			activityPeriod != null, 
 			postpone.postponePeriod != null, 
-			$activityPeriod : activityPeriod
+			$activityPeriod : activityPeriod, 
+			$postpone.getPostponeType() == PostponeType.POSTPONE_15MIN, 
+			exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())
 		)
 	then
-
-		// the activity must be planned after the postpone period + offset
-		if ($postpone.getPostponeType() == PostponeType.POSTPONE_15MIN) {
-			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime())) {
-				scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
+		scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
 					getAdjustedPeriod($postpone.getPostponePeriod(), 15).getTime(), $activityPeriod.getTime()));
-			}
-		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_30MIN) {
-			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 30).getTime())) {
-				scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
+
+end
+
+rule "postponeActivity30MIN"
+	when
+		$scoreParametrization : ScoreParametrization(postponeLaterThisDayAndThisWeekPenalty != null)
+
+		$activity : Activity(
+			$postpone : postpone, 
+			postpone != null, 
+			activityPeriod != null, 
+			postpone.postponePeriod != null, 
+			$activityPeriod : activityPeriod, 
+			$postpone.getPostponeType() == PostponeType.POSTPONE_30MIN, 
+			exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 30).getTime())
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
 					getAdjustedPeriod($postpone.getPostponePeriod(), 30).getTime(), $activityPeriod.getTime()));
-			}
-		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_1HOUR) {
-			if (exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 60).getTime())) {
-				scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
+
+end
+
+rule "postponeActivity1HOUR"
+	when
+		$scoreParametrization : ScoreParametrization(postponeLaterThisDayAndThisWeekPenalty != null)
+
+		$activity : Activity(
+			$postpone : postpone, 
+			postpone != null, 
+			activityPeriod != null, 
+			postpone.postponePeriod != null, 
+			$activityPeriod : activityPeriod, 
+			$postpone.getPostponeType() == PostponeType.POSTPONE_1HOUR, 
+			exclusiveBefore($activityPeriod.getTime(), getAdjustedPeriod($postpone.getPostponePeriod(), 60).getTime())
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, getNumberOfMinutesInInterval( 
 					getAdjustedPeriod($postpone.getPostponePeriod(), 60).getTime(), $activityPeriod.getTime()));
-			}
-		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_DAY) {
-			if (before($activityPeriod.getTime(), $postpone.getPostponePeriod().getTime())) {
-				scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
-			}
-		} else if ($postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_WEEK) {
-			if ($postpone.getPostponePeriod().getWeekDay().getDayIndex() < 6)
-				if ($activityPeriod.getWeekDay().getDayIndex() <= $postpone.getPostponePeriod().getWeekDay().getDayIndex()) {
-					scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
-				}
-		}
+
+end
+
+rule "postponeActivityLATER_THIS_DAY"
+	when
+		$scoreParametrization : ScoreParametrization(postponeLaterThisDayAndThisWeekPenalty != null)
+
+		$activity : Activity(
+			$postpone : postpone, 
+			postpone != null, 
+			activityPeriod != null, 
+			postpone.postponePeriod != null, 
+			$activityPeriod : activityPeriod, 
+			$postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_DAY, 
+			before($activityPeriod.getTime(), $postpone.getPostponePeriod().getTime())
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
+
+end
+
+rule "postponeActivityLATER_THIS_WEEK"
+	when
+		$scoreParametrization : ScoreParametrization(postponeLaterThisDayAndThisWeekPenalty != null)
+
+		$activity : Activity(
+			$postpone : postpone, 
+			postpone != null, 
+			activityPeriod != null, 
+			postpone.postponePeriod != null, 
+			$activityPeriod : activityPeriod, 
+			$postpone.getPostponeType() == PostponeType.POSTPONE_LATER_THIS_WEEK, 
+			$postpone.getPostponePeriod().getWeekDay().getDayIndex() < 6, 
+			$activityPeriod.getWeekDay().getDayIndex() <= $postpone.getPostponePeriod().getWeekDay().getDayIndex()
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
+
 end
 
 // activities can now be "initialized" with null values to variables
