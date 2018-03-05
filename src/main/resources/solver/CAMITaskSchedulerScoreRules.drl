@@ -67,8 +67,8 @@ rule "periodConflict"
 	then
 
 		if (!($activity1.getImposedPeriod() != null && $activity2.getImposedPeriod() != null))
-			if (before($activityPeriod1.getTime(), $activity2.getActivityEndPeriod().getTime()) && 
-				after($activityPeriod2.getTime(), $activity1.getActivityEndPeriod().getTime()))
+			if (exclusiveBefore($activityPeriod1.getTime(), $activity2.getActivityEndPeriod().getTime()) && 
+				exclusiveAfter($activityPeriod2.getTime(), $activity1.getActivityEndPeriod().getTime()))
 	
 				scoreHolder.addHardConstraintMatch(kcontext, (-$scoreParametrization.getPeriodConflictPenalty()));
 end
@@ -367,7 +367,7 @@ rule "distanceBetweenExerciseAndMeal"
 		)
 	then
 
-		if (after($exercisePeriod.getTime(), $mealPeriod.getTime())) {
+		/*if (after($exercisePeriod.getTime(), $mealPeriod.getTime())) {
 
 			if (Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $mealPeriod.getTime())) <= 
 				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
@@ -378,7 +378,7 @@ rule "distanceBetweenExerciseAndMeal"
 
 			}
 
-		} else if (after($mealPeriod.getTime(), $exercisePeriod.getTime())) {
+		} else */if (after($mealPeriod.getTime(), $exercisePeriod.getTime())) {
 
 			if (Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) <= 
 				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
