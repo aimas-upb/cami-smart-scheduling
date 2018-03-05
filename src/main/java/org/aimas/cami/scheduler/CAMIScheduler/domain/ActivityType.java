@@ -120,7 +120,7 @@ public class ActivityType extends AbstractPersistable implements Labeled {
 	}
 
 	public Long getDurationInMillis() {
-		return duration * 1000L;
+		return duration * 60 * 1000L;
 	}
 
 }

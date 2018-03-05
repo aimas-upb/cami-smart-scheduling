@@ -76,7 +76,7 @@ public class ActivityPeriod extends AbstractPersistable implements Labeled {
 	}
 
 	public Long getTimeInMillis() {
-		return time.getHour() * time.getMinutes() * 1000L;
+		return (time.getHour() * 3600 + time.getMinutes() * 60) * 1000L;
 	}
 
 }
