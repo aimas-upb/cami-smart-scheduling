@@ -58,10 +58,12 @@ import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.notification.client.Client;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionBusiness;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
@@ -490,10 +492,10 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 	}
 
 	/**
-	 * When a new schedule is opened from file, reset all the activity domain
-	 * value ranges. In real time rescheduling, activities after the current
-	 * time will have a more restricted value range, and activities before the
-	 * current time will be immovable.
+	 * When a new schedule is opened from file, reset all the activity domain value
+	 * ranges. In real time rescheduling, activities after the current time will
+	 * have a more restricted value range, and activities before the current time
+	 * will be immovable.
 	 */
 	protected void resetValueRange() {
 
@@ -502,9 +504,35 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		solutionPanel.doProblemFactChange(scoreDirector -> {
 			for (Activity activity : activitySchedule.getActivityList()) {
 				if (activity instanceof NormalActivity) {
-					scoreDirector.beforeProblemPropertyChanged(activity);
-					((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-					scoreDirector.afterProblemPropertyChanged(activity);
+					if (activity.getActivityType().getPermittedIntervals() != null) {
+
+						List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
+
+						for (TimeInterval permittedInterval : activity.getActivityType().getPermittedIntervals()) {
+
+							int offset = 1;
+
+							TimeInterval relaxedPermittedInterval = new TimeInterval(
+									new Time(permittedInterval.getMinStart().getHour() - offset,
+											permittedInterval.getMinStart().getMinutes()),
+									new Time(permittedInterval.getMaxEnd().getHour() + offset,
+											permittedInterval.getMaxEnd().getMinutes()));
+
+							for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+								if (Utility.fullOverlap(period.getTime(), period.getTime(),
+										relaxedPermittedInterval.getMinStart(), relaxedPermittedInterval.getMaxEnd()))
+									restrictedPeriodDomain.add(period);
+							}
+						}
+
+						scoreDirector.beforeProblemPropertyChanged(activity);
+						((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
+						scoreDirector.afterProblemPropertyChanged(activity);
+					} else {
+						scoreDirector.beforeProblemPropertyChanged(activity);
+						((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+						scoreDirector.afterProblemPropertyChanged(activity);
+					}
 				}
 			}
 		});
@@ -612,8 +640,9 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 		refreshScreenDuringSolvingToggleButton = new JToggleButton(refreshScreenDuringSolvingTrueIcon, true);
 		refreshScreenDuringSolvingToggleButton.setToolTipText("Refresh screen during solving");
 		refreshScreenDuringSolvingToggleButton.addActionListener(e -> {
-			refreshScreenDuringSolvingToggleButton.setIcon(refreshScreenDuringSolvingToggleButton.isSelected()
-					? refreshScreenDuringSolvingTrueIcon : refreshScreenDuringSolvingFalseIcon);
+			refreshScreenDuringSolvingToggleButton
+					.setIcon(refreshScreenDuringSolvingToggleButton.isSelected() ? refreshScreenDuringSolvingTrueIcon
+							: refreshScreenDuringSolvingFalseIcon);
 		});
 		scorePanel.add(refreshScreenDuringSolvingToggleButton, BorderLayout.EAST);
 		return scorePanel;

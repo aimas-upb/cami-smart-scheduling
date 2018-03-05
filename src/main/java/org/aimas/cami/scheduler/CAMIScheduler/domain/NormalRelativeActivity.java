@@ -17,7 +17,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Bogdan
  *
  */
-@PlanningEntity(movableEntitySelectionFilter = MovableActivitySelectionFilter.class)
+@PlanningEntity
 @XStreamAlias("NormalRelativeActivity")
 public class NormalRelativeActivity extends Activity {
 
