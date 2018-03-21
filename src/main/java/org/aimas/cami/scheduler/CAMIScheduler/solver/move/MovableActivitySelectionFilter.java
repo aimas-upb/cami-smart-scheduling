@@ -7,7 +7,7 @@ import org.optaplanner.core.impl.score.director.ScoreDirector;
 
 /**
  * Filter used by the solver to not select some activities based on some
- * condition.
+ * conditions.
  * 
  * @author Bogdan
  *
@@ -16,7 +16,7 @@ public class MovableActivitySelectionFilter implements SelectionFilter<ActivityS
 
 	@Override
 	public boolean accept(ScoreDirector<ActivitySchedule> scoreDirector, Activity activity) {
-		return !activity.isImmovable();
+		return !activity.isImmovable() && activity.isWantedToBePlanned();
 	}
 
 }
