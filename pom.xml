@@ -36,6 +36,14 @@
             </arguments>
           </configuration>
         </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -148,30 +156,27 @@
 			<scope>test</scope>
 	</dependency>
 
-    <!-- Examples only dependencies. -->
-    <!--
-      WARNING: every examples only dependency must be properly dealt with in
-      optaplanner-distribution/src/main/assembly/assembly-optaplanner.xml
-    -->
-    <!-- Converters -->
+    <!--Vert.x dependencies. -->
     <dependency>
-      <groupId>org.jdom</groupId>
-      <artifactId>jdom</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi-ooxml</artifactId>
-      <exclusions>
-        <exclusion>
-          <!-- Collides with 'javax.xml.stream:stax-api' brought in by 'org.drools:drools-decisiontables'. -->
-          <groupId>stax</groupId>
-          <artifactId>stax-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-core</artifactId>
+			<version>${vertx.version}</version>
+	</dependency>
+	<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web</artifactId>
+			<version>${vertx.version}</version>
+	</dependency>
+	<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-client</artifactId>
+			<version>${vertx.version}</version>
+	</dependency>
+	<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-unit</artifactId>
+			<version>${vertx.version}</version>
+			<scope>test</scope>
+	</dependency>
   </dependencies>
 </project>

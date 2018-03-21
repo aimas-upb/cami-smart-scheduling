@@ -423,6 +423,12 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			} catch (ExecutionException e) {
 				throw new IllegalStateException("Solving failed.", e.getCause());
 			} finally {
+
+				// notify the thread that is waiting that the solving has ended
+				synchronized (SolverAndPersistenceFrame.this) {
+					SolverAndPersistenceFrame.this.notify();
+				}
+
 				setSolvingState(false);
 				resetScreen();
 			}
@@ -631,6 +637,10 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 			constraintMatchesDialog.setVisible(true);
 		}
 
+	}
+
+	public void loadSolution() {
+		setSolutionLoaded();
 	}
 
 	private void setSolutionLoaded() {
