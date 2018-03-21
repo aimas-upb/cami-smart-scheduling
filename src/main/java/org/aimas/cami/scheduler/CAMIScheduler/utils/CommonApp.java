@@ -42,8 +42,8 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 	protected static final Logger logger = LoggerFactory.getLogger(CommonApp.class);
 
 	/**
-	 * Some examples are not compatible with every native LookAndFeel. For
-	 * example, NurseRosteringPanel is incompatible with Mac.
+	 * Some examples are not compatible with every native LookAndFeel. For example,
+	 * NurseRosteringPanel is incompatible with Mac.
 	 */
 	public static void prepareSwingEnvironment() {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -108,4 +108,16 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 	protected abstract SolutionPanel<Solution_> createSolutionPanel();
 
 	protected abstract SolutionDao createSolutionDao();
+
+	public SolutionBusiness<Solution_> getSolutionBusiness() {
+		return solutionBusiness;
+	}
+
+	/**
+	 * Just for testing. To see what happens in GUI as a result from a client request.
+	 */
+	public SolverAndPersistenceFrame<Solution_> getSolverAndPersistenceFrame() {
+		return solverAndPersistenceFrame;
+	}
+
 }
