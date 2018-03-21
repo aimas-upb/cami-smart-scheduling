@@ -1,6 +1,7 @@
 package org.aimas.cami.scheduler.CAMIScheduler.notification.client;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.server.Runner;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
