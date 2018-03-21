@@ -1,5 +1,7 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain.solver;
 
+import java.util.Random;
+
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
@@ -41,7 +43,8 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 
 			if (rightEntity) {
 
-				// pick a NormalRelativeActivity that can be assigned to this activityEntity
+				// pick a NormalRelativeActivity that can be assigned to this
+				// activityEntity
 				// using a map
 				for (Activity activity : activitySchedule.getActivityList()) {
 					if (activity instanceof NormalRelativeActivity) {
@@ -55,20 +58,25 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 									.containsKey(relativeActivity.getActivityTypeCode())
 									&& !relativeActivity.isAssigned()) {
 
-								// scoreDirector is used to notify the solver about the changes
-								scoreDirector.beforeProblemPropertyChanged(activityEntity);
-								activityEntity.getAssignedToRelativeActivityMap()
-										.put(relativeActivity.getActivityTypeCode(), relativeActivity.getId());
-								scoreDirector.afterProblemPropertyChanged(activityEntity);
+								if (rap.getCategory() != null) {
 
-								scoreDirector.beforeProblemPropertyChanged(relativeActivity);
-								relativeActivity.setAssigned(true);
-								scoreDirector.afterProblemPropertyChanged(relativeActivity);
+									// use an assignation probability for category assignation
+									Random rand = new Random();
+									float p = rand.nextFloat();
+
+									if (p < 0.001f) {
+										assignRelativeActivity(scoreDirector, activityEntity, relativeActivity);
+
+									}
+								} else {
+									assignRelativeActivity(scoreDirector, activityEntity, relativeActivity);
+								}
 
 							}
 
 							// and set it's period
-							// scoreDirector is used to notify the solver about the changes
+							// scoreDirector is used to notify the solver about
+							// the changes
 							if (relativeActivity != null && activityEntity.getActivityPeriod() != null) {
 
 								if (activityEntity.getAssignedToRelativeActivityMap()
@@ -112,6 +120,21 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 				}
 			}
 		}
+	}
+
+	private void assignRelativeActivity(ScoreDirector scoreDirector, NormalActivity activityEntity,
+			NormalRelativeActivity relativeActivity) {
+
+		// scoreDirector is used to notify the
+		// solver about the changes
+		scoreDirector.beforeProblemPropertyChanged(activityEntity);
+		activityEntity.getAssignedToRelativeActivityMap().put(relativeActivity.getActivityTypeCode(),
+				relativeActivity.getId());
+		scoreDirector.afterProblemPropertyChanged(activityEntity);
+
+		scoreDirector.beforeProblemPropertyChanged(relativeActivity);
+		relativeActivity.setAssigned(true);
+		scoreDirector.afterProblemPropertyChanged(relativeActivity);
 	}
 
 	@Override
