@@ -387,6 +387,7 @@ public class Utility {
 		}
 
 		return false;
+	}
 
 	public static String getCategory(String particularCategory) {
 
