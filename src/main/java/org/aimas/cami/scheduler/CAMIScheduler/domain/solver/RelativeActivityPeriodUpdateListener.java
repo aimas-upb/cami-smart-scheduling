@@ -41,12 +41,15 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 
 			if (rightEntity) {
 
-				// pick a NormalRelativeActivity that can be assigned to this activityEntity using a map
+				// pick a NormalRelativeActivity that can be assigned to this activityEntity
+				// using a map
 				for (Activity activity : activitySchedule.getActivityList()) {
 					if (activity instanceof NormalRelativeActivity) {
 						NormalRelativeActivity relativeActivity = (NormalRelativeActivity) activity;
 
-						if (relativeActivity.getActivityTypeCode().equals(rap.getRelativeActivityType()) && relativeActivity.isWantedToBePlanned()) {
+						if (relativeActivity.getActivityTypeCode().equals(rap.getRelativeActivityType())) {// &&
+																											// relativeActivity.isWantedToBePlanned())
+																											// {
 
 							if (!activityEntity.getAssignedToRelativeActivityMap()
 									.containsKey(relativeActivity.getActivityTypeCode())

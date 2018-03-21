@@ -3,6 +3,8 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 import java.util.List;
 import java.util.Map;
 
+import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.ActivityDifficultyWeightFactory;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.ActivityDifficultyWeightFactory.ActivityDifficultyWeight;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.ReinitializeActivityFilter;
@@ -18,7 +20,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Bogdan
  *
  */
-@PlanningEntity(movableEntitySelectionFilter = MovableActivitySelectionFilter.class)
+@PlanningEntity(movableEntitySelectionFilter = MovableActivitySelectionFilter.class, difficultyWeightFactoryClass = ActivityDifficultyWeightFactory.class)
 @XStreamAlias("NormalActivity")
 public class NormalActivity extends Activity {
 
@@ -34,7 +36,10 @@ public class NormalActivity extends Activity {
 
 	@Override
 	@PlanningVariable(valueRangeProviderRefs = {
-			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class, nullable = true, reinitializeVariableEntityFilter = ReinitializeActivityFilter.class)
+			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class) // , nullable = true,
+																							// reinitializeVariableEntityFilter
+																							// =
+																							// ReinitializeActivityFilter.class)
 	public ActivityPeriod getActivityPeriod() {
 		return activityPeriod;
 	}
