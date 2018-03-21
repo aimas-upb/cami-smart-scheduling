@@ -19,48 +19,21 @@
     <bestScoreLimit>0hard/0soft</bestScoreLimit>
   </termination>
   <constructionHeuristic>
-    <queuedEntityPlacer>
-      <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
-        <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
-      </entitySelector>
-      <changeMoveSelector>
-        <entitySelector mimicSelectorRef="placerEntitySelector"/>
-      </changeMoveSelector>
-    </queuedEntityPlacer>
-  </constructionHeuristic>
-  <constructionHeuristic>
-    <queuedEntityPlacer>
-      <entitySelector id="placerEntitySelector">
-        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
-        <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
-      </entitySelector>
-      <changeMoveSelector>
-        <entitySelector mimicSelectorRef="placerEntitySelector"/>
-      </changeMoveSelector>
-    </queuedEntityPlacer>
+    <constructionHeuristicType>STRONGEST_FIT_DECREASING</constructionHeuristicType>
   </constructionHeuristic>
   <localSearch>
     <termination>
       <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
     </termination>
     <unionMoveSelector>
-      <changeMoveSelector/>
-      <swapMoveSelector/>
-      <changeMoveSelector>
-      	<cacheType>PHASE</cacheType>
-        <entitySelector>
-          <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.ReinitializeActivityFilter</filterClass>
-        </entitySelector>
-      </changeMoveSelector>
 	  <changeMoveSelector>
 	    <cacheType>PHASE</cacheType>
+	    <selectionOrder>RANDOM</selectionOrder>
         <entitySelector>
           <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
         </entitySelector>
       </changeMoveSelector>
+      <swapMoveSelector/>
     </unionMoveSelector>
     <acceptor>
       <simulatedAnnealingStartingTemperature>2hard/200soft</simulatedAnnealingStartingTemperature>
@@ -68,6 +41,8 @@
     </acceptor>
     <forager>
       <acceptedCountLimit>1</acceptedCountLimit>
+      <pickEarlyType>FIRST_BEST_SCORE_IMPROVING</pickEarlyType>
+      <!--<pickEarlyType>FIRST_LAST_STEP_SCORE_IMPROVING</pickEarlyType>-->
     </forager>
   </localSearch>
 </solver>
