@@ -354,6 +354,7 @@ public class Utility {
 		}
 	}
 
+
 	/**
 	 * Get the offset sign for a relative (activity) type.
 	 * 
@@ -386,6 +387,35 @@ public class Utility {
 		}
 
 		return false;
+
+	public static String getCategory(String particularCategory) {
+
+		if (particularCategory.equals("Indoor physical exercises")
+				|| particularCategory.equals("Outdoor physical exercises"))
+			return "Exercise";
+		else if (particularCategory.equals("Imposed/Suggested Health measurements")
+				|| particularCategory.equals("Medication intake"))
+			return "Medication";
+		else
+			return "Personal";
+
+	}
+
+	public static String getActivityCategory(Activity activity) {
+
+		if (activity.getActivityCategory() == null)
+			return "Personal";
+
+		if (activity.getActivityCategory().getCode().equals("Indoor physical exercises")
+				|| activity.getActivityCategory().getCode().equals("Outdoor physical exercises"))
+			return "Exercise";
+		else if (activity.getActivityCategory().getCode().equals("Imposed/Suggested Health measurements")
+				|| activity.getActivityCategory().getCode().equals("Medication intake"))
+			return "Medication";
+		else
+			return "Personal";
+
+
 	}
 
 }
