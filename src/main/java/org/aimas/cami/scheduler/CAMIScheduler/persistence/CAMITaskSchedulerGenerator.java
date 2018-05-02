@@ -17,7 +17,6 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Difficulty;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
@@ -27,6 +26,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.LoggingMain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
 
