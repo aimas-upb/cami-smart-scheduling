@@ -1,13 +1,16 @@
 package org.aimas.cami.scheduler.CAMIScheduler.server;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.ActivityProperties;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
 public class RouterConfigActivitySchedule extends RouterConfigImplementation {
@@ -37,16 +40,15 @@ public class RouterConfigActivitySchedule extends RouterConfigImplementation {
 
 		List<Activity> activityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution().getActivityList();
 
-		StringBuilder activitySchedule = new StringBuilder();
+		List<ActivityProperties> activityPropertiesList = new ArrayList<>();
 
 		for (Activity activity : activityList) {
-			activitySchedule.append("Activity ["
-					+ (activity.getActivityTypeCode() + "] | " + activity.getActivityPeriodWeekday().toString() + " | "
-							+ activity.getActivityPeriodTime().toString())
-					+ " || \n");
+			activityPropertiesList.add(new ActivityProperties(activity.getActivityTypeCode(),
+					activity.getActivityPeriod().getLabel(), activity.getActivityDuration()));
 		}
 
 		// send the response(modified activities) back to client
-		response.end(activitySchedule.toString());
+		response.putHeader("content-type", "application/json; charset=utf-8")
+				.end(Json.encodePrettily(activityPropertiesList));
 	}
 }
