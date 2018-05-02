@@ -8,10 +8,11 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolverAndPersistenceFrame;
 
 import com.thoughtworks.xstream.XStream;
@@ -266,27 +267,25 @@ public class SolutionUtils<Solution_> {
 		});
 	}
 
-	public List<String> getChangedActivites(List<Activity> beforeAddActivityList, List<Activity> afterAddActivityList) {
+	public List<ChangedActivity> getChangedActivites(List<Activity> beforeAddActivityList,
+			List<Activity> afterAddActivityList) {
 
-		List<String> changedActivities = new ArrayList<>();
-		boolean foundSameActivity = false;
+		List<ChangedActivity> changedActivities = new ArrayList<>();
 
 		for (Activity activity1 : beforeAddActivityList) {
-			foundSameActivity = false;
 			for (Activity activity2 : afterAddActivityList) {
 
-				if (activity1.getActivityTypeCode() == activity2.getActivityTypeCode()) {
+				if (activity1.getActivityTypeCode() == activity2.getActivityTypeCode()
+						&& activity1.getId() == activity2.getId()) {
 
-					// if we found an activity with the same name in the same period
-					// even if it has different id(this is the case of many-instances activities)
-					if (!Utility.compareActivityPeriods(activity1, activity2))
-						foundSameActivity = true;
-
+					if (Utility.compareActivityPeriods(activity1, activity2)) {
+						changedActivities.add(new ChangedActivity(activity1.getActivityTypeCode(),
+								activity1.getActivityPeriod().getLabel(), activity2.getActivityPeriod().getLabel(),
+								activity1.getActivityDuration()));
+						break;
+					}
 				}
 			}
-
-			if (!foundSameActivity)
-				changedActivities.add(activity1.getActivityTypeCode()); // add the name of the activity
 		}
 
 		return changedActivities;

@@ -5,10 +5,13 @@ import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivities;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionUtils;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 
 public class RouterConfigAddNewActivity extends RouterConfigImplementation {
@@ -72,21 +75,18 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 					.getActivityList();
 
 			// get the modified activities(activity names)
-			List<String> changedActivitiesList = solutionUtils.getChangedActivites(beforeAddActivityList,
+			List<ChangedActivity> changedActivities = solutionUtils.getChangedActivites(beforeAddActivityList,
 					afterAddActivityList);
 
-			StringBuilder changedActivities = new StringBuilder();
-
-			System.out.println(
-					"How many activities have modified? Answer: " + changedActivitiesList.size() + " activities.");
-
-			for (String activity : changedActivitiesList) {
-				changedActivities.append(activity + "||");
-			}
+			System.out
+					.println("How many activities have modified? Answer: " + changedActivities.size() + " activities.");
 
 			// send the response(modified activities) back to client
-			response.end(changedActivities.toString());
+			response.putHeader("content-type", "application/json; charset=utf-8")
+					.end(Json.encodePrettily(new ChangedActivities(changedActivities.size(), changedActivities, 0)));
 
+			// save changed solution
+			camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);
 		}, handler -> {
 			System.out.println("The result is: " + handler.result());
 		});
