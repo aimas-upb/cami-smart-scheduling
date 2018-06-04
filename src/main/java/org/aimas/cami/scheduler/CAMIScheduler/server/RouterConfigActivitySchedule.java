@@ -8,7 +8,6 @@ import org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ActivityProperties;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
@@ -17,7 +16,7 @@ public class RouterConfigActivitySchedule extends RouterConfigImplementation {
 
 	private CAMITaskSchedulerApp camiTaskSchedulerApp;
 
-	public RouterConfigActivitySchedule(Vertx vertx, CAMITaskSchedulerApp camiTaskSchedulerApp) {
+	public RouterConfigActivitySchedule(CAMITaskSchedulerApp camiTaskSchedulerApp) {
 		super();
 		this.camiTaskSchedulerApp = camiTaskSchedulerApp;
 	}

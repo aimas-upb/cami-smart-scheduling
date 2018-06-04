@@ -8,7 +8,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 
 public abstract class RouterConfig {
 
-	public abstract Router createRouterNewActivity(Vertx vertx, CAMITaskSchedulerApp camiTaskSchedulerApp);
+	public abstract Router createRoutes(Vertx vertx, CAMITaskSchedulerApp camiTaskSchedulerApp);
 
 	protected Router createRouter(Vertx vertx) {
 		Router router = Router.router(vertx);
