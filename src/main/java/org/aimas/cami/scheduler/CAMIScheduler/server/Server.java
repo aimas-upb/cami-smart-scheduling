@@ -24,7 +24,7 @@ public class Server extends AbstractVerticle {
 
 		// create a new empty router
 		RouterConfig routerConfig = new RouterConfigImplementation();
-		router = routerConfig.createRouterNewActivity(vertx, camiTaskSchedulerApp);
+		router = routerConfig.createRoutes(vertx, camiTaskSchedulerApp);
 
 		vertx.createHttpServer().requestHandler(router::accept).listen(SERVER_PORT, SERVER_HOST, res -> {
 			if (res.succeeded()) {
