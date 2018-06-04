@@ -696,7 +696,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			JPanel listFieldsPanel = new JPanel(new GridLayout(1, 3));
+			JPanel listFieldsPanel = new JPanel(new GridLayout(1, 4));
 
 			JButton setPeriodButton = SwingUtils.makeSmallButton(new JButton(new ActivityAction(activity)));
 			listFieldsPanel.add(setPeriodButton);
@@ -706,6 +706,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 			JButton addNotificationButton = SwingUtils.makeSmallButton(new JButton(new ActivityNotification(activity)));
 			listFieldsPanel.add(addNotificationButton);
+			
+			JButton deleteActivityButton = SwingUtils.makeSmallButton(new JButton(new DeleteActivity(activity)));
+			listFieldsPanel.add(deleteActivityButton);
 
 			if (activity.getActivityPeriod() == null) {
 				addPostponeButton.setEnabled(false);
@@ -724,6 +727,9 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	}
 
+	/**
+	 * Send a notification to an endpoint.
+	 */
 	private class ActivityNotification extends AbstractAction {
 
 		private Activity activity;
@@ -747,6 +753,45 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 	}
 
 	/**
+	 * Delete an activity from the schedule.
+	 */
+	private class DeleteActivity extends AbstractAction {
+
+		private Activity activity;
+
+		public DeleteActivity(Activity activity) {
+			super("Delete activity");
+			this.activity = activity;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			doProblemFactChange(scoreDirector-> {
+				ActivitySchedule activitySchedule = scoreDirector.getWorkingSolution();
+				Activity activityEntity = scoreDirector.lookUpWorkingObject(activity);
+
+				// it has been already deleted
+				if (activityEntity == null) {
+					return;
+				}
+
+				// shallow clone the activityList
+				List<Activity> activityList = new ArrayList<>(activitySchedule.getActivityList());
+				activitySchedule.setActivityList(activityList);
+
+				scoreDirector.beforeEntityRemoved(activityEntity);
+				activityList.remove(activityEntity);
+				scoreDirector.afterEntityRemoved(activityEntity);
+				scoreDirector.triggerVariableListeners();
+			});
+
+			System.out.println("Deleted " + activity.getActivityTypeCode());
+		}
+
+	}
+
+	/**
 	 * Add a new activity to schedule using the GUI.
 	 */
 	private class AddActivityOptionAction extends AbstractAction {
@@ -759,11 +804,11 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		public void actionPerformed(ActionEvent arg0) {
 			JPanel listFieldsPanel = new JPanel(new GridLayout(1, 2));
 
-			JButton setPeriodButton = SwingUtils.makeSmallButton(new JButton(new AddActivityAction()));
-			listFieldsPanel.add(setPeriodButton);
+			JButton addNormalActivityButton = SwingUtils.makeSmallButton(new JButton(new AddActivityAction()));
+			listFieldsPanel.add(addNormalActivityButton);
 
-			JButton addPostponeButton = SwingUtils.makeSmallButton(new JButton(new AddRelativeActivityAction()));
-			listFieldsPanel.add(addPostponeButton);
+			JButton addNormalRelativeActivityButton = SwingUtils.makeSmallButton(new JButton(new AddRelativeActivityAction()));
+			listFieldsPanel.add(addNormalRelativeActivityButton);
 
 			int result = JOptionPane.showConfirmDialog(CAMITaskSchedulerPanel.this.getRootPane(), listFieldsPanel,
 					"Select an option", JOptionPane.OK_CANCEL_OPTION);
