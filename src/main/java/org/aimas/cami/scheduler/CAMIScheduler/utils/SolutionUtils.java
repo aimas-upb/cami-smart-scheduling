@@ -12,8 +12,10 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.DeletedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolverAndPersistenceFrame;
+import org.optaplanner.core.impl.score.director.ScoreDirector;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -223,6 +225,61 @@ public class SolutionUtils<Solution_> {
 		}
 
 		solverAndPersistenceFrame.startSolveAction();
+	}
+
+	public void deleteActivityFromSchedule(SolutionBusiness<Solution_> solutionBusiness, Object xmlActivity) {
+
+		ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+
+		// shallow clone the activityList
+		List<Activity> activityList = new ArrayList<>(activitySchedule.getActivityList());
+		activitySchedule.setActivityList(activityList);
+
+		List<Activity> deletedActivities = new ArrayList<>();
+
+		DeletedActivity deletedActivityDAO = null;
+
+		XStream xStream = new XStream();
+		xStream.alias("DeletedActivity", DeletedActivity.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		if (xmlActivity instanceof String) {
+			deletedActivityDAO = (DeletedActivity) xStream.fromXML((String) xmlActivity);
+		} else {
+			deletedActivityDAO = (DeletedActivity) xStream.fromXML((Reader) xmlActivity);
+		}
+
+		for (Activity activity : activitySchedule.getActivityList()) {
+			if (activity.getActivityTypeCode().equals(deletedActivityDAO.getName())
+					&& activity.getUuid().equals(deletedActivityDAO.getUuid()))
+
+				deletedActivities.add(activity);
+
+		}
+
+		for (Activity activity : deletedActivities) {
+			solutionBusiness.doProblemFactChange(scoreDirector -> {
+				deleteActivity(scoreDirector, activity, activityList);
+			});
+		}
+	}
+
+	public void deleteActivity(ScoreDirector<Solution_> scoreDirector, Activity activity, List<Activity> activityList) {
+
+		Activity activityEntity = scoreDirector.lookUpWorkingObject(activity);
+
+		// it has been already deleted
+		if (activityEntity == null) {
+			return;
+		}
+
+		scoreDirector.beforeEntityRemoved(activityEntity);
+		activityList.remove(activityEntity);
+		scoreDirector.afterEntityRemoved(activityEntity);
+
+		scoreDirector.triggerVariableListeners();
+
 	}
 
 	/**
