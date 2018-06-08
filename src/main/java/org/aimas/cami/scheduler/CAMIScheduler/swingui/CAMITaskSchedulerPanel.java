@@ -766,24 +766,15 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+
 			doProblemFactChange(scoreDirector-> {
 				ActivitySchedule activitySchedule = scoreDirector.getWorkingSolution();
-				Activity activityEntity = scoreDirector.lookUpWorkingObject(activity);
-
-				// it has been already deleted
-				if (activityEntity == null) {
-					return;
-				}
 
 				// shallow clone the activityList
 				List<Activity> activityList = new ArrayList<>(activitySchedule.getActivityList());
 				activitySchedule.setActivityList(activityList);
 
-				scoreDirector.beforeEntityRemoved(activityEntity);
-				activityList.remove(activityEntity);
-				scoreDirector.afterEntityRemoved(activityEntity);
-				scoreDirector.triggerVariableListeners();
+				solutionUtils.deleteActivity(scoreDirector, activity, activityList);
 			});
 
 			System.out.println("Deleted " + activity.getActivityTypeCode());
