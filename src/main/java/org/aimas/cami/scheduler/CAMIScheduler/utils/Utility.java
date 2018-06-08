@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
@@ -354,7 +355,6 @@ public class Utility {
 		}
 	}
 
-
 	/**
 	 * Get the offset sign for a relative (activity) type.
 	 * 
@@ -416,7 +416,10 @@ public class Utility {
 		else
 			return "Personal";
 
+	}
 
+	public static String generateRandomUuid() {
+		return UUID.randomUUID().toString().replace("-", "");
 	}
 
 }
