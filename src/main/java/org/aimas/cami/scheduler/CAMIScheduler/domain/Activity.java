@@ -31,6 +31,7 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 
 	private boolean wantedToBePlanned;
 	private boolean onDropdown;
+	private String uuid;
 
 	public ActivityType getActivityType() {
 		return activityType;
@@ -72,6 +73,14 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 
 	public void setOnDropdown(boolean onDropdown) {
 		this.onDropdown = onDropdown;
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
 	public abstract ActivityPeriod getActivityPeriod();
