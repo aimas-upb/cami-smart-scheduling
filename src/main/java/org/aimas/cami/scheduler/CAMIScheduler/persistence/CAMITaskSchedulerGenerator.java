@@ -26,9 +26,11 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.DeletedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.LoggingMain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -49,6 +51,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		CAMITaskSchedulerGenerator camiTSG = new CAMITaskSchedulerGenerator();
 		camiTSG.writeActivitySchedule();
 		camiTSG.generateNewActivityExampleInput();
+		camiTSG.generateDeletedActivityExampleInput();
 	}
 
 	protected final SolutionDao solutionDao;
@@ -86,6 +89,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		setImposedActivities(activitySchedule);
 		predefinedScoreParametrization(activitySchedule);
 		setPeriodDomainRange(activitySchedule);
+		setUuid(activitySchedule);
 
 		return activitySchedule;
 	}
@@ -141,7 +145,29 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
 			xStream.toXML(na, writer);
 		} catch (IOException e) {
-			throw new IllegalArgumentException("Failed writing outputSolutionFile (" + outputFile + ").", e);
+			throw new IllegalArgumentException("Failed writing to file (" + outputFile + ").", e);
+		}
+
+	}
+	
+	private void generateDeletedActivityExampleInput() {
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Delete Activity" + ".xml");
+
+		DeletedActivity deletedActivity = new DeletedActivity();
+		deletedActivity.setId(0L);
+		deletedActivity.setName("Breakfast");
+		deletedActivity.setUuid("4510cd8ee1a042978377339448d4b8bf");
+
+		// serialize the object
+		XStream xStream = new XStream();
+		xStream.alias("DeletedActivity", DeletedActivity.class);
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
+			xStream.toXML(deletedActivity, writer);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed writing to file (" + outputFile + ").", e);
 		}
 
 	}
@@ -755,6 +781,16 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		for (Activity activity : activitySchedule.getActivityList())
 			if (activity instanceof NormalActivity)
 				((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+	}
+
+	/**
+	 * Set an UUID for every activity.
+	 * 
+	 * @param activitySchedule
+	 */
+	private void setUuid(ActivitySchedule activitySchedule) {
+		for (Activity activity : activitySchedule.getActivityList())
+			activity.setUuid(Utility.generateRandomUuid());
 	}
 
 	private void createTimeList(ActivitySchedule activitySchedule) {
