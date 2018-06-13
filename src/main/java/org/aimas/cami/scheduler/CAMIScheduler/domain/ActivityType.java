@@ -2,7 +2,7 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
 import java.util.List;
 
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
+import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;

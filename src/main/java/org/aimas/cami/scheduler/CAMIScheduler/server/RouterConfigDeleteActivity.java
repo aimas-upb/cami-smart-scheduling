@@ -34,10 +34,7 @@ public class RouterConfigDeleteActivity extends RouterConfigImplementation {
 		}
 
 		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
-		camiTaskSchedulerApp.getSolutionBusiness().openSolution(solvedSchedule);
-
-		// just to confirm(GUI) that the solution was loaded
-		camiTaskSchedulerApp.getSolverAndPersistenceFrame().loadSolution();
+		camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
 
 		solutionUtils.deleteActivityFromSchedule(camiTaskSchedulerApp.getSolutionBusiness(), xmlActivity);
 
@@ -45,7 +42,7 @@ public class RouterConfigDeleteActivity extends RouterConfigImplementation {
 		response.end();
 
 		// visual proof of delete action
-		camiTaskSchedulerApp.getSolverAndPersistenceFrame().resetScreen();
+		camiTaskSchedulerApp.getProblemSolver().resetScreen();
 
 		// save changed solution
 		camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);

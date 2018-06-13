@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.aimas.cami.scheduler.CAMIScheduler.swingui;
+package org.aimas.cami.scheduler.CAMIScheduler.solver.solver;
 
 /**
  * @see LabeledComboBoxRenderer

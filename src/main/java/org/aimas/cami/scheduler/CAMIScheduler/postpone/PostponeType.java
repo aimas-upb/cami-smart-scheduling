@@ -1,6 +1,6 @@
 package org.aimas.cami.scheduler.CAMIScheduler.postpone;
 
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
+import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.Labeled;
 
 /**
  * The type of the postpone.

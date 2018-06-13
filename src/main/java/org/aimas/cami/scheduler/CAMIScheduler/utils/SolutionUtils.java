@@ -14,7 +14,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.DeletedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivity;
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolverAndPersistenceFrame;
+import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.ProblemSolver;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
 import com.thoughtworks.xstream.XStream;
@@ -22,7 +22,7 @@ import com.thoughtworks.xstream.XStream;
 public class SolutionUtils<Solution_> {
 
 	public void addNewActivityFromXML(SolutionBusiness<Solution_> solutionBusiness, Object xmlActivity,
-			SolverAndPersistenceFrame solverAndPersistenceFrame) {
+			ProblemSolver problemSolver) {
 
 		NewActivity newActivityDAO = null;
 
@@ -224,7 +224,7 @@ public class SolutionUtils<Solution_> {
 
 		}
 
-		solverAndPersistenceFrame.startSolveAction();
+		problemSolver.startSolveAction();
 	}
 
 	public void deleteActivityFromSchedule(SolutionBusiness<Solution_> solutionBusiness, Object xmlActivity) {

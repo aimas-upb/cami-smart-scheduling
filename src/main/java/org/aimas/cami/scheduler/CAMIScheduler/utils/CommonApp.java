@@ -16,12 +16,7 @@
 
 package org.aimas.cami.scheduler.CAMIScheduler.utils;
 
-import java.awt.Component;
-
-import javax.swing.WindowConstants;
-
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolutionPanel;
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolverAndPersistenceFrame;
+import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.ProblemSolver;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.solver.Solver;
 import org.optaplanner.core.api.solver.SolverFactory;
@@ -48,8 +43,6 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 	public static void prepareSwingEnvironment() {
 		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 		loggerContext.stop();
-		SwingUncaughtExceptionHandler.register();
-		SwingUtils.fixateLookAndFeel();
 	}
 
 	protected final String name;
@@ -57,7 +50,7 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 	protected final String solverConfig;
 	protected final String iconResource;
 
-	protected SolverAndPersistenceFrame<Solution_> solverAndPersistenceFrame;
+	protected ProblemSolver<Solution_> problemSolver;
 	protected SolutionBusiness<Solution_> solutionBusiness;
 
 	protected CommonApp(String name, String description, String solverConfig, String iconResource) {
@@ -80,16 +73,9 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 	}
 
 	public void init() {
-		init(null, true);
-	}
-
-	public void init(Component centerForComponent, boolean exitOnClose) {
 		solutionBusiness = createSolutionBusiness();
-		solverAndPersistenceFrame = new SolverAndPersistenceFrame<>(solutionBusiness, createSolutionPanel());
-		solverAndPersistenceFrame.setDefaultCloseOperation(
-				exitOnClose ? WindowConstants.EXIT_ON_CLOSE : WindowConstants.DISPOSE_ON_CLOSE);
-		solverAndPersistenceFrame.init(centerForComponent);
-		solverAndPersistenceFrame.setVisible(true);
+		problemSolver = new ProblemSolver<>(solutionBusiness);
+		problemSolver.init();
 	}
 
 	public SolutionBusiness<Solution_> createSolutionBusiness() {
@@ -105,8 +91,6 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 		return solverFactory.buildSolver();
 	}
 
-	protected abstract SolutionPanel<Solution_> createSolutionPanel();
-
 	protected abstract SolutionDao createSolutionDao();
 
 	public SolutionBusiness<Solution_> getSolutionBusiness() {
@@ -116,8 +100,8 @@ public abstract class CommonApp<Solution_> extends LoggingMain {
 	/**
 	 * Just for testing. To see what happens in GUI as a result from a client request.
 	 */
-	public SolverAndPersistenceFrame<Solution_> getSolverAndPersistenceFrame() {
-		return solverAndPersistenceFrame;
+	public ProblemSolver<Solution_> getProblemSolver() {
+		return problemSolver;
 	}
 
 }

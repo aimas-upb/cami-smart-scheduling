@@ -1,6 +1,6 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
+import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.Labeled;
 
 /**
  * Type of relativity that an activity has on other activity.

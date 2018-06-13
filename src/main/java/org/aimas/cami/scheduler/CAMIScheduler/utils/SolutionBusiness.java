@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 
+import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.ProblemSolver;
 import org.apache.commons.io.FileUtils;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.score.Score;
@@ -45,7 +46,6 @@ import org.optaplanner.core.impl.score.director.InnerScoreDirector;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 import org.optaplanner.core.impl.score.director.ScoreDirectorFactory;
 import org.optaplanner.core.impl.solver.ProblemFactChange;
-import org.aimas.cami.scheduler.CAMIScheduler.swingui.SolverAndPersistenceFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,7 +170,7 @@ public class SolutionBusiness<Solution_> {
 		return solver.isSolving();
 	}
 
-	public void registerForBestSolutionChanges(final SolverAndPersistenceFrame solverAndPersistenceFrame) {
+	public void registerForBestSolutionChanges(final ProblemSolver solverAndPersistenceFrame) {
 		solver.addEventListener(event -> {
 			// Called on the Solver thread, so not on the Swing Event thread
 			/*

@@ -32,10 +32,7 @@ public class RouterConfigActivitySchedule extends RouterConfigImplementation {
 		}
 
 		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
-		camiTaskSchedulerApp.getSolutionBusiness().openSolution(solvedSchedule);
-
-		// just to confirm(GUI) that the solution was loaded
-		camiTaskSchedulerApp.getSolverAndPersistenceFrame().loadSolution();
+		camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
 
 		List<Activity> activityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution().getActivityList();
 

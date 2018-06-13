@@ -47,10 +47,7 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 
 		// get first solution
 		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
-		camiTaskSchedulerApp.getSolutionBusiness().openSolution(solvedSchedule);
-
-		// just to confirm(GUI) that the solution was loaded
-		camiTaskSchedulerApp.getSolverAndPersistenceFrame().loadSolution();
+		camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
 
 		List<Activity> beforeAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
 				.getActivityList();
@@ -59,12 +56,12 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 
 			// add the new activity to the schedule
 			solutionUtils.addNewActivityFromXML(camiTaskSchedulerApp.getSolutionBusiness(), xmlActivity,
-					camiTaskSchedulerApp.getSolverAndPersistenceFrame());
+					camiTaskSchedulerApp.getProblemSolver());
 
 			// wait on solving
-			synchronized (camiTaskSchedulerApp.getSolverAndPersistenceFrame()) {
+			synchronized (camiTaskSchedulerApp.getProblemSolver()) {
 				try {
-					camiTaskSchedulerApp.getSolverAndPersistenceFrame().wait();
+					camiTaskSchedulerApp.getProblemSolver().wait();
 				} catch (InterruptedException e) {
 					// happens if someone interrupts your thread
 				}
