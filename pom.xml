@@ -27,7 +27,7 @@
           <!-- WARNING: This configuration must be run with "mvn exec:java" not "mvn exec:exec". -->
           <!-- It is impossible to write a configuration that is compatible with both exec:java and exec:exec -->
           <configuration>
-            <mainClass>org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp</mainClass>
+            <mainClass>org.aimas.cami.scheduler.CAMIScheduler.server.Server</mainClass>
             <arguments>
               <argument>-Xms256m</argument>
               <!-- Most examples run (potentially slower) with max heap of 128 MB (so -Xmx128m), but 1 example's dataset requires 1.5 GB -->
