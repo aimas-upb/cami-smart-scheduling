@@ -26,7 +26,7 @@ paths:
         - activity
       summary: Add a new activity to the schedule
       description: ''
-      operationId: addActivity
+      operationId: putNewActivity
       consumes:
         - application/xml
       produces:
@@ -73,6 +73,33 @@ paths:
         - cami_auth:
             - 'write:schedule'
             - 'read:schedule'
+  /delete_activity:
+    delete:
+      tags:
+        - activity
+      summary: Delete an activity
+      description: Delete an activity from schedule
+      operationId: deleteActivity
+      consumes:
+        - application/xml
+      parameters:
+        - in: body
+          name: body
+          description: Activity object properties that needs to be deleted from the schedule
+          required: true
+          schema:
+            $ref: '#/definitions/DeletedActivity'
+      produces: 
+        - ""
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid status value
+      security:
+        - cami_auth:
+            - 'write:schedule'
+            - 'read:schedule'
 securityDefinitions:
   cami_auth:
     type: oauth2
@@ -97,6 +124,8 @@ definitions:
         type: string
       activityDurationInMinutes:
         type: integer
+    xml:
+      name: ActivityProperties
   ChangedActivities:
     type: object
     properties:
@@ -106,6 +135,8 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/ChangedActivity'
+    xml:
+      name: ChangedActivities
   ChangedActivity:
     type: object
     properties:
@@ -119,6 +150,8 @@ definitions:
         type: string
       activityDurationInMinutes:
         type: integer
+    xml:
+      name: ChangedActivity
   ActivityCategory:
     type: object
     properties:
@@ -139,6 +172,8 @@ definitions:
         type: string
       description:
         type: string
+    xml:
+      name: ActivityDomain
   Activity:
     type: object
     properties:
@@ -147,26 +182,32 @@ definitions:
         format: int64
       activityType:
         $ref: '#/definitions/ActivityType'
+    xml:
+      name: Activity
   NormalActivity:
     type: object
-    allOf: 
+    allOf:
       - $ref: '#/definitions/Activity'
     properties:
-      activityPeriod: 
+      activityPeriod:
         $ref: '#/definitions/ActivityPeriod'
-    description: "Extends 'Activity'"
+    description: Extends 'Activity'
+    xml:
+      name: NormalActivity
   NormalRelativeActivity:
     type: object
-    allOf: 
+    allOf:
       - $ref: '#/definitions/Activity'
     properties:
-      activityPeriod: 
+      activityPeriod:
         $ref: '#/definitions/ActivityPeriod'
-      offset: 
+      offset:
         type: integer
-      assigned: 
+      assigned:
         type: boolean
-    description: "Extends 'Activity'"
+    description: Extends 'Activity'
+    xml:
+      name: NormalRelativeActivity
   ActivityType:
     type: object
     properties:
@@ -192,6 +233,8 @@ definitions:
         $ref: '#/definitions/ActivityCategory'
       description:
         type: string
+    xml:
+      name: ActivityType
   ActivityPeriod:
     type: object
     properties:
@@ -199,6 +242,8 @@ definitions:
         $ref: '#/definitions/Time'
       weekDay:
         $ref: '#/definitions/WeekDay'
+    xml:
+      name: ActivityPeriod
   Time:
     type: object
     properties:
@@ -206,12 +251,25 @@ definitions:
         type: integer
       minutes:
         type: integer
+    xml:
+      name: Time
   WeekDay:
     type: object
     properties:
       dayIndex:
         type: integer
+        description: "Day of week"
+        enum:
+          - MONDAY
+          - TUESDAY
+          - WEDNESDAY
+          - THURSDAY
+          - FRIDAY
+          - SATURDAY
+          - SUNDAY
     description: Uses WeekDays to get a value using dayIndex
+    xml:
+      name: WeekDay
   WeekDays:
     type: integer
     enum:
@@ -222,6 +280,8 @@ definitions:
       - FRIDAY
       - SATURDAY
       - SUNDAY
+    xml:
+      name: WeekDays
   TimeInterval:
     type: object
     properties:
@@ -229,6 +289,8 @@ definitions:
         $ref: '#/definitions/Time'
       maxEnd:
         $ref: '#/definitions/Time'
+    xml:
+      name: TimeInterval
   PeriodInterval:
     type: object
     properties:
@@ -236,20 +298,26 @@ definitions:
         $ref: '#/definitions/ActivityPeriod'
       endPeriod:
         $ref: '#/definitions/ActivityPeriod'
+    xml:
+      name: PeriodInterval
   Difficulty:
     type: integer
     enum:
       - EASY
       - MEDIUM
       - HARD
+    xml:
+      name: Difficulty
   RelativeType:
     type: integer
     enum:
       - BEFORE
       - AFTER
+    xml:
+      name: RelativeType
   NewActivity:
     type: object
-    description: "Can use NormalActivity or NormalRelativeActivity"
+    description: Can use NormalActivity or NormalRelativeActivity
     properties:
       activity:
         $ref: '#/definitions/Activity'
@@ -258,7 +326,17 @@ definitions:
       relativeActivityPenalty:
         $ref: '#/definitions/RelativeActivityPenalty'
     xml:
-      name: Activity
+      name: NewActivity
+  DeletedActivity:
+    type: object
+    description: Activity that has to be deleted
+    properties:
+      name:
+        type: string
+      uuid:
+        type: string
+    xml:
+      name: DeletedActivity
   ExcludedTimePeriodsPenalty:
     type: object
     properties:
@@ -268,6 +346,8 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/PeriodInterval'
+    xml:
+      name: ExcludedTimePeriodsPenalty
   RelativeActivityPenalty:
     type: object
     properties:
@@ -279,6 +359,8 @@ definitions:
         type: string
       category:
         type: string
+    xml:
+      name: RelativeActivityPenalty
   ApiResponse:
     type: object
     properties:
