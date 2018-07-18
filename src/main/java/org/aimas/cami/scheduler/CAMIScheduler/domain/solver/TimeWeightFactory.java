@@ -17,78 +17,79 @@ import org.optaplanner.core.impl.heuristic.selector.common.decorator.SelectionSo
  */
 public class TimeWeightFactory implements SelectionSorterWeightFactory<ActivitySchedule, ActivityPeriod> {
 
-	public static class TimeslotWeight implements Comparable<TimeslotWeight> {
+    public static class TimeslotWeight implements Comparable<TimeslotWeight> {
 
-		private final ActivityPeriod period;
-		private final int penalty;
+        private final ActivityPeriod period;
+        private final int penalty;
 
-		public TimeslotWeight(ActivityPeriod period, int penalty) {
-			super();
-			this.period = period;
-			this.penalty = penalty;
-		}
+        public TimeslotWeight(ActivityPeriod period, int penalty) {
+            super();
+            this.period = period;
+            this.penalty = penalty;
+        }
 
-		@Override
-		public int compareTo(TimeslotWeight other) {
-			// bigger penalty -> weaker
-			return new CompareToBuilder().append(other.penalty, this.penalty)
-					.append(period.getWeekDay().getDayIndex(), other.period.getWeekDay().getDayIndex())
-					.append(period.getTime().getHour(), other.period.getTime().getHour())
-					.append(period.getTime().getMinutes(), other.period.getTime().getMinutes())
-					.append(period.getId(), other.period.getId()).toComparison();
-		}
+        @Override
+        public int compareTo(TimeslotWeight other) {
+            // bigger penalty -> weaker
+            return new CompareToBuilder().append(other.penalty, this.penalty)
+                    .append(period.getWeekDay().getDayIndex(), other.period.getWeekDay().getDayIndex())
+                    .append(period.getTime().getHour(), other.period.getTime().getHour())
+                    .append(period.getTime().getMinutes(), other.period.getTime().getMinutes())
+                    .append(period.getId(), other.period.getId()).toComparison();
+        }
 
-	}
+    }
 
-	@Override
-	public Comparable createSorterWeight(ActivitySchedule solution, ActivityPeriod activityPeriod) {
-		int penalty = 0;
-		for (ExcludedTimePeriodsPenalty etp : solution.getExcludedTimePeriodsList()) {
-			for (PeriodInterval excludedPeriod : etp.getExcludedActivityPeriods()) {
+    @Override
+    public Comparable createSorterWeight(ActivitySchedule solution, ActivityPeriod activityPeriod) {
+        int penalty = 0;
+        for (ExcludedTimePeriodsPenalty etp : solution.getExcludedTimePeriodsList()) {
+            for (PeriodInterval excludedPeriod : etp.getExcludedActivityPeriods()) {
 
-				// excluded on a period interval just on a specific day or everyday
-				if ((excludedPeriod.getStartPeriod().getWeekDay() == null
-						&& excludedPeriod.getEndPeriod().getWeekDay() == null)
-						|| (activityPeriod.getWeekDayIndex() == excludedPeriod.getStartPeriod().getWeekDayIndex()
-								&& activityPeriod.getWeekDayIndex() == excludedPeriod.getEndPeriod()
-										.getWeekDayIndex())) {
+                // excluded on a period interval just on a specific day or
+                // everyday
+                if ((excludedPeriod.getStartPeriod().getWeekDay() == null
+                        && excludedPeriod.getEndPeriod().getWeekDay() == null)
+                        || (activityPeriod.getWeekDayIndex() == excludedPeriod.getStartPeriod().getWeekDayIndex()
+                                && activityPeriod.getWeekDayIndex() == excludedPeriod.getEndPeriod()
+                                        .getWeekDayIndex())) {
 
-					if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
-							true, true)) {
+                    if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
+                            true, true)) {
 
-						penalty++;
-					}
+                        penalty++;
+                    }
 
-				} else { // excluded between some specific days
+                } else { // excluded between some specific days
 
-					if (activityPeriod.getWeekDayIndex() > excludedPeriod.getStartPeriod().getWeekDayIndex()
-							&& activityPeriod.getWeekDayIndex() < excludedPeriod.getEndPeriod().getWeekDayIndex()) {
+                    if (activityPeriod.getWeekDayIndex() > excludedPeriod.getStartPeriod().getWeekDayIndex()
+                            && activityPeriod.getWeekDayIndex() < excludedPeriod.getEndPeriod().getWeekDayIndex()) {
 
-						penalty++;
+                        penalty++;
 
-					} else if (activityPeriod.getWeekDayIndex() == excludedPeriod.getStartPeriod().getWeekDayIndex()) {
+                    } else if (activityPeriod.getWeekDayIndex() == excludedPeriod.getStartPeriod().getWeekDayIndex()) {
 
-						if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
-								true, false)) {
+                        if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
+                                true, false)) {
 
-							penalty++;
+                            penalty++;
 
-						}
+                        }
 
-					} else if (activityPeriod.getWeekDayIndex() == excludedPeriod.getEndPeriod().getWeekDayIndex()) {
+                    } else if (activityPeriod.getWeekDayIndex() == excludedPeriod.getEndPeriod().getWeekDayIndex()) {
 
-						if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
-								false, true)) {
+                        if (Utility.checkTimeslots(activityPeriod, excludedPeriod, etp.getActivityType().getDuration(),
+                                false, true)) {
 
-							penalty++;
+                            penalty++;
 
-						}
+                        }
 
-					}
-				}
-			}
-		}
-		return new TimeslotWeight(activityPeriod, penalty);
-	}
+                    }
+                }
+            }
+        }
+        return new TimeslotWeight(activityPeriod, penalty);
+    }
 
 }

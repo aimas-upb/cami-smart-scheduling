@@ -50,14 +50,14 @@ public abstract class CommonBenchmarkApp extends LoggingMain {
                 aggregator = true;
             } else if (benchmarkArgumentMap.containsKey(arg)) {
                 if (argOption != null) {
-                    throw new IllegalArgumentException("The args (" + Arrays.toString(args)
-                            + ") contains arg name (" + argOption.getName() + ") and arg name (" + arg + ").");
+                    throw new IllegalArgumentException("The args (" + Arrays.toString(args) + ") contains arg name ("
+                            + argOption.getName() + ") and arg name (" + arg + ").");
                 }
                 argOption = benchmarkArgumentMap.get(arg);
             } else {
-                throw new IllegalArgumentException("The args (" + Arrays.toString(args)
-                        + ") contains an arg (" + arg + ") which is not part of the recognized args ("
-                        + benchmarkArgumentMap.keySet() + " or " + AGGREGATOR_ARG + ").");
+                throw new IllegalArgumentException("The args (" + Arrays.toString(args) + ") contains an arg (" + arg
+                        + ") which is not part of the recognized args (" + benchmarkArgumentMap.keySet() + " or "
+                        + AGGREGATOR_ARG + ").");
             }
         }
         if (argOption == null) {

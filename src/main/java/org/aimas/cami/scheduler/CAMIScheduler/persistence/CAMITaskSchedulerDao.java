@@ -10,8 +10,8 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.XStreamSolutionDao;
  */
 public class CAMITaskSchedulerDao extends XStreamSolutionDao<ActivitySchedule> {
 
-	public CAMITaskSchedulerDao() {
-		super("activityschedule", ActivitySchedule.class);
-	}
+    public CAMITaskSchedulerDao() {
+        super("activityschedule", ActivitySchedule.class);
+    }
 
 }

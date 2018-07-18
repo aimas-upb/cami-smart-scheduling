@@ -21,50 +21,51 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("NormalRelativeActivity")
 public class NormalRelativeActivity extends Activity {
 
-	// shadow variable (it depends on a planning variable)
-	// if the planning variable changes, then the shadow variable adjusts
-	// according to it
-	private ActivityPeriod activityPeriod;
+    // shadow variable (it depends on a planning variable)
+    // if the planning variable changes, then the shadow variable adjusts
+    // according to it
+    private ActivityPeriod activityPeriod;
 
-	private int offset; // offset (in minutes) - distance between an activity and an activity relative to it
-	private boolean assigned;
+    private int offset; // offset (in minutes) - distance between an activity
+                        // and an activity relative to it
+    private boolean assigned;
 
-	@Override
-	@CustomShadowVariable(variableListenerClass = RelativeActivityPeriodUpdateListener.class, sources = {
-			@PlanningVariableReference(entityClass = NormalActivity.class, variableName = "activityPeriod") })
-	public ActivityPeriod getActivityPeriod() {
-		return activityPeriod;
-	}
+    @Override
+    @CustomShadowVariable(variableListenerClass = RelativeActivityPeriodUpdateListener.class, sources = {
+            @PlanningVariableReference(entityClass = NormalActivity.class, variableName = "activityPeriod") })
+    public ActivityPeriod getActivityPeriod() {
+        return activityPeriod;
+    }
 
-	public void setActivityPeriod(ActivityPeriod activityPeriod) {
-		this.activityPeriod = activityPeriod;
-	}
+    public void setActivityPeriod(ActivityPeriod activityPeriod) {
+        this.activityPeriod = activityPeriod;
+    }
 
-	public int getOffset() {
-		return offset;
-	}
+    public int getOffset() {
+        return offset;
+    }
 
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
 
-	public boolean isAssigned() {
-		return assigned;
-	}
+    public boolean isAssigned() {
+        return assigned;
+    }
 
-	public void setAssigned(boolean assigned) {
-		this.assigned = assigned;
-	}
+    public void setAssigned(boolean assigned) {
+        this.assigned = assigned;
+    }
 
-	@Override
-	public String toString() {
-		return "RelativeActivity [activityType=" + getActivityType() + ", activityPeriod=" + activityPeriod
-				+ ", offset=" + offset + "]";
-	}
+    @Override
+    public String toString() {
+        return "RelativeActivity [activityType=" + getActivityType() + ", activityPeriod=" + activityPeriod
+                + ", offset=" + offset + "]";
+    }
 
-	@Override
-	public String getLabel() {
-		return getActivityTypeCode();
-	}
+    @Override
+    public String getLabel() {
+        return getActivityTypeCode();
+    }
 
 }

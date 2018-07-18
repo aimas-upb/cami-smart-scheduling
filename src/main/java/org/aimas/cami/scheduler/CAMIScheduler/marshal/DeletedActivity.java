@@ -12,23 +12,23 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  */
 @XStreamAlias("DeletedActivity")
 public class DeletedActivity extends AbstractPersistable {
-	private String name;
-	private String uuid;
+    private String name;
+    private String uuid;
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getUuid() {
-		return uuid;
-	}
+    public String getUuid() {
+        return uuid;
+    }
 
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
 }

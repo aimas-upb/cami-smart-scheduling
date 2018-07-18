@@ -49,225 +49,226 @@ import org.slf4j.LoggerFactory;
  */
 public class ProblemSolver<Solution_> {
 
-	protected final transient Logger logger = LoggerFactory.getLogger(getClass());
+    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-	private final SolutionBusiness<Solution_> solutionBusiness;
-	private boolean solvingState;
-	private Timer timer;
+    private final SolutionBusiness<Solution_> solutionBusiness;
+    private boolean solvingState;
+    private Timer timer;
 
-	public ProblemSolver(SolutionBusiness<Solution_> solutionBusiness) {
-		this.solutionBusiness = solutionBusiness;
+    public ProblemSolver(SolutionBusiness<Solution_> solutionBusiness) {
+        this.solutionBusiness = solutionBusiness;
 
-		registerListeners();
-	}
+        registerListeners();
+    }
 
-	private void createTimer() {
-		timer = new Timer(60000, new TimerActionListener());
-		timer.start();
-	}
+    private void createTimer() {
+        timer = new Timer(60000, new TimerActionListener());
+        timer.start();
+    }
 
-	/**
-	 * Event notification using a time listener.
-	 */
-	class TimerActionListener implements ActionListener {
+    /**
+     * Event notification using a time listener.
+     */
+    class TimerActionListener implements ActionListener {
 
-		public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
 
-			// if the app isn't solving
-			if (!solvingState) {
+            // if the app isn't solving
+            if (!solvingState) {
 
-				ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
+                ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
 
-				if (solution != null) {
-					// notify the user if there is a nearby activity by 15 minutes
-					for (Activity activity : solution.getActivityList()) {
-						if (activity.getActivityPeriod() != null) {
-							if ((LocalDateTime.now().getDayOfWeek().getValue() - 1) == activity
-									.getActivityPeriodWeekday().getDayIndex()) {
-								if (Utility.getNumberOfMinutesInInterval(
-										new Time(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute()),
-										activity.getActivityPeriodTime()) == 15) {
+                if (solution != null) {
+                    // notify the user if there is a nearby activity by 15
+                    // minutes
+                    for (Activity activity : solution.getActivityList()) {
+                        if (activity.getActivityPeriod() != null) {
+                            if ((LocalDateTime.now().getDayOfWeek().getValue() - 1) == activity
+                                    .getActivityPeriodWeekday().getDayIndex()) {
+                                if (Utility.getNumberOfMinutesInInterval(
+                                        new Time(LocalDateTime.now().getHour(), LocalDateTime.now().getMinute()),
+                                        activity.getActivityPeriodTime()) == 15) {
 
-									// send notification to device
-									Client.runClient(activity);
-								}
-							}
-						}
-					}
-				}
-			}
+                                    // send notification to device
+                                    Client.runClient(activity);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-		}
+        }
 
-	}
+    }
 
-	private void registerListeners() {
-		solutionBusiness.registerForBestSolutionChanges(this);
-	}
+    private void registerListeners() {
+        solutionBusiness.registerForBestSolutionChanges(this);
+    }
 
-	public void bestSolutionChanged() {
-		// do nothing
-	}
+    public void bestSolutionChanged() {
+        // do nothing
+    }
 
-	public void init() {
-		createTimer();
-	}
+    public void init() {
+        createTimer();
+    }
 
-	/**
-	 * Get the {@link ScoreParametrization} from file and update it in solution.
-	 */
-	private void setScoreParametrization() {
-		solutionBusiness.doProblemFactChange(scoreDirector -> {
+    /**
+     * Get the {@link ScoreParametrization} from file and update it in solution.
+     */
+    private void setScoreParametrization() {
+        solutionBusiness.doProblemFactChange(scoreDirector -> {
 
-			ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
-			ScoreParametrization solutionScoreParametrization = activitySchedule.getScoreParametrization();
+            ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+            ScoreParametrization solutionScoreParametrization = activitySchedule.getScoreParametrization();
 
-			ScoreParametrization scoreParametrization = Utility.getScoreParametrization(
-					(ActivitySchedule) solutionBusiness.getSolution(),
-					new File(new File(solutionBusiness.getUnsolvedDataDir().getParentFile(), ""),
-							"Score parametrization" + ".xml"));
+            ScoreParametrization scoreParametrization = Utility.getScoreParametrization(
+                    (ActivitySchedule) solutionBusiness.getSolution(),
+                    new File(new File(solutionBusiness.getUnsolvedDataDir().getParentFile(), ""),
+                            "Score parametrization" + ".xml"));
 
-			scoreParametrization.setId(0L);
+            scoreParametrization.setId(0L);
 
-			if (solutionScoreParametrization != null) {
-				scoreDirector.beforeProblemFactRemoved(solutionScoreParametrization);
-				activitySchedule.setScoreParametrization(null);
-				scoreDirector.afterProblemFactRemoved(solutionScoreParametrization);
-			}
+            if (solutionScoreParametrization != null) {
+                scoreDirector.beforeProblemFactRemoved(solutionScoreParametrization);
+                activitySchedule.setScoreParametrization(null);
+                scoreDirector.afterProblemFactRemoved(solutionScoreParametrization);
+            }
 
-			scoreDirector.beforeProblemFactAdded(scoreParametrization);
-			activitySchedule.setScoreParametrization(scoreParametrization);
-			scoreDirector.afterProblemFactAdded(scoreParametrization);
+            scoreDirector.beforeProblemFactAdded(scoreParametrization);
+            activitySchedule.setScoreParametrization(scoreParametrization);
+            scoreDirector.afterProblemFactAdded(scoreParametrization);
 
-			scoreDirector.triggerVariableListeners();
+            scoreDirector.triggerVariableListeners();
 
-		});
-	}
+        });
+    }
 
-	/**
-	 * Start a new solving(when reschedule)
-	 */
-	public void startSolveAction() {
-		if (!solvingState) {
-			setSolvingState(true);
-			Solution_ planningProblem = solutionBusiness.getSolution();
-			new SolveWorker(planningProblem).execute();
-		}
-	}
+    /**
+     * Start a new solving(when reschedule)
+     */
+    public void startSolveAction() {
+        if (!solvingState) {
+            setSolvingState(true);
+            Solution_ planningProblem = solutionBusiness.getSolution();
+            new SolveWorker(planningProblem).execute();
+        }
+    }
 
-	protected class SolveWorker extends SwingWorker<Solution_, Void> {
+    protected class SolveWorker extends SwingWorker<Solution_, Void> {
 
-		protected final Solution_ planningProblem;
+        protected final Solution_ planningProblem;
 
-		public SolveWorker(Solution_ planningProblem) {
-			this.planningProblem = planningProblem;
-		}
+        public SolveWorker(Solution_ planningProblem) {
+            this.planningProblem = planningProblem;
+        }
 
-		@Override
-		protected Solution_ doInBackground() throws Exception {
-			return solutionBusiness.solve(planningProblem);
-		}
+        @Override
+        protected Solution_ doInBackground() throws Exception {
+            return solutionBusiness.solve(planningProblem);
+        }
 
-		@Override
-		protected void done() {
-			try {
-				Solution_ bestSolution = get();
-				solutionBusiness.setSolution(bestSolution);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				throw new IllegalStateException("Solving was interrupted.", e);
-			} catch (ExecutionException e) {
-				throw new IllegalStateException("Solving failed.", e.getCause());
-			} finally {
+        @Override
+        protected void done() {
+            try {
+                Solution_ bestSolution = get();
+                solutionBusiness.setSolution(bestSolution);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Solving was interrupted.", e);
+            } catch (ExecutionException e) {
+                throw new IllegalStateException("Solving failed.", e.getCause());
+            } finally {
 
-				// notify the thread that is waiting that the solving has ended
-				synchronized (ProblemSolver.this) {
-					ProblemSolver.this.notify();
-				}
+                // notify the thread that is waiting that the solving has ended
+                synchronized (ProblemSolver.this) {
+                    ProblemSolver.this.notify();
+                }
 
-				setSolvingState(false);
-				resetScreen();
-			}
-		}
+                setSolvingState(false);
+                resetScreen();
+            }
+        }
 
-	}
+    }
 
-	public void openSolution(File schedule) {
-		solutionBusiness.openSolution(schedule);
-		setSolutionLoaded();
+    public void openSolution(File schedule) {
+        solutionBusiness.openSolution(schedule);
+        setSolutionLoaded();
 
-		resetValueRange();
-		setScoreParametrization();
-	}
+        resetValueRange();
+        setScoreParametrization();
+    }
 
-	/**
-	 * When a new schedule is opened from file, reset all the activity domain value
-	 * ranges. In real time rescheduling, activities after the current time will
-	 * have a more restricted value range, and activities before the current time
-	 * will be immovable.
-	 */
-	protected void resetValueRange() {
+    /**
+     * When a new schedule is opened from file, reset all the activity domain
+     * value ranges. In real time rescheduling, activities after the current
+     * time will have a more restricted value range, and activities before the
+     * current time will be immovable.
+     */
+    protected void resetValueRange() {
 
-		ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
+        ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
 
-		solutionBusiness.doProblemFactChange(scoreDirector -> {
-			for (Activity activity : activitySchedule.getActivityList()) {
-				if (activity instanceof NormalActivity) {
-					if (activity.getActivityType().getPermittedIntervals() != null) {
+        solutionBusiness.doProblemFactChange(scoreDirector -> {
+            for (Activity activity : activitySchedule.getActivityList()) {
+                if (activity instanceof NormalActivity) {
+                    if (activity.getActivityType().getPermittedIntervals() != null) {
 
-						List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
+                        List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
 
-						for (TimeInterval permittedInterval : activity.getActivityType().getPermittedIntervals()) {
+                        for (TimeInterval permittedInterval : activity.getActivityType().getPermittedIntervals()) {
 
-							int offset = 1;
+                            int offset = 1;
 
-							TimeInterval relaxedPermittedInterval = new TimeInterval(
-									new Time(permittedInterval.getMinStart().getHour() - offset,
-											permittedInterval.getMinStart().getMinutes()),
-									new Time(permittedInterval.getMaxEnd().getHour() + offset,
-											permittedInterval.getMaxEnd().getMinutes()));
+                            TimeInterval relaxedPermittedInterval = new TimeInterval(
+                                    new Time(permittedInterval.getMinStart().getHour() - offset,
+                                            permittedInterval.getMinStart().getMinutes()),
+                                    new Time(permittedInterval.getMaxEnd().getHour() + offset,
+                                            permittedInterval.getMaxEnd().getMinutes()));
 
-							for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
-								if (Utility.fullOverlap(period.getTime(), period.getTime(),
-										relaxedPermittedInterval.getMinStart(), relaxedPermittedInterval.getMaxEnd()))
-									restrictedPeriodDomain.add(period);
-							}
-						}
+                            for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+                                if (Utility.fullOverlap(period.getTime(), period.getTime(),
+                                        relaxedPermittedInterval.getMinStart(), relaxedPermittedInterval.getMaxEnd()))
+                                    restrictedPeriodDomain.add(period);
+                            }
+                        }
 
-						scoreDirector.beforeProblemPropertyChanged(activity);
-						((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
-						scoreDirector.afterProblemPropertyChanged(activity);
-					} else {
-						scoreDirector.beforeProblemPropertyChanged(activity);
-						((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-						scoreDirector.afterProblemPropertyChanged(activity);
-					}
-				}
-			}
-		});
-	}
+                        scoreDirector.beforeProblemPropertyChanged(activity);
+                        ((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
+                        scoreDirector.afterProblemPropertyChanged(activity);
+                    } else {
+                        scoreDirector.beforeProblemPropertyChanged(activity);
+                        ((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+                        scoreDirector.afterProblemPropertyChanged(activity);
+                    }
+                }
+            }
+        });
+    }
 
-	private void setSolutionLoaded() {
-		setSolvingState(false);
-		resetScreen();
-	}
+    private void setSolutionLoaded() {
+        setSolvingState(false);
+        resetScreen();
+    }
 
-	private void setSolvingState(boolean solving) {
+    private void setSolvingState(boolean solving) {
 
-		solvingState = solving;
+        solvingState = solving;
 
-		if (!solving) {
-			setScoreParametrization();
-		}
+        if (!solving) {
+            setScoreParametrization();
+        }
 
-	}
+    }
 
-	public void resetScreen() {
-		setScoreParametrization();
-	}
+    public void resetScreen() {
+        setScoreParametrization();
+    }
 
-	public void refreshScoreField(Score score) {
-		// do nothing
-	}
+    public void refreshScoreField(Score score) {
+        // do nothing
+    }
 
 }

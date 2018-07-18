@@ -34,74 +34,75 @@ import ch.qos.logback.classic.LoggerContext;
  */
 public abstract class CommonApp<Solution_> extends LoggingMain {
 
-	protected static final Logger logger = LoggerFactory.getLogger(CommonApp.class);
+    protected static final Logger logger = LoggerFactory.getLogger(CommonApp.class);
 
-	/**
-	 * Some examples are not compatible with every native LookAndFeel. For example,
-	 * NurseRosteringPanel is incompatible with Mac.
-	 */
-	public static void prepareSwingEnvironment() {
-		LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-		loggerContext.stop();
-	}
+    /**
+     * Some examples are not compatible with every native LookAndFeel. For
+     * example, NurseRosteringPanel is incompatible with Mac.
+     */
+    public static void prepareSwingEnvironment() {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.stop();
+    }
 
-	protected final String name;
-	protected final String description;
-	protected final String solverConfig;
-	protected final String iconResource;
+    protected final String name;
+    protected final String description;
+    protected final String solverConfig;
+    protected final String iconResource;
 
-	protected ProblemSolver<Solution_> problemSolver;
-	protected SolutionBusiness<Solution_> solutionBusiness;
+    protected ProblemSolver<Solution_> problemSolver;
+    protected SolutionBusiness<Solution_> solutionBusiness;
 
-	protected CommonApp(String name, String description, String solverConfig, String iconResource) {
-		this.name = name;
-		this.description = description;
-		this.solverConfig = solverConfig;
-		this.iconResource = iconResource;
-	}
+    protected CommonApp(String name, String description, String solverConfig, String iconResource) {
+        this.name = name;
+        this.description = description;
+        this.solverConfig = solverConfig;
+        this.iconResource = iconResource;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getIconResource() {
-		return iconResource;
-	}
+    public String getIconResource() {
+        return iconResource;
+    }
 
-	public void init() {
-		solutionBusiness = createSolutionBusiness();
-		problemSolver = new ProblemSolver<>(solutionBusiness);
-		problemSolver.init();
-	}
+    public void init() {
+        solutionBusiness = createSolutionBusiness();
+        problemSolver = new ProblemSolver<>(solutionBusiness);
+        problemSolver.init();
+    }
 
-	public SolutionBusiness<Solution_> createSolutionBusiness() {
-		SolutionBusiness<Solution_> solutionBusiness = new SolutionBusiness<>(this);
-		solutionBusiness.setSolutionDao(createSolutionDao());
-		solutionBusiness.updateDataDirs();
-		solutionBusiness.setSolver(createSolver());
-		return solutionBusiness;
-	}
+    public SolutionBusiness<Solution_> createSolutionBusiness() {
+        SolutionBusiness<Solution_> solutionBusiness = new SolutionBusiness<>(this);
+        solutionBusiness.setSolutionDao(createSolutionDao());
+        solutionBusiness.updateDataDirs();
+        solutionBusiness.setSolver(createSolver());
+        return solutionBusiness;
+    }
 
-	protected Solver<Solution_> createSolver() {
-		SolverFactory<Solution_> solverFactory = SolverFactory.createFromXmlResource(solverConfig);
-		return solverFactory.buildSolver();
-	}
+    protected Solver<Solution_> createSolver() {
+        SolverFactory<Solution_> solverFactory = SolverFactory.createFromXmlResource(solverConfig);
+        return solverFactory.buildSolver();
+    }
 
-	protected abstract SolutionDao createSolutionDao();
+    protected abstract SolutionDao createSolutionDao();
 
-	public SolutionBusiness<Solution_> getSolutionBusiness() {
-		return solutionBusiness;
-	}
+    public SolutionBusiness<Solution_> getSolutionBusiness() {
+        return solutionBusiness;
+    }
 
-	/**
-	 * Just for testing. To see what happens in GUI as a result from a client request.
-	 */
-	public ProblemSolver<Solution_> getProblemSolver() {
-		return problemSolver;
-	}
+    /**
+     * Just for testing. To see what happens in GUI as a result from a client
+     * request.
+     */
+    public ProblemSolver<Solution_> getProblemSolver() {
+        return problemSolver;
+    }
 
 }

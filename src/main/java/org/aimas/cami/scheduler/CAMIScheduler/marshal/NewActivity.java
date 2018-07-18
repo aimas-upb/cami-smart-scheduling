@@ -16,32 +16,32 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("NewActivity")
 public class NewActivity extends AbstractPersistable {
 
-	private Activity activity;
-	private ExcludedTimePeriodsPenalty excludedTimePeriodsPenalty;
-	private RelativeActivityPenalty relativeActivityPenalty;
+    private Activity activity;
+    private ExcludedTimePeriodsPenalty excludedTimePeriodsPenalty;
+    private RelativeActivityPenalty relativeActivityPenalty;
 
-	public Activity getActivity() {
-		return activity;
-	}
+    public Activity getActivity() {
+        return activity;
+    }
 
-	public void setActivity(Activity activity) {
-		this.activity = activity;
-	}
+    public void setActivity(Activity activity) {
+        this.activity = activity;
+    }
 
-	public ExcludedTimePeriodsPenalty getExcludedTimePeriodsPenalty() {
-		return excludedTimePeriodsPenalty;
-	}
+    public ExcludedTimePeriodsPenalty getExcludedTimePeriodsPenalty() {
+        return excludedTimePeriodsPenalty;
+    }
 
-	public void setExcludedTimePeriodsPenalty(ExcludedTimePeriodsPenalty excludedTimePeriodsPenalty) {
-		this.excludedTimePeriodsPenalty = excludedTimePeriodsPenalty;
-	}
+    public void setExcludedTimePeriodsPenalty(ExcludedTimePeriodsPenalty excludedTimePeriodsPenalty) {
+        this.excludedTimePeriodsPenalty = excludedTimePeriodsPenalty;
+    }
 
-	public RelativeActivityPenalty getRelativeActivityPenalty() {
-		return relativeActivityPenalty;
-	}
+    public RelativeActivityPenalty getRelativeActivityPenalty() {
+        return relativeActivityPenalty;
+    }
 
-	public void setRelativeActivityPenalty(RelativeActivityPenalty relativeActivityPenalty) {
-		this.relativeActivityPenalty = relativeActivityPenalty;
-	}
+    public void setRelativeActivityPenalty(RelativeActivityPenalty relativeActivityPenalty) {
+        this.relativeActivityPenalty = relativeActivityPenalty;
+    }
 
 }

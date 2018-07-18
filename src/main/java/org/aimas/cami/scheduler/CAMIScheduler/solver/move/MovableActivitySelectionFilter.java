@@ -14,9 +14,9 @@ import org.optaplanner.core.impl.score.director.ScoreDirector;
  */
 public class MovableActivitySelectionFilter implements SelectionFilter<ActivitySchedule, Activity> {
 
-	@Override
-	public boolean accept(ScoreDirector<ActivitySchedule> scoreDirector, Activity activity) {
-		return !activity.isImmovable(); // && activity.isWantedToBePlanned();
-	}
+    @Override
+    public boolean accept(ScoreDirector<ActivitySchedule> scoreDirector, Activity activity) {
+        return !activity.isImmovable(); // && activity.isWantedToBePlanned();
+    }
 
 }

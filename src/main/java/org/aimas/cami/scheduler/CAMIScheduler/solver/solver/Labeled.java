@@ -21,6 +21,6 @@ package org.aimas.cami.scheduler.CAMIScheduler.solver.solver;
  */
 public interface Labeled {
 
-	String getLabel();
+    String getLabel();
 
 }

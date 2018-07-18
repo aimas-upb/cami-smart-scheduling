@@ -13,37 +13,37 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("PeriodInterval")
 public class PeriodInterval extends AbstractPersistable {
 
-	ActivityPeriod startPeriod, endPeriod;
+    ActivityPeriod startPeriod, endPeriod;
 
-	public PeriodInterval() {
+    public PeriodInterval() {
 
-	}
+    }
 
-	public PeriodInterval(ActivityPeriod startPeriod, ActivityPeriod endPeriod) {
-		super();
-		this.startPeriod = startPeriod;
-		this.endPeriod = endPeriod;
-	}
+    public PeriodInterval(ActivityPeriod startPeriod, ActivityPeriod endPeriod) {
+        super();
+        this.startPeriod = startPeriod;
+        this.endPeriod = endPeriod;
+    }
 
-	public ActivityPeriod getStartPeriod() {
-		return startPeriod;
-	}
+    public ActivityPeriod getStartPeriod() {
+        return startPeriod;
+    }
 
-	public void setStartPeriod(ActivityPeriod startPeriod) {
-		this.startPeriod = startPeriod;
-	}
+    public void setStartPeriod(ActivityPeriod startPeriod) {
+        this.startPeriod = startPeriod;
+    }
 
-	public ActivityPeriod getEndPeriod() {
-		return endPeriod;
-	}
+    public ActivityPeriod getEndPeriod() {
+        return endPeriod;
+    }
 
-	public void setEndPeriod(ActivityPeriod endPeriod) {
-		this.endPeriod = endPeriod;
-	}
+    public void setEndPeriod(ActivityPeriod endPeriod) {
+        this.endPeriod = endPeriod;
+    }
 
-	@Override
-	public String toString() {
-		return "PeriodInterval [startPeriod=" + startPeriod + ", endPeriod=" + endPeriod + "]";
-	}
+    @Override
+    public String toString() {
+        return "PeriodInterval [startPeriod=" + startPeriod + ", endPeriod=" + endPeriod + "]";
+    }
 
 }

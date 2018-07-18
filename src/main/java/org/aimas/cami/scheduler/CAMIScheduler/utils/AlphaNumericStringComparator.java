@@ -20,7 +20,8 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * Sorts data like this: "data-1", "data-2", "data-3", "data-10", "data-20", "data-100", ...
+ * Sorts data like this: "data-1", "data-2", "data-3", "data-10", "data-20",
+ * "data-100", ...
  */
 public class AlphaNumericStringComparator implements Comparator<String>, Serializable {
 

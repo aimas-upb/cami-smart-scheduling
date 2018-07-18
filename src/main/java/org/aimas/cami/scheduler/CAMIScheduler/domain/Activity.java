@@ -20,127 +20,127 @@ import com.thoughtworks.xstream.annotations.XStreamInclude;
 @XStreamInclude({ NormalActivity.class, NormalRelativeActivity.class })
 public abstract class Activity extends AbstractPersistable implements Labeled {
 
-	// type of activity(name, duration etc.)
-	private ActivityType activityType;
+    // type of activity(name, duration etc.)
+    private ActivityType activityType;
 
-	// stores the period when an activity was postponed and the postpone type
-	private Postpone postpone;
+    // stores the period when an activity was postponed and the postpone type
+    private Postpone postpone;
 
-	// if an activity is immovable or not
-	private boolean immovable;
+    // if an activity is immovable or not
+    private boolean immovable;
 
-	private boolean wantedToBePlanned;
-	private boolean onDropdown;
-	private String uuid;
+    private boolean wantedToBePlanned;
+    private boolean onDropdown;
+    private String uuid;
 
-	public ActivityType getActivityType() {
-		return activityType;
-	}
+    public ActivityType getActivityType() {
+        return activityType;
+    }
 
-	public void setActivityType(ActivityType activityType) {
-		this.activityType = activityType;
-	}
+    public void setActivityType(ActivityType activityType) {
+        this.activityType = activityType;
+    }
 
-	public Postpone getPostpone() {
-		return postpone;
-	}
+    public Postpone getPostpone() {
+        return postpone;
+    }
 
-	public void setPostpone(Postpone postpone) {
-		this.postpone = postpone;
-	}
+    public void setPostpone(Postpone postpone) {
+        this.postpone = postpone;
+    }
 
-	public boolean isImmovable() {
-		return immovable;
-	}
+    public boolean isImmovable() {
+        return immovable;
+    }
 
-	public void setImmovable(boolean immovable) {
-		this.immovable = immovable;
-	}
+    public void setImmovable(boolean immovable) {
+        this.immovable = immovable;
+    }
 
-	// other useful methods
+    // other useful methods
 
-	public boolean isWantedToBePlanned() {
-		return wantedToBePlanned;
-	}
+    public boolean isWantedToBePlanned() {
+        return wantedToBePlanned;
+    }
 
-	public void setWantedToBePlanned(boolean wantToBePlanned) {
-		this.wantedToBePlanned = wantToBePlanned;
-	}
+    public void setWantedToBePlanned(boolean wantToBePlanned) {
+        this.wantedToBePlanned = wantToBePlanned;
+    }
 
-	public boolean isOnDropdown() {
-		return onDropdown;
-	}
+    public boolean isOnDropdown() {
+        return onDropdown;
+    }
 
-	public void setOnDropdown(boolean onDropdown) {
-		this.onDropdown = onDropdown;
-	}
+    public void setOnDropdown(boolean onDropdown) {
+        this.onDropdown = onDropdown;
+    }
 
-	public String getUuid() {
-		return uuid;
-	}
+    public String getUuid() {
+        return uuid;
+    }
 
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
-	public abstract ActivityPeriod getActivityPeriod();
+    public abstract ActivityPeriod getActivityPeriod();
 
-	public ActivityPeriod getActivityEndPeriod() {
-		ActivityPeriod activityPeriod = getActivityPeriod();
-		if (activityPeriod == null) {
-			return null;
-		}
-		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, getActivityType().getDuration());
-	}
+    public ActivityPeriod getActivityEndPeriod() {
+        ActivityPeriod activityPeriod = getActivityPeriod();
+        if (activityPeriod == null) {
+            return null;
+        }
+        return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, getActivityType().getDuration());
+    }
 
-	public Time getActivityEndPeriodTime() {
-		ActivityPeriod activityPeriod = getActivityPeriod();
-		if (activityPeriod == null) {
-			return null;
-		}
-		return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, getActivityType().getDuration()).getTime();
-	}
+    public Time getActivityEndPeriodTime() {
+        ActivityPeriod activityPeriod = getActivityPeriod();
+        if (activityPeriod == null) {
+            return null;
+        }
+        return AdjustActivityPeriod.getAdjustedPeriod(activityPeriod, getActivityType().getDuration()).getTime();
+    }
 
-	public ActivityCategory getActivityCategory() {
-		return getActivityType().getActivityCategory();
-	}
+    public ActivityCategory getActivityCategory() {
+        return getActivityType().getActivityCategory();
+    }
 
-	public int getActivityDuration() {
-		return getActivityType().getDuration();
-	}
+    public int getActivityDuration() {
+        return getActivityType().getDuration();
+    }
 
-	public int getInstancesPerDay() {
-		return getActivityType().getInstancesPerDay();
-	}
+    public int getInstancesPerDay() {
+        return getActivityType().getInstancesPerDay();
+    }
 
-	public int getInstancesPerWeek() {
-		return getActivityType().getInstancesPerWeek();
-	}
+    public int getInstancesPerWeek() {
+        return getActivityType().getInstancesPerWeek();
+    }
 
-	public ActivityPeriod getImposedPeriod() {
-		return getActivityType().getImposedPeriod();
-	}
+    public ActivityPeriod getImposedPeriod() {
+        return getActivityType().getImposedPeriod();
+    }
 
-	public List<TimeInterval> getPermittedInterval() {
-		return getActivityType().getPermittedIntervals();
-	}
+    public List<TimeInterval> getPermittedInterval() {
+        return getActivityType().getPermittedIntervals();
+    }
 
-	public Time getActivityPeriodTime() {
-		ActivityPeriod activityPeriod = getActivityPeriod();
-		if (activityPeriod == null)
-			return null;
-		return activityPeriod.getTime();
-	}
+    public Time getActivityPeriodTime() {
+        ActivityPeriod activityPeriod = getActivityPeriod();
+        if (activityPeriod == null)
+            return null;
+        return activityPeriod.getTime();
+    }
 
-	public WeekDay getActivityPeriodWeekday() {
-		ActivityPeriod activityPeriod = getActivityPeriod();
-		if (activityPeriod == null)
-			return null;
-		return activityPeriod.getWeekDay();
-	}
+    public WeekDay getActivityPeriodWeekday() {
+        ActivityPeriod activityPeriod = getActivityPeriod();
+        if (activityPeriod == null)
+            return null;
+        return activityPeriod.getWeekDay();
+    }
 
-	public String getActivityTypeCode() {
-		return activityType.getCode();
-	}
+    public String getActivityTypeCode() {
+        return activityType.getCode();
+    }
 
 }

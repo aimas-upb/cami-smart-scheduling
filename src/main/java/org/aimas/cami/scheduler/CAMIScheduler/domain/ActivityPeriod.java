@@ -14,65 +14,65 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("ActivityPeriod")
 public class ActivityPeriod extends AbstractPersistable implements Labeled {
 
-	private Time time;
-	private WeekDay weekDay;
-	private int periodIndex;
+    private Time time;
+    private WeekDay weekDay;
+    private int periodIndex;
 
-	public ActivityPeriod() {
+    public ActivityPeriod() {
 
-	}
+    }
 
-	public ActivityPeriod(Time time, WeekDay weekDay) {
-		super();
-		this.time = time;
-		this.weekDay = weekDay;
-	}
+    public ActivityPeriod(Time time, WeekDay weekDay) {
+        super();
+        this.time = time;
+        this.weekDay = weekDay;
+    }
 
-	public WeekDay getWeekDay() {
-		return weekDay;
-	}
+    public WeekDay getWeekDay() {
+        return weekDay;
+    }
 
-	public void setWeekDay(WeekDay weekDay) {
-		this.weekDay = weekDay;
-	}
+    public void setWeekDay(WeekDay weekDay) {
+        this.weekDay = weekDay;
+    }
 
-	public Time getTime() {
-		return time;
-	}
+    public Time getTime() {
+        return time;
+    }
 
-	public void setTime(Time time) {
-		this.time = time;
-	}
+    public void setTime(Time time) {
+        this.time = time;
+    }
 
-	// helpful methods
-	public int getPeriodHour() {
-		return time.getHour();
-	}
+    // helpful methods
+    public int getPeriodHour() {
+        return time.getHour();
+    }
 
-	public int getPeriodMinutes() {
-		return time.getMinutes();
-	}
+    public int getPeriodMinutes() {
+        return time.getMinutes();
+    }
 
-	public Integer getWeekDayIndex() {
-		return weekDay == null ? null : weekDay.getDayIndex();
-	}
+    public Integer getWeekDayIndex() {
+        return weekDay == null ? null : weekDay.getDayIndex();
+    }
 
-	public int getPeriodIndex() {
-		return periodIndex;
-	}
+    public int getPeriodIndex() {
+        return periodIndex;
+    }
 
-	public void setPeriodIndex(int periodIndex) {
-		this.periodIndex = periodIndex;
-	}
+    public void setPeriodIndex(int periodIndex) {
+        this.periodIndex = periodIndex;
+    }
 
-	@Override
-	public String toString() {
-		return "ActivityPeriod [weekDay=" + weekDay + ", time=" + time + "]";
-	}
+    @Override
+    public String toString() {
+        return "ActivityPeriod [weekDay=" + weekDay + ", time=" + time + "]";
+    }
 
-	@Override
-	public String getLabel() {
-		return weekDay.getLabel() + " " + time.getLabel();
-	}
+    @Override
+    public String getLabel() {
+        return weekDay.getLabel() + " " + time.getLabel();
+    }
 
 }

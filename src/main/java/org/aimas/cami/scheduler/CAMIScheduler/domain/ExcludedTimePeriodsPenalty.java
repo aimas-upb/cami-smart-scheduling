@@ -15,29 +15,29 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("ExcludedTimePeriodsPenalty")
 public class ExcludedTimePeriodsPenalty extends AbstractPersistable {
 
-	private ActivityType activityType;
-	private List<PeriodInterval> excludedActivityPeriods;
+    private ActivityType activityType;
+    private List<PeriodInterval> excludedActivityPeriods;
 
-	public ActivityType getActivityType() {
-		return activityType;
-	}
+    public ActivityType getActivityType() {
+        return activityType;
+    }
 
-	public void setActivityType(ActivityType activityType) {
-		this.activityType = activityType;
-	}
+    public void setActivityType(ActivityType activityType) {
+        this.activityType = activityType;
+    }
 
-	public List<PeriodInterval> getExcludedActivityPeriods() {
-		return excludedActivityPeriods;
-	}
+    public List<PeriodInterval> getExcludedActivityPeriods() {
+        return excludedActivityPeriods;
+    }
 
-	public void setExcludedActivityPeriods(List<PeriodInterval> excludedActivityPeriods) {
-		this.excludedActivityPeriods = excludedActivityPeriods;
-	}
+    public void setExcludedActivityPeriods(List<PeriodInterval> excludedActivityPeriods) {
+        this.excludedActivityPeriods = excludedActivityPeriods;
+    }
 
-	@Override
-	public String toString() {
-		return "ExcludedTimePeriodsPenalty [activityType=" + activityType + ", excludedActivityPeriods="
-				+ excludedActivityPeriods + "]";
-	}
+    @Override
+    public String toString() {
+        return "ExcludedTimePeriodsPenalty [activityType=" + activityType + ", excludedActivityPeriods="
+                + excludedActivityPeriods + "]";
+    }
 
 }

@@ -7,41 +7,41 @@ import io.vertx.ext.web.Router;
 
 public class Server extends AbstractVerticle {
 
-	private Router router;
-	private final static int SERVER_PORT = 8080;
-	private final static String SERVER_HOST = "localhost";
+    private Router router;
+    private final static int SERVER_PORT = 8080;
+    private final static String SERVER_HOST = "localhost";
 
-	// Convenience method so you can run it in your IDE
-	public static void main(String[] args) {
-		Runner.runExample(Server.class);
-	}
+    // Convenience method so you can run it in your IDE
+    public static void main(String[] args) {
+        Runner.runExample(Server.class);
+    }
 
-	@Override
-	public void start() {
+    @Override
+    public void start() {
 
-		// init the app
-		CAMITaskSchedulerApp camiTaskSchedulerApp = new CAMITaskSchedulerApp();
+        // init the app
+        CAMITaskSchedulerApp camiTaskSchedulerApp = new CAMITaskSchedulerApp();
 
-		// create a new empty router
-		RouterConfig routerConfig = new RouterConfigImplementation();
-		router = routerConfig.createRoutes(vertx, camiTaskSchedulerApp);
+        // create a new empty router
+        RouterConfig routerConfig = new RouterConfigImplementation();
+        router = routerConfig.createRoutes(vertx, camiTaskSchedulerApp);
 
-		vertx.createHttpServer().requestHandler(router::accept).listen(SERVER_PORT, SERVER_HOST, res -> {
-			if (res.succeeded()) {
-				System.out.println("Server is now listening!");
+        vertx.createHttpServer().requestHandler(router::accept).listen(SERVER_PORT, SERVER_HOST, res -> {
+            if (res.succeeded()) {
+                System.out.println("Server is now listening!");
 
-				vertx.executeBlocking(future -> {
+                vertx.executeBlocking(future -> {
 
-					CAMITaskSchedulerApp.runApp(camiTaskSchedulerApp);
+                    CAMITaskSchedulerApp.runApp(camiTaskSchedulerApp);
 
-				}, handler -> {
-					System.out.println("The result is: " + handler.result());
-				});
+                }, handler -> {
+                    System.out.println("The result is: " + handler.result());
+                });
 
-			} else {
-				System.out.println("Failed to bind!");
-			}
-		});
-	}
+            } else {
+                System.out.println("Failed to bind!");
+            }
+        });
+    }
 
 }

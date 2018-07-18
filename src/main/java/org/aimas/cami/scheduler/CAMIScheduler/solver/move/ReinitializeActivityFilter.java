@@ -14,14 +14,14 @@ import org.optaplanner.core.impl.score.director.ScoreDirector;
  */
 public class ReinitializeActivityFilter implements SelectionFilter<ActivitySchedule, Activity> {
 
-	@Override
-	public boolean accept(ScoreDirector<ActivitySchedule> scoreDirector, Activity selection) {
+    @Override
+    public boolean accept(ScoreDirector<ActivitySchedule> scoreDirector, Activity selection) {
 
-		if (selection.isWantedToBePlanned()) {
-			// System.out.println(selection.getActivityTypeCode());
-			return true;
-		}
-		return false;
-	}
+        if (selection.isWantedToBePlanned()) {
+            // System.out.println(selection.getActivityTypeCode());
+            return true;
+        }
+        return false;
+    }
 
 }

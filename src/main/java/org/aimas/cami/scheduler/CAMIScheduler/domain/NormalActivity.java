@@ -24,55 +24,58 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("NormalActivity")
 public class NormalActivity extends Activity {
 
-	// planning variable, changes during planning
-	protected ActivityPeriod activityPeriod;
+    // planning variable, changes during planning
+    protected ActivityPeriod activityPeriod;
 
-	// map that keeps count of the assigned (relative) activities to this
-	// activity
-	Map<String, Long> assignedToRelativeActivityMap;
+    // map that keeps count of the assigned (relative) activities to this
+    // activity
+    Map<String, Long> assignedToRelativeActivityMap;
 
-	// custom value range for the planning variable
-	List<ActivityPeriod> periodDomainRangeList;
+    // custom value range for the planning variable
+    List<ActivityPeriod> periodDomainRangeList;
 
-	@Override
-	@PlanningVariable(valueRangeProviderRefs = {
-			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class) // , nullable = true,
-																							// reinitializeVariableEntityFilter
-																							// =
-																							// ReinitializeActivityFilter.class)
-	public ActivityPeriod getActivityPeriod() {
-		return activityPeriod;
-	}
+    @Override
+    @PlanningVariable(valueRangeProviderRefs = {
+            "activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class) // ,
+                                                                                           // nullable
+                                                                                           // =
+                                                                                           // true,
+                                                                                           // reinitializeVariableEntityFilter
+                                                                                           // =
+                                                                                           // ReinitializeActivityFilter.class)
+    public ActivityPeriod getActivityPeriod() {
+        return activityPeriod;
+    }
 
-	public void setActivityPeriod(ActivityPeriod activityPeriod) {
-		this.activityPeriod = activityPeriod;
-	}
+    public void setActivityPeriod(ActivityPeriod activityPeriod) {
+        this.activityPeriod = activityPeriod;
+    }
 
-	@ValueRangeProvider(id = "activityPeriodRange")
-	public List<ActivityPeriod> getPeriodDomainRangeList() {
-		return periodDomainRangeList;
-	}
+    @ValueRangeProvider(id = "activityPeriodRange")
+    public List<ActivityPeriod> getPeriodDomainRangeList() {
+        return periodDomainRangeList;
+    }
 
-	public void setPeriodDomainRangeList(List<ActivityPeriod> periodDomainRangeList) {
-		this.periodDomainRangeList = periodDomainRangeList;
-	}
+    public void setPeriodDomainRangeList(List<ActivityPeriod> periodDomainRangeList) {
+        this.periodDomainRangeList = periodDomainRangeList;
+    }
 
-	public Map<String, Long> getAssignedToRelativeActivityMap() {
-		return assignedToRelativeActivityMap;
-	}
+    public Map<String, Long> getAssignedToRelativeActivityMap() {
+        return assignedToRelativeActivityMap;
+    }
 
-	public void setAssignedToRelativeActivityMap(Map<String, Long> assignedRelativeActivityList) {
-		this.assignedToRelativeActivityMap = assignedRelativeActivityList;
-	}
+    public void setAssignedToRelativeActivityMap(Map<String, Long> assignedRelativeActivityList) {
+        this.assignedToRelativeActivityMap = assignedRelativeActivityList;
+    }
 
-	@Override
-	public String toString() {
-		return "Activity [activityType=" + getActivityType() + ", activityPeriod=" + activityPeriod + "]";
-	}
+    @Override
+    public String toString() {
+        return "Activity [activityType=" + getActivityType() + ", activityPeriod=" + activityPeriod + "]";
+    }
 
-	@Override
-	public String getLabel() {
-		return getActivityTypeCode();
-	}
+    @Override
+    public String getLabel() {
+        return getActivityTypeCode();
+    }
 
 }

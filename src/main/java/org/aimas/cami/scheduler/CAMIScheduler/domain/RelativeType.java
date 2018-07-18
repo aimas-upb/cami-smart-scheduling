@@ -9,10 +9,10 @@ import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.Labeled;
  *
  */
 public enum RelativeType implements Labeled {
-	BEFORE, AFTER;
+    BEFORE, AFTER;
 
-	@Override
-	public String getLabel() {
-		return this.toString();
-	}
+    @Override
+    public String getLabel() {
+        return this.toString();
+    }
 }

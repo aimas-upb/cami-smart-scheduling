@@ -16,49 +16,49 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("RelativeActivityPenalty")
 public class RelativeActivityPenalty extends AbstractPersistable {
 
-	private RelativeType relativeType;
-	// activity names
-	private String relativeActivityType;
-	private String normalActivityType;
-	// activity category
-	private String category;
+    private RelativeType relativeType;
+    // activity names
+    private String relativeActivityType;
+    private String normalActivityType;
+    // activity category
+    private String category;
 
-	public RelativeType getRelativeType() {
-		return relativeType;
-	}
+    public RelativeType getRelativeType() {
+        return relativeType;
+    }
 
-	public void setRelativeType(RelativeType relativeType) {
-		this.relativeType = relativeType;
-	}
+    public void setRelativeType(RelativeType relativeType) {
+        this.relativeType = relativeType;
+    }
 
-	public String getRelativeActivityType() {
-		return relativeActivityType;
-	}
+    public String getRelativeActivityType() {
+        return relativeActivityType;
+    }
 
-	public void setRelativeActivityType(String relativeActivityType) {
-		this.relativeActivityType = relativeActivityType;
-	}
+    public void setRelativeActivityType(String relativeActivityType) {
+        this.relativeActivityType = relativeActivityType;
+    }
 
-	public String getNormalActivityType() {
-		return normalActivityType;
-	}
+    public String getNormalActivityType() {
+        return normalActivityType;
+    }
 
-	public void setNormalActivityType(String normalActivityType) {
-		this.normalActivityType = normalActivityType;
-	}
+    public void setNormalActivityType(String normalActivityType) {
+        this.normalActivityType = normalActivityType;
+    }
 
-	public String getCategory() {
-		return category;
-	}
+    public String getCategory() {
+        return category;
+    }
 
-	public void setCategory(String category) {
-		this.category = category;
-	}
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
-	@Override
-	public String toString() {
-		return "RelativeActivityPenalty [relativeType=" + relativeType + ", relativeActivityType="
-				+ relativeActivityType + ", staticActivityType=" + normalActivityType + "]";
-	}
+    @Override
+    public String toString() {
+        return "RelativeActivityPenalty [relativeType=" + relativeType + ", relativeActivityType="
+                + relativeActivityType + ", staticActivityType=" + normalActivityType + "]";
+    }
 
 }

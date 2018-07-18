@@ -9,10 +9,10 @@ import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.Labeled;
  *
  */
 public enum Difficulty implements Labeled {
-	EASY, MEDIUM, HARD;
+    EASY, MEDIUM, HARD;
 
-	@Override
-	public String getLabel() {
-		return this.toString();
-	}
+    @Override
+    public String getLabel() {
+        return this.toString();
+    }
 }

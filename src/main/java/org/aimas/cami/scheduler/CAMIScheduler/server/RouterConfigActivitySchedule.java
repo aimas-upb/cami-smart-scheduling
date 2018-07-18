@@ -14,37 +14,37 @@ import io.vertx.ext.web.RoutingContext;
 
 public class RouterConfigActivitySchedule extends RouterConfigImplementation {
 
-	private CAMITaskSchedulerApp camiTaskSchedulerApp;
+    private CAMITaskSchedulerApp camiTaskSchedulerApp;
 
-	public RouterConfigActivitySchedule(CAMITaskSchedulerApp camiTaskSchedulerApp) {
-		super();
-		this.camiTaskSchedulerApp = camiTaskSchedulerApp;
-	}
+    public RouterConfigActivitySchedule(CAMITaskSchedulerApp camiTaskSchedulerApp) {
+        super();
+        this.camiTaskSchedulerApp = camiTaskSchedulerApp;
+    }
 
-	public void getActivitySchedule(RoutingContext routingContext) {
-		HttpServerResponse response = routingContext.response();
+    public void getActivitySchedule(RoutingContext routingContext) {
+        HttpServerResponse response = routingContext.response();
 
-		System.out.println("Handling \"getActivitySchedule\"!");
+        System.out.println("Handling \"getActivitySchedule\"!");
 
-		if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
-			System.out.println("There is no solution generated, yet.");
-			return;
-		}
+        if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
+            System.out.println("There is no solution generated, yet.");
+            return;
+        }
 
-		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
-		camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
+        File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
+        camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
 
-		List<Activity> activityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution().getActivityList();
+        List<Activity> activityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution().getActivityList();
 
-		List<ActivityProperties> activityPropertiesList = new ArrayList<>();
+        List<ActivityProperties> activityPropertiesList = new ArrayList<>();
 
-		for (Activity activity : activityList) {
-			activityPropertiesList.add(new ActivityProperties(activity.getActivityTypeCode(),
-					activity.getActivityPeriod().getLabel(), activity.getActivityDuration()));
-		}
+        for (Activity activity : activityList) {
+            activityPropertiesList.add(new ActivityProperties(activity.getActivityTypeCode(),
+                    activity.getActivityPeriod().getLabel(), activity.getActivityDuration()));
+        }
 
-		// send the response(modified activities) back to client
-		response.putHeader("content-type", "application/json; charset=utf-8")
-				.end(Json.encodePrettily(activityPropertiesList));
-	}
+        // send the response(modified activities) back to client
+        response.putHeader("content-type", "application/json; charset=utf-8")
+                .end(Json.encodePrettily(activityPropertiesList));
+    }
 }

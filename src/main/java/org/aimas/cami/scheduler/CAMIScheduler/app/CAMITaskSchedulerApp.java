@@ -13,31 +13,31 @@ import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
  */
 public class CAMITaskSchedulerApp extends CommonApp<ActivitySchedule> {
 
-	public static final String SOLVER_CONFIG = "solver/CAMITaskSchedulerSolverConfig.xml";
+    public static final String SOLVER_CONFIG = "solver/CAMITaskSchedulerSolverConfig.xml";
 
-	public static void main(String[] args) {
-		runApp(new CAMITaskSchedulerApp());
-	}
+    public static void main(String[] args) {
+        runApp(new CAMITaskSchedulerApp());
+    }
 
-	/**
-	 * Run the application.
-	 */
-	public static void runApp(CAMITaskSchedulerApp camiTaskSchedulerApp) {
-		prepareSwingEnvironment();
-		camiTaskSchedulerApp.init();
-	}
+    /**
+     * Run the application.
+     */
+    public static void runApp(CAMITaskSchedulerApp camiTaskSchedulerApp) {
+        prepareSwingEnvironment();
+        camiTaskSchedulerApp.init();
+    }
 
-	public CAMITaskSchedulerApp() {
-		super("Weekly Scheduler [CAMI]", "Schedule daily activities every week based on some " + "imposed constraints.",
-				SOLVER_CONFIG, null); // no logo
-	}
+    public CAMITaskSchedulerApp() {
+        super("Weekly Scheduler [CAMI]", "Schedule daily activities every week based on some " + "imposed constraints.",
+                SOLVER_CONFIG, null); // no logo
+    }
 
-	/**
-	 * I/O serializer.
-	 */
-	@Override
-	protected SolutionDao createSolutionDao() {
-		return new CAMITaskSchedulerDao();
-	}
+    /**
+     * I/O serializer.
+     */
+    @Override
+    protected SolutionDao createSolutionDao() {
+        return new CAMITaskSchedulerDao();
+    }
 
 }

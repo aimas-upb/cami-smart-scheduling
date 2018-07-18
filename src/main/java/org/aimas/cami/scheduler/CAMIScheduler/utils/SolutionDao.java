@@ -29,14 +29,14 @@ import org.optaplanner.core.api.domain.solution.PlanningSolution;
  */
 public interface SolutionDao<Solution_> {
 
-	String getDirName();
+    String getDirName();
 
-	File getDataDir();
+    File getDataDir();
 
-	String getFileExtension();
+    String getFileExtension();
 
-	Solution_ readSolution(File inputSolutionFile);
+    Solution_ readSolution(File inputSolutionFile);
 
-	void writeSolution(Solution_ solution, File outputSolutionFile);
+    void writeSolution(Solution_ solution, File outputSolutionFile);
 
 }

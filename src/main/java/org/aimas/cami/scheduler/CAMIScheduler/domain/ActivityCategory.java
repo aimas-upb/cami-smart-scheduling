@@ -13,46 +13,46 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("ActivityCategory")
 public class ActivityCategory extends AbstractPersistable implements Labeled {
 
-	private String code; // category's name
+    private String code; // category's name
 
-	/*
-	 * used when need to compare the domain when are overlapped activities(e.g.
-	 * leisure vs health, can overlap)
-	 */
-	private ActivityDomain domain;
+    /*
+     * used when need to compare the domain when are overlapped activities(e.g.
+     * leisure vs health, can overlap)
+     */
+    private ActivityDomain domain;
 
-	public ActivityCategory(String code, ActivityDomain domain, long id) {
-		super();
-		this.code = code;
-		this.domain = domain;
-		this.id = id;
-	}
+    public ActivityCategory(String code, ActivityDomain domain, long id) {
+        super();
+        this.code = code;
+        this.domain = domain;
+        this.id = id;
+    }
 
-	public ActivityCategory(String code, ActivityDomain domain) {
-		super();
-		this.code = code;
-		this.domain = domain;
-	}
+    public ActivityCategory(String code, ActivityDomain domain) {
+        super();
+        this.code = code;
+        this.domain = domain;
+    }
 
-	public String getCode() {
-		return code;
-	}
+    public String getCode() {
+        return code;
+    }
 
-	public void setCode(String code) {
-		this.code = code;
-	}
+    public void setCode(String code) {
+        this.code = code;
+    }
 
-	public ActivityDomain getDomain() {
-		return domain;
-	}
+    public ActivityDomain getDomain() {
+        return domain;
+    }
 
-	public void setDomain(ActivityDomain domain) {
-		this.domain = domain;
-	}
+    public void setDomain(ActivityDomain domain) {
+        this.domain = domain;
+    }
 
-	@Override
-	public String getLabel() {
-		return code;
-	}
+    @Override
+    public String getLabel() {
+        return code;
+    }
 
 }
