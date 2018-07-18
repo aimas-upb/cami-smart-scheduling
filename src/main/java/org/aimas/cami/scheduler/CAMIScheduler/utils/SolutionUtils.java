@@ -61,7 +61,8 @@ public class SolutionUtils<Solution_> {
 					instances = newActivity.getActivityType().getInstancesPerWeek();
 
 				// set activity type id
-				newActivity.getActivityType().setId(activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
+				newActivity.getActivityType().setId(activityTypeList.isEmpty() ? 0L
+						: activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
 
 				// create instances of this type of activity
 				for (int i = 0; i < instances; i++) {
@@ -70,7 +71,7 @@ public class SolutionUtils<Solution_> {
 					activity.setActivityType(newActivity.getActivityType());
 					activity.setImmovable(newActivity.isImmovable());
 					activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-					activity.setId(activityList.get(activityList.size() - 1).getId() + 1);
+					activity.setId(activityList.isEmpty() ? 0L : activityList.get(activityList.size() - 1).getId() + 1);
 
 					scoreDirector.beforeEntityAdded(activity);
 					activityList.add(activity);
@@ -107,7 +108,8 @@ public class SolutionUtils<Solution_> {
 							activitySchedule.getRelativeActivityPenaltyList());
 					activitySchedule.setRelativeActivityPenaltyList(relativeActivityPenaltyList);
 
-					newActivity.getActivityType().setId(activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
+					newActivity.getActivityType().setId(activityTypeList.isEmpty() ? 0L
+							: activityTypeList.get(activityTypeList.size() - 1).getId() + 1);
 
 					// if the activity is relative to a specific activity
 					if (relativeActivityPenalty.getNormalActivityType() != null) {
@@ -137,7 +139,8 @@ public class SolutionUtils<Solution_> {
 							relativeActivity.setOffset(((NormalRelativeActivity) newActivity).getOffset()
 									* Utility.getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 							relativeActivity.setImmovable(newActivity.isImmovable());
-							relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
+							relativeActivity.setId(activityList.isEmpty() ? 0L
+									: activityList.get(activityList.size() - 1).getId() + 1);
 
 							scoreDirector.beforeEntityAdded(relativeActivity);
 							activityList.add(relativeActivity);
@@ -164,7 +167,8 @@ public class SolutionUtils<Solution_> {
 							relativeActivity.setOffset(((NormalRelativeActivity) newActivity).getOffset()
 									* Utility.getRelativeTypeSign(relativeActivityPenalty.getRelativeType()));
 							relativeActivity.setImmovable(newActivity.isImmovable());
-							relativeActivity.setId(activityList.get(activityList.size() - 1).getId() + 1);
+							relativeActivity.setId(activityList.isEmpty() ? 0L
+									: activityList.get(activityList.size() - 1).getId() + 1);
 
 							scoreDirector.beforeEntityAdded(relativeActivity);
 							activityList.add(relativeActivity);
@@ -174,8 +178,8 @@ public class SolutionUtils<Solution_> {
 					}
 
 					// add relativeActivityPenalty fact to the solution
-					relativeActivityPenalty
-							.setId(relativeActivityPenaltyList.get(relativeActivityPenaltyList.size() - 1).getId() + 1);
+					relativeActivityPenalty.setId(relativeActivityPenaltyList.isEmpty() ? 0L
+							: relativeActivityPenaltyList.get(relativeActivityPenaltyList.size() - 1).getId() + 1);
 
 					scoreDirector.beforeProblemFactAdded(relativeActivityPenalty);
 					relativeActivityPenaltyList.add(relativeActivityPenalty);
@@ -212,8 +216,8 @@ public class SolutionUtils<Solution_> {
 			activitySchedule.setExcludedTimePeriodsList(excludedTimePeriodsPenaltyList);
 
 			solutionBusiness.doProblemFactChange(scoreDirector -> {
-				excludedTimePeriodsPenalty.setId(
-						excludedTimePeriodsPenaltyList.get(excludedTimePeriodsPenaltyList.size() - 1).getId() + 1);
+				excludedTimePeriodsPenalty.setId(excludedTimePeriodsPenaltyList.isEmpty() ? 0L
+						: excludedTimePeriodsPenaltyList.get(excludedTimePeriodsPenaltyList.size() - 1).getId() + 1);
 
 				scoreDirector.beforeProblemFactAdded(excludedTimePeriodsPenalty);
 				excludedTimePeriodsPenaltyList.add(excludedTimePeriodsPenalty);
