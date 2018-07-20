@@ -14,7 +14,7 @@ import io.vertx.core.http.HttpClientOptions;
 public class Client extends AbstractVerticle {
 
 	private final static int SERVER_PORT = 8080;
-	private final static String SERVER_HOST = "localhost";
+	private final static String SERVER_HOST = "0.0.0.0";
 
 	// Convenience method so you can run it in your IDE
 	public static void main(String[] args) {
