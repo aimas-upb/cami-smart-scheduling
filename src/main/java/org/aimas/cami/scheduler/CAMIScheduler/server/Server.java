@@ -8,11 +8,18 @@ import io.vertx.ext.web.Router;
 public class Server extends AbstractVerticle {
 
 	private Router router;
-	private final static int SERVER_PORT = 8080;
-	private final static String SERVER_HOST = "localhost";
+	private static int SERVER_PORT;
+	private static String SERVER_HOST;
 
 	// Convenience method so you can run it in your IDE
 	public static void main(String[] args) {
+		String host = args[0];
+		String port = args[1];
+
+		System.out.println("Host: " + host + "\nPort: " + port);
+		SERVER_HOST = host;
+		SERVER_PORT = Integer.parseInt(port);
+
 		Runner.runExample(Server.class);
 	}
 
