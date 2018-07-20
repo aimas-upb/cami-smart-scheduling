@@ -24,4 +24,16 @@ RUN apt-get -y install maven
 COPY ./cami-smart-scheduling /cami-smart-scheduling
 WORKDIR /cami-smart-scheduling
 
-CMD ["echo","Image created"]
+#resolve the dependencies
+RUN mvn dependency:copy-dependencies
+
+COPY ./docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+#RUN adduser --disabled-password --gecos '' scheduling
+#RUN chown -R scheduling /cami-smart-scheduling
+
+#USER scheduling
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+EXPOSE 8080
