@@ -26,7 +26,9 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.WeekDay;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.DeletedActivities;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.DeletedActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivities;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.LoggingMain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
@@ -98,7 +100,9 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	 * Generate a new activity and serialize it into XML.
 	 */
 	private void generateNewActivityExampleInput() {
-		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activity" + ".xml");
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activities" + ".xml");
+		
+		List<NewActivity> newActivitiesList = new ArrayList<>();
 
 		NewActivity na = new NewActivity();
 		na.setId(0L);
@@ -138,34 +142,44 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		// serialize the new activity
 		XStream xStream = new XStream();
-		xStream.alias("NewActivity", NewActivity.class);
+		xStream.alias("NewActivities", NewActivities.class);
 		xStream.setMode(XStream.ID_REFERENCES);
 		xStream.autodetectAnnotations(true);
 
+		// add the generated activities to this list
+		// all activities will be added one by one
+		newActivitiesList.add(na);
+		NewActivities newActivities = new NewActivities(newActivitiesList);
+
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
-			xStream.toXML(na, writer);
+			xStream.toXML(newActivities, writer);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Failed writing to file (" + outputFile + ").", e);
 		}
 
 	}
-	
+
 	private void generateDeletedActivityExampleInput() {
-		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Delete Activity" + ".xml");
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Deleted Activities" + ".xml");
+		
+		List<DeletedActivity> deletedActivitiesList = new ArrayList<>();
 
 		DeletedActivity deletedActivity = new DeletedActivity();
 		deletedActivity.setId(0L);
 		deletedActivity.setName("Breakfast");
 		deletedActivity.setUuid("4510cd8ee1a042978377339448d4b8bf");
+		
+		deletedActivitiesList.add(deletedActivity);
+		DeletedActivities deletedActivities = new DeletedActivities(deletedActivitiesList);
 
 		// serialize the object
 		XStream xStream = new XStream();
-		xStream.alias("DeletedActivity", DeletedActivity.class);
+		xStream.alias("DeletedActivities", DeletedActivities.class);
 		xStream.setMode(XStream.ID_REFERENCES);
 		xStream.autodetectAnnotations(true);
 
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
-			xStream.toXML(deletedActivity, writer);
+			xStream.toXML(deletedActivities, writer);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Failed writing to file (" + outputFile + ").", e);
 		}
