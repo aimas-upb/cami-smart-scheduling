@@ -9,6 +9,8 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,13 @@ public class Utility {
 
 	public static void main(String[] args) {
 		System.out.println(fullOverlap(new Time(19, 05), new Time(19, 35), new Time(19, 04), new Time(19, 34)));
+		Date date = new Date();
+		System.out.println(date.getDay());
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(1531832400000L);
+
+		System.out.println(calendar.getTime());
 	}
 
 	public static void help(final KnowledgeHelper drools, final String message) {
@@ -260,8 +269,8 @@ public class Utility {
 	}
 
 	/**
-	 * Checks if the specified time interval (activityPeriod, activityEndPeriod) is
-	 * free.
+	 * Checks if the specified time interval (activityPeriod, activityEndPeriod)
+	 * is free.
 	 * 
 	 */
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
@@ -420,6 +429,54 @@ public class Utility {
 
 	public static String generateRandomUuid() {
 		return UUID.randomUUID().toString().replace("-", "");
+	}
+
+	public static List<ActivityPeriod> determineValueRange(ActivitySchedule activitySchedule, Activity activity) {
+
+		if (activity.getActivityType().getPermittedIntervals() != null) {
+
+			List<ActivityPeriod> restrictedPeriodDomainRange = new ArrayList<>();
+
+			for (TimeInterval permittedInterval : activity.getActivityType().getPermittedIntervals()) {
+
+				int offset = 1;
+
+				TimeInterval relaxedPermittedInterval = new TimeInterval(
+						new Time(permittedInterval.getMinStart().getHour() - offset,
+								permittedInterval.getMinStart().getMinutes()),
+						new Time(permittedInterval.getMaxEnd().getHour() + offset,
+								permittedInterval.getMaxEnd().getMinutes()));
+
+				for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+					if (Utility.fullOverlap(period.getTime(), period.getTime(), relaxedPermittedInterval.getMinStart(),
+							relaxedPermittedInterval.getMaxEnd()))
+						restrictedPeriodDomainRange.add(period);
+				}
+			}
+
+			return restrictedPeriodDomainRange;
+
+		} else {
+			// return the whole range
+			return activitySchedule.getActivityPeriodList();
+		}
+	}
+
+	public static long convertActivityPeriodToTimestamp(ActivityPeriod activityPeriod) {
+		int dayOfMonth;
+		Date actualDate = new Date();
+
+		// Date has assigned value 0 for Sunday, whilst, in WeekDays enum, Sunday
+		// has value 6 assigned
+		if (actualDate.getDay() == 0)
+			dayOfMonth = actualDate.getDate() + ((activityPeriod.getWeekDayIndex() + 1) - (actualDate.getDay() + 7));
+		else
+			dayOfMonth = actualDate.getDate() + ((activityPeriod.getWeekDayIndex() + 1) - actualDate.getDay());
+
+		Date activityDate = new Date(actualDate.getYear(), actualDate.getMonth(), dayOfMonth,
+				activityPeriod.getPeriodHour(), activityPeriod.getPeriodMinutes());
+
+		return activityDate.getTime();
 	}
 
 }

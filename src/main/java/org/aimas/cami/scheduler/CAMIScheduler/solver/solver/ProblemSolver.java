@@ -79,7 +79,8 @@ public class ProblemSolver<Solution_> {
 				ActivitySchedule solution = (ActivitySchedule) solutionBusiness.getSolution();
 
 				if (solution != null) {
-					// notify the user if there is a nearby activity by 15 minutes
+					// notify the user if there is a nearby activity by 15
+					// minutes
 					for (Activity activity : solution.getActivityList()) {
 						if (activity.getActivityPeriod() != null) {
 							if ((LocalDateTime.now().getDayOfWeek().getValue() - 1) == activity
@@ -121,7 +122,8 @@ public class ProblemSolver<Solution_> {
 
 			ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
 			ScoreParametrization solutionScoreParametrization = activitySchedule.getScoreParametrization();
-			ScoreParametrization workingScoreParametrization = scoreDirector.lookUpWorkingObject(solutionScoreParametrization);
+			ScoreParametrization workingScoreParametrization = scoreDirector
+					.lookUpWorkingObject(solutionScoreParametrization);
 
 			ScoreParametrization scoreParametrization = Utility.getScoreParametrization(
 					(ActivitySchedule) solutionBusiness.getSolution(),
@@ -202,10 +204,10 @@ public class ProblemSolver<Solution_> {
 	}
 
 	/**
-	 * When a new schedule is opened from file, reset all the activity domain value
-	 * ranges. In real time rescheduling, activities after the current time will
-	 * have a more restricted value range, and activities before the current time
-	 * will be immovable.
+	 * When a new schedule is opened from file, reset all the activity domain
+	 * value ranges. In real time rescheduling, activities after the current
+	 * time will have a more restricted value range, and activities before the
+	 * current time will be immovable.
 	 */
 	protected void resetValueRange() {
 
@@ -214,35 +216,13 @@ public class ProblemSolver<Solution_> {
 		solutionBusiness.doProblemFactChange(scoreDirector -> {
 			for (Activity activity : activitySchedule.getActivityList()) {
 				if (activity instanceof NormalActivity) {
-					if (activity.getActivityType().getPermittedIntervals() != null) {
+					Activity workingActivity = scoreDirector.lookUpWorkingObject(activity);
 
-						List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
+					List<ActivityPeriod> periodDomainRange = Utility.determineValueRange(activitySchedule, workingActivity);
 
-						for (TimeInterval permittedInterval : activity.getActivityType().getPermittedIntervals()) {
-
-							int offset = 1;
-
-							TimeInterval relaxedPermittedInterval = new TimeInterval(
-									new Time(permittedInterval.getMinStart().getHour() - offset,
-											permittedInterval.getMinStart().getMinutes()),
-									new Time(permittedInterval.getMaxEnd().getHour() + offset,
-											permittedInterval.getMaxEnd().getMinutes()));
-
-							for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
-								if (Utility.fullOverlap(period.getTime(), period.getTime(),
-										relaxedPermittedInterval.getMinStart(), relaxedPermittedInterval.getMaxEnd()))
-									restrictedPeriodDomain.add(period);
-							}
-						}
-
-						scoreDirector.beforeProblemPropertyChanged(activity);
-						((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
-						scoreDirector.afterProblemPropertyChanged(activity);
-					} else {
-						scoreDirector.beforeProblemPropertyChanged(activity);
-						((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-						scoreDirector.afterProblemPropertyChanged(activity);
-					}
+					scoreDirector.beforeProblemPropertyChanged(workingActivity);
+					((NormalActivity) workingActivity).setPeriodDomainRangeList(periodDomainRange);
+					scoreDirector.afterProblemPropertyChanged(workingActivity);
 				}
 			}
 		});
