@@ -121,6 +121,7 @@ public class ProblemSolver<Solution_> {
 
 			ActivitySchedule activitySchedule = (ActivitySchedule) solutionBusiness.getSolution();
 			ScoreParametrization solutionScoreParametrization = activitySchedule.getScoreParametrization();
+			ScoreParametrization workingScoreParametrization = scoreDirector.lookUpWorkingObject(solutionScoreParametrization);
 
 			ScoreParametrization scoreParametrization = Utility.getScoreParametrization(
 					(ActivitySchedule) solutionBusiness.getSolution(),
@@ -129,10 +130,10 @@ public class ProblemSolver<Solution_> {
 
 			scoreParametrization.setId(0L);
 
-			if (solutionScoreParametrization != null) {
-				scoreDirector.beforeProblemFactRemoved(solutionScoreParametrization);
+			if (workingScoreParametrization != null) {
+				scoreDirector.beforeProblemFactRemoved(workingScoreParametrization);
 				activitySchedule.setScoreParametrization(null);
-				scoreDirector.afterProblemFactRemoved(solutionScoreParametrization);
+				scoreDirector.afterProblemFactRemoved(workingScoreParametrization);
 			}
 
 			scoreDirector.beforeProblemFactAdded(scoreParametrization);
