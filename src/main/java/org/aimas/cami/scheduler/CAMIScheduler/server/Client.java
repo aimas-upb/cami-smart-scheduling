@@ -27,8 +27,16 @@ public class Client extends AbstractVerticle {
 		HttpClientOptions options = new HttpClientOptions().setDefaultHost(SERVER_HOST);
 		HttpClient client = vertx.createHttpClient(options);
 
-		// send a post request to server to add a new activity to the schedule
+		// send requests to the server
 		postNewActivity(client);
+		getActivitySchedule(client);
+
+		// send multiple requests to analyze the concurrency
+		/*
+		 * for (int i = 0; i < 5; ++i) postNewActivity(client);
+		 * 
+		 * getActivitySchedule(client);
+		 */
 
 	}
 
@@ -56,5 +64,20 @@ public class Client extends AbstractVerticle {
 			});
 		}).end(newActivity);
 
+	}
+
+	private void getActivitySchedule(HttpClient client) {
+		client.get(SERVER_PORT, SERVER_HOST, RoutePaths.API_ROUTE + RoutePaths.ACTIVITY_SCHEDULE_ROUTE, response -> {
+
+			System.out.println("Received response with status code " + response.statusCode());
+
+			response.bodyHandler(new Handler<Buffer>() {
+
+				@Override
+				public void handle(Buffer event) {
+					System.out.println("Got the event: " + event);
+				}
+			});
+		}).end();
 	}
 }
