@@ -70,7 +70,7 @@ public class SolutionUtils<Solution_> {
 
 					activity.setActivityType(newActivity.getActivityType());
 					activity.setImmovable(newActivity.isImmovable());
-					activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+					activity.setPeriodDomainRangeList(Utility.determineValueRange(activitySchedule, activity));
 					activity.setId(activityList.isEmpty() ? 0L : activityList.get(activityList.size() - 1).getId() + 1);
 
 					scoreDirector.beforeEntityAdded(activity);
@@ -341,7 +341,8 @@ public class SolutionUtils<Solution_> {
 
 					if (Utility.compareActivityPeriods(activity1, activity2)) {
 						changedActivities.add(new ChangedActivity(activity1.getActivityTypeCode(),
-								activity1.getActivityPeriod().getLabel(), activity2.getActivityPeriod().getLabel(),
+								Utility.convertActivityPeriodToTimestamp(activity1.getActivityPeriod())
+								, Utility.convertActivityPeriodToTimestamp(activity2.getActivityPeriod()),
 								activity1.getActivityDuration()));
 						break;
 					}

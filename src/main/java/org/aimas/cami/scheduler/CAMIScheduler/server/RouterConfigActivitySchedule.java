@@ -7,6 +7,7 @@ import java.util.List;
 import org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ActivityProperties;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
@@ -40,7 +41,8 @@ public class RouterConfigActivitySchedule extends RouterConfigImplementation {
 
 		for (Activity activity : activityList) {
 			activityPropertiesList.add(new ActivityProperties(activity.getActivityTypeCode(),
-					activity.getActivityPeriod().getLabel(), activity.getActivityDuration()));
+					Utility.convertActivityPeriodToTimestamp(activity.getActivityPeriod()),
+					activity.getActivityDuration()));
 		}
 
 		// send the response(modified activities) back to client

@@ -8,10 +8,10 @@ public class ActivityProperties {
 
 	private final int id;
 	private String activity;
-	private String activityPeriod;
+	private long activityPeriod;
 	private int activityDurationInMinutes;
 
-	public ActivityProperties(String activity, String activityPeriod, int activityDurationInMinutes) {
+	public ActivityProperties(String activity, long activityPeriod, int activityDurationInMinutes) {
 		super();
 		this.id = COUNTER.getAndIncrement();
 		this.activity = activity;
@@ -31,11 +31,11 @@ public class ActivityProperties {
 		this.activity = activity;
 	}
 
-	public String getActivityPeriod() {
+	public long getActivityPeriod() {
 		return activityPeriod;
 	}
 
-	public void setActivityPeriod(String activityPeriod) {
+	public void setActivityPeriod(long activityPeriod) {
 		this.activityPeriod = activityPeriod;
 	}
 

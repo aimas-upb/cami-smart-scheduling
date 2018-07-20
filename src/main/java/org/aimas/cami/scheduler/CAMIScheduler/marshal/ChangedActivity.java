@@ -16,11 +16,11 @@ public class ChangedActivity {
 	private final int id;
 
 	private String activity;
-	private String oldActivityPeriod;
-	private String newActivityPeriod;
+	private long oldActivityPeriod;
+	private long newActivityPeriod;
 	private int activityDurationInMinutes;
 
-	public ChangedActivity(String activity, String oldActivityPeriod, String newActivityPeriod,
+	public ChangedActivity(String activity, long oldActivityPeriod, long newActivityPeriod,
 			int activityDurationInMinutes) {
 		super();
 		this.id = COUNTER.getAndIncrement();
@@ -34,28 +34,28 @@ public class ChangedActivity {
 		this.id = COUNTER.getAndIncrement();
 	}
 
+	public long getOldActivityPeriod() {
+		return oldActivityPeriod;
+	}
+
+	public void setOldActivityPeriod(long oldActivityPeriod) {
+		this.oldActivityPeriod = oldActivityPeriod;
+	}
+
+	public long getNewActivityPeriod() {
+		return newActivityPeriod;
+	}
+
+	public void setNewActivityPeriod(long newActivityPeriod) {
+		this.newActivityPeriod = newActivityPeriod;
+	}
+
 	public String getActivity() {
 		return activity;
 	}
 
 	public void setActivity(String activity) {
 		this.activity = activity;
-	}
-
-	public String getOldActivityPeriod() {
-		return oldActivityPeriod;
-	}
-
-	public void setOldActivityPeriod(String oldActivityPeriod) {
-		this.oldActivityPeriod = oldActivityPeriod;
-	}
-
-	public String getNewActivityPeriod() {
-		return newActivityPeriod;
-	}
-
-	public void setNewActivityPeriod(String newActivityPeriod) {
-		this.newActivityPeriod = newActivityPeriod;
 	}
 
 	public int getActivityDurationInMinutes() {
