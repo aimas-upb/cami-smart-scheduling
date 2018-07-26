@@ -476,7 +476,7 @@ public class Utility {
 		Date activityDate = new Date(actualDate.getYear(), actualDate.getMonth(), dayOfMonth,
 				activityPeriod.getPeriodHour(), activityPeriod.getPeriodMinutes());
 
-		return activityDate.getTime();
+		return activityDate.getTime() / 1000L;
 	}
 
 }
