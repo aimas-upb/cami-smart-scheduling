@@ -20,6 +20,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.solver.solver.ProblemSolver;
 import org.optaplanner.core.impl.score.director.ScoreDirector;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 public class SolutionUtils<Solution_> {
 
@@ -29,7 +30,7 @@ public class SolutionUtils<Solution_> {
 		NewActivities newActivitiesDAO = null;
 
 		// get the NewActivities instance from the xml object
-		XStream xStream = new XStream();
+		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("NewActivities", NewActivities.class);
 		xStream.setMode(XStream.ID_REFERENCES);
 		xStream.autodetectAnnotations(true);
@@ -262,7 +263,7 @@ public class SolutionUtils<Solution_> {
 		// get the DeletedActivities instance from xml object
 		DeletedActivities deletedActivitiesDAO = null;
 
-		XStream xStream = new XStream();
+		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("DeletedActivities", DeletedActivities.class);
 		xStream.setMode(XStream.ID_REFERENCES);
 		xStream.autodetectAnnotations(true);

@@ -31,12 +31,12 @@ public class XStreamSolutionFileIO<Solution_> implements SolutionFileIO<Solution
 
 	public XStreamSolutionFileIO(Class... xStreamAnnotatedClasses) {
 		xStream = new XStream(new JettisonMappedXmlDriver());
-		xStream.setMode(XStream.NO_REFERENCES);
-		//xStream.processAnnotations(xStreamAnnotatedClasses);
-		//XStream.setupDefaultSecurity(xStream);
-		// Presume the XML file comes from a trusted source so it works out of the box.
+		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.processAnnotations(xStreamAnnotatedClasses);
+		XStream.setupDefaultSecurity(xStream);
+		// Presume the JSON file comes from a trusted source so it works out of the box.
 		// See class javadoc.
-		//xStream.addPermission(new AnyTypePermission());
+		xStream.addPermission(new AnyTypePermission());
 	}
 
 	public XStream getXStream() {

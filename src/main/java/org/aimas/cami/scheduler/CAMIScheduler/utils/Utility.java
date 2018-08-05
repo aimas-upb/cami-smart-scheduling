@@ -28,6 +28,7 @@ import org.drools.core.spi.KnowledgeHelper;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 /**
  * 
@@ -338,7 +339,7 @@ public class Utility {
 	 * @return
 	 */
 	public static ScoreParametrization getScoreParametrization(ActivitySchedule activitySchedule, File inputFile) {
-		XStream xStream = new XStream();
+		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("ScoreParametrization", ScoreParametrization.class);
 		xStream.setMode(XStream.ID_REFERENCES);
 		xStream.autodetectAnnotations(true);
@@ -352,7 +353,7 @@ public class Utility {
 	}
 
 	public static void setScoreParametrization(ActivitySchedule activitySchedule, File outputFile) {
-		XStream xStream = new XStream();
+		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("ScoreParametrization", ScoreParametrization.class);
 		xStream.setMode(XStream.ID_REFERENCES);
 		xStream.autodetectAnnotations(true);
