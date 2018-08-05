@@ -130,8 +130,6 @@ public class ProblemSolver<Solution_> {
 					new File(new File(solutionBusiness.getUnsolvedDataDir().getParentFile(), ""),
 							"Score parametrization" + ".json"));
 
-			scoreParametrization.setId(0L);
-
 			if (workingScoreParametrization != null) {
 				scoreDirector.beforeProblemFactRemoved(workingScoreParametrization);
 				activitySchedule.setScoreParametrization(null);

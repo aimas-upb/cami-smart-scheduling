@@ -825,6 +825,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		scoreParametrization.setHardExerciseLateHour(20);
 
 		scoreParametrization.setId(0L);
+		
+		activitySchedule.setScoreParametrization(scoreParametrization);
 
 		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("ScoreParametrization", ScoreParametrization.class);
