@@ -32,7 +32,7 @@ public class SolutionUtils<Solution_> {
 		// get the NewActivities instance from the xml object
 		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("NewActivities", NewActivities.class);
-		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.setMode(XStream.NO_REFERENCES);
 		xStream.autodetectAnnotations(true);
 
 		if (xmlActivity instanceof String) {
@@ -265,7 +265,7 @@ public class SolutionUtils<Solution_> {
 
 		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("DeletedActivities", DeletedActivities.class);
-		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.setMode(XStream.NO_REFERENCES);
 		xStream.autodetectAnnotations(true);
 
 		if (xmlActivity instanceof String) {

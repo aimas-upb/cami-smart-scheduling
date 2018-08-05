@@ -43,7 +43,7 @@ public class Client extends AbstractVerticle {
 	private void postNewActivity(HttpClient client) {
 
 		String newActivityFilePath = "data" + File.separator + "activityschedule" + File.separator
-				+ "New Activities.xml";
+				+ "New Activities.json";
 		String newActivity = null;
 		try {
 			newActivity = new String(Files.readAllBytes(Paths.get(newActivityFilePath)));

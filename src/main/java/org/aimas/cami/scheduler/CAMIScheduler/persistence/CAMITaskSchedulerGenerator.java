@@ -182,7 +182,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		// serialize the new activity
 		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("NewActivities", NewActivities.class);
-		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.setMode(XStream.NO_REFERENCES);
 		xStream.autodetectAnnotations(true);
 
 		// add the generated activities to this list
@@ -214,7 +214,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		// serialize the object
 		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("DeletedActivities", DeletedActivities.class);
-		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.setMode(XStream.NO_REFERENCES);
 		xStream.autodetectAnnotations(true);
 
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
@@ -248,11 +248,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activityCategoryListAll.addAll(activityCategoryList1);
 		activityCategoryListAll.addAll(activityCategoryList2);
 
-		activityDomain1.setCategories(activityCategoryList1);
-
 		activityDomainList.add(activityDomain1);
-
-		activityDomain2.setCategories(activityCategoryList2);
 
 		activityDomainList.add(activityDomain2);
 
@@ -832,7 +828,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		XStream xStream = new XStream(new JettisonMappedXmlDriver());
 		xStream.alias("ScoreParametrization", ScoreParametrization.class);
-		xStream.setMode(XStream.ID_REFERENCES);
+		xStream.setMode(XStream.NO_REFERENCES);
 		xStream.autodetectAnnotations(true);
 
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
