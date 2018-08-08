@@ -163,6 +163,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		activityType.setPermittedIntervals(permittedIntervalListBreakfast);
 
 		normalActivity.setActivityType(activityType);
+		normalActivity.setUuid(Utility.generateRandomUuid());
 
 		ExcludedTimePeriodsPenalty etpp = new ExcludedTimePeriodsPenalty();
 		etpp.setActivityType(activityType);
