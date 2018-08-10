@@ -206,8 +206,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		DeletedActivity deletedActivity = new DeletedActivity();
 		deletedActivity.setId(0L);
-		deletedActivity.setName("Breakfast");
-		deletedActivity.setUuid("4510cd8ee1a042978377339448d4b8bf");
+		deletedActivity.setName("Yoga");
+		deletedActivity.setUuid("5035e83bbefb4ae48ce427b2613e153a");
 		
 		deletedActivitiesList.add(deletedActivity);
 		DeletedActivities deletedActivities = new DeletedActivities(deletedActivitiesList);
