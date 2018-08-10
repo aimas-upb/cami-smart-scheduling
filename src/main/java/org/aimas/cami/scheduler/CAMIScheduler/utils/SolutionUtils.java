@@ -331,15 +331,19 @@ public class SolutionUtils<Solution_> {
 			}
 		}
 
-		// delete ExcludedTimePeriodsPenalty fact from list
-		scoreDirector.beforeProblemFactRemoved(ettpToDelete);
-		excludedTimePeriodsPenaltyList.remove(ettpToDelete);
-		scoreDirector.afterProblemFactRemoved(ettpToDelete);
+		if (ettpToDelete != null) {
+			// delete ExcludedTimePeriodsPenalty fact from list
+			scoreDirector.beforeProblemFactRemoved(ettpToDelete);
+			excludedTimePeriodsPenaltyList.remove(ettpToDelete);
+			scoreDirector.afterProblemFactRemoved(ettpToDelete);
+		}
 
-		// delete ActivityType fact from list
-		scoreDirector.beforeProblemFactRemoved(activityTypeToDelete);
-		activityTypeList.remove(activityTypeToDelete);
-		scoreDirector.afterProblemFactRemoved(activityTypeToDelete);
+		if (activityTypeToDelete != null) {
+			// delete ActivityType fact from list
+			scoreDirector.beforeProblemFactRemoved(activityTypeToDelete);
+			activityTypeList.remove(activityTypeToDelete);
+			scoreDirector.afterProblemFactRemoved(activityTypeToDelete);
+		}
 
 		// delete Activity entity from list
 		scoreDirector.beforeEntityRemoved(activityEntity);
