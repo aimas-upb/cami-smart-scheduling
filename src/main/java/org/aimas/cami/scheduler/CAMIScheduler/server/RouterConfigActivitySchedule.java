@@ -43,7 +43,7 @@ public class RouterConfigActivitySchedule extends RouterConfigImplementation {
 		List<ActivityProperties> activityPropertiesList = new ArrayList<>();
 
 		for (Activity activity : activityList) {
-			activityPropertiesList.add(new ActivityProperties(activity.getActivityTypeCode(),
+			activityPropertiesList.add(new ActivityProperties(activity.getUuid(), activity.getActivityTypeCode(),
 					Utility.convertActivityPeriodToTimestamp(activity.getActivityPeriod()),
 					activity.getActivityDuration()));
 		}
