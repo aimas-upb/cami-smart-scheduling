@@ -71,7 +71,8 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 			}
 
 			// save changed solution to file
-			camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);
+			if (solvedSchedule != null)
+				camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);
 
 			// get the new solution
 			List<Activity> afterAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()

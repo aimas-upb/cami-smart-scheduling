@@ -43,7 +43,8 @@ public class RouterConfigDeleteActivity extends RouterConfigImplementation {
 		solutionUtils.deleteActivityFromSchedule(camiTaskSchedulerApp.getSolutionBusiness(), jsonActivity);
 
 		// save changed solution to file
-		camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);
+		if (solvedSchedule != null)
+			camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);
 
 		// send empty response back to client
 		response.end();
