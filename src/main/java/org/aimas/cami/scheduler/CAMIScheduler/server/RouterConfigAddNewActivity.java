@@ -34,20 +34,22 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 		// handle adding a new activity to the activitySchedule
 
 		// get the activity from client
-		String xmlActivity = routingContext.getBodyAsString();
+		String jsonActivity = routingContext.getBodyAsString();
 
-		// System.out.println("Got from client:\n" + xmlActivity);
+		// System.out.println("Got from client:\n" + jsonActivity);
 
 		System.out.println("Handling \"putNewActivity\"!");
 
-		if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
-			System.out.println("There is no solution generated, yet.");
-			return;
-		}
+		// if there is no working solution in memory, get it from file
+		if (camiTaskSchedulerApp.getSolutionBusiness().getSolution() == null) {
+			if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
+				System.out.println("There is no solution generated, yet.");
+				return;
+			}
 
-		// get first solution
-		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
-		camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
+			File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
+			camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
+		}
 
 		List<Activity> beforeAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
 				.getActivityList();
@@ -55,7 +57,7 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 		vertx.executeBlocking(future -> {
 
 			// add the new activity to the schedule
-			solutionUtils.addNewActivityFromXML(camiTaskSchedulerApp.getSolutionBusiness(), xmlActivity,
+			solutionUtils.addNewActivityFromXML(camiTaskSchedulerApp.getSolutionBusiness(), jsonActivity,
 					camiTaskSchedulerApp.getProblemSolver());
 
 			// wait on solving
@@ -66,6 +68,9 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 					// happens if someone interrupts your thread
 				}
 			}
+
+			// save changed solution to file
+			// camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);
 
 			// get the new solution
 			List<Activity> afterAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
@@ -82,8 +87,6 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 			response.putHeader("content-type", "application/json; charset=utf-8")
 					.end(Json.encodePrettily(new ChangedActivities(changedActivities.size(), changedActivities, 0)));
 
-			// save changed solution
-			camiTaskSchedulerApp.getSolutionBusiness().saveSolution(solvedSchedule);
 		}, handler -> {
 			System.out.println("The result is: " + handler.result());
 		});

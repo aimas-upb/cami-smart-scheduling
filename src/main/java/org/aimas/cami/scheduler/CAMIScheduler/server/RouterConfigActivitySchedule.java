@@ -27,13 +27,16 @@ public class RouterConfigActivitySchedule extends RouterConfigImplementation {
 
 		System.out.println("Handling \"getActivitySchedule\"!");
 
-		if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
-			System.out.println("There is no solution generated, yet.");
-			return;
-		}
+		// if there is no working solution in memory, get it from file
+		if (camiTaskSchedulerApp.getSolutionBusiness().getSolution() == null) {
+			if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
+				System.out.println("There is no solution generated, yet.");
+				return;
+			}
 
-		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
-		camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
+			File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
+			camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
+		}
 
 		List<Activity> activityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution().getActivityList();
 
