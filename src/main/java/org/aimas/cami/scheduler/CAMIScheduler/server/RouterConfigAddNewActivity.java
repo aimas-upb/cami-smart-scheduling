@@ -19,7 +19,6 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 	private CAMITaskSchedulerApp camiTaskSchedulerApp;
 	private Vertx vertx;
 	private SolutionUtils solutionUtils;
-	private File solvedSchedule;
 
 	public RouterConfigAddNewActivity(Vertx vertx, CAMITaskSchedulerApp camiTaskSchedulerApp) {
 		super();
@@ -41,16 +40,16 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 
 		System.out.println("Handling \"putNewActivity\"!");
 
-		// if there is no working solution in memory, get the last changes from file
-		if (camiTaskSchedulerApp.getSolutionBusiness().getSolution() == null) {
-			if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
-				System.out.println("There is no solution generated, yet.");
-				return;
-			}
-
-			solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
-			camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
+		if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
+			System.out.println("There is no solution generated, yet.");
+			return;
 		}
+
+		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
+
+		// if there is no working solution in memory, get the last changes from file
+		if (camiTaskSchedulerApp.getSolutionBusiness().getSolution() == null)
+			camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
 
 		List<Activity> beforeAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
 				.getActivityList();

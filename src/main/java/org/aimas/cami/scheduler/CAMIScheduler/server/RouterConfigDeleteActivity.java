@@ -13,7 +13,6 @@ public class RouterConfigDeleteActivity extends RouterConfigImplementation {
 
 	private CAMITaskSchedulerApp camiTaskSchedulerApp;
 	private SolutionUtils solutionUtils;
-	private File solvedSchedule;
 
 	public RouterConfigDeleteActivity(CAMITaskSchedulerApp camiTaskSchedulerApp) {
 		super();
@@ -28,17 +27,17 @@ public class RouterConfigDeleteActivity extends RouterConfigImplementation {
 		String jsonActivity = routingContext.getBodyAsString();
 
 		System.out.println("Handling \"deleteActivity\"!");
+		
+		if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
+			System.out.println("There is no solution generated, yet.");
+			return;
+		}
+
+		File solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
 
 		// if there is no working solution in memory, get the last changes from file
-		if (camiTaskSchedulerApp.getSolutionBusiness().getSolution() == null) {
-			if (camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().isEmpty()) {
-				System.out.println("There is no solution generated, yet.");
-				return;
-			}
-
-			solvedSchedule = camiTaskSchedulerApp.getSolutionBusiness().getSolvedFileList().get(0);
+		if (camiTaskSchedulerApp.getSolutionBusiness().getSolution() == null)
 			camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
-		}
 
 		solutionUtils.deleteActivityFromSchedule(camiTaskSchedulerApp.getSolutionBusiness(), jsonActivity);
 
