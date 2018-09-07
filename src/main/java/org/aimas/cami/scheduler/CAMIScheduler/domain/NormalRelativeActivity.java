@@ -1,10 +1,14 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain;
 
+import java.util.List;
+
+import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.ActivityDifficultyWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.RelativeActivityPeriodUpdateListener;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.domain.variable.CustomShadowVariable;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 import org.optaplanner.core.api.domain.variable.PlanningVariableReference;
@@ -17,7 +21,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @author Bogdan
  *
  */
-@PlanningEntity
+@PlanningEntity(difficultyWeightFactoryClass = ActivityDifficultyWeightFactory.class)
 @XStreamAlias("NormalRelativeActivity")
 public class NormalRelativeActivity extends Activity {
 
@@ -26,18 +30,41 @@ public class NormalRelativeActivity extends Activity {
 	// according to it
 	private ActivityPeriod activityPeriod;
 
-	private int offset; // offset (in minutes) - distance between an activity and an activity relative to it
+	private ActivityPeriod planningPeriod;
+
+	// custom value range for the planning variable
+	List<ActivityPeriod> periodDomainRangeList;
+
+	private int offset; // offset (in minutes) - distance between an activity and an activity relative
+						// to it
 	private boolean assigned;
 
-	@Override
-	@CustomShadowVariable(variableListenerClass = RelativeActivityPeriodUpdateListener.class, sources = {
-			@PlanningVariableReference(entityClass = NormalActivity.class, variableName = "activityPeriod") })
+	@PlanningVariable(valueRangeProviderRefs = { "relativeActivityPeriodRange" })
 	public ActivityPeriod getActivityPeriod() {
 		return activityPeriod;
 	}
 
 	public void setActivityPeriod(ActivityPeriod activityPeriod) {
 		this.activityPeriod = activityPeriod;
+	}
+
+	@CustomShadowVariable(variableListenerClass = RelativeActivityPeriodUpdateListener.class, sources = {
+			@PlanningVariableReference(entityClass = NormalActivity.class, variableName = "activityPeriod") })
+	public ActivityPeriod getPlanningPeriod() {
+		return planningPeriod;
+	}
+
+	@ValueRangeProvider(id = "relativeActivityPeriodRange")
+	public List<ActivityPeriod> getPeriodDomainRangeList() {
+		return periodDomainRangeList;
+	}
+
+	public void setPeriodDomainRangeList(List<ActivityPeriod> periodDomainRangeList) {
+		this.periodDomainRangeList = periodDomainRangeList;
+	}
+
+	public void setPlanningPeriod(ActivityPeriod planningPeriod) {
+		this.planningPeriod = planningPeriod;
 	}
 
 	public int getOffset() {
