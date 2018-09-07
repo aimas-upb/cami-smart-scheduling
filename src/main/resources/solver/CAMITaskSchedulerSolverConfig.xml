@@ -23,7 +23,8 @@
       <entitySelector id="placerEntitySelector">
         <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
         <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
       </entitySelector>
       <changeMoveSelector>
         <entitySelector mimicSelectorRef="placerEntitySelector"/>
@@ -35,7 +36,8 @@
       <entitySelector id="placerEntitySelector">
         <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
         <cacheType>PHASE</cacheType>
-        <selectionOrder>SHUFFLED</selectionOrder>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
       </entitySelector>
       <changeMoveSelector>
         <entitySelector mimicSelectorRef="placerEntitySelector"/>
