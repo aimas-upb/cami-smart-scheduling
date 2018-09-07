@@ -422,4 +422,52 @@ public class Utility {
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
+	public static List<ActivityPeriod> getRetrictedDomainRangeForBeforeRelativeType(ActivityPeriod activityPeriod,
+			int offset, int relativeActivityDuration, ActivitySchedule activitySchedule) {
+		List<ActivityPeriod> restrictedDomain = new ArrayList<>();
+
+		int decay = 120;
+
+		ActivityPeriod startPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
+				-(offset + relativeActivityDuration + decay));
+		ActivityPeriod endPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityPeriod,
+				-(offset + relativeActivityDuration));
+
+		TimeInterval restrictedInterval = new TimeInterval(
+				new Time(startPeriod.getPeriodHour(), startPeriod.getPeriodMinutes()),
+				new Time(endPeriod.getPeriodHour(), endPeriod.getPeriodMinutes()));
+
+		for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+			if (activityPeriod.getWeekDayIndex().equals(period.getWeekDayIndex()))
+				if (Utility.fullOverlap(period.getTime(), period.getTime(), restrictedInterval.getMinStart(),
+						restrictedInterval.getMaxEnd()))
+					restrictedDomain.add(period);
+		}
+
+		return restrictedDomain;
+	}
+
+	public static List<ActivityPeriod> getRetrictedDomainRangeForAfterRelativeType(ActivityPeriod activityEndPeriod,
+			int offset, ActivitySchedule activitySchedule) {
+		List<ActivityPeriod> restrictedDomain = new ArrayList<>();
+
+		int decay = 120;
+
+		ActivityPeriod startPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityEndPeriod, offset);
+		ActivityPeriod endPeriod = AdjustActivityPeriod.getAdjustedPeriod(activityEndPeriod, offset + decay);
+
+		TimeInterval restrictedInterval = new TimeInterval(
+				new Time(startPeriod.getPeriodHour(), startPeriod.getPeriodMinutes()),
+				new Time(endPeriod.getPeriodHour(), endPeriod.getPeriodMinutes()));
+
+		for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+			if (activityEndPeriod.getWeekDayIndex().equals(period.getWeekDayIndex()))
+				if (Utility.fullOverlap(period.getTime(), period.getTime(), restrictedInterval.getMinStart(),
+						restrictedInterval.getMaxEnd()))
+					restrictedDomain.add(period);
+		}
+
+		return restrictedDomain;
+	}
+
 }
