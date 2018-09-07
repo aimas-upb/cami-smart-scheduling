@@ -274,7 +274,7 @@ rule "instancesPerDayNormalActivity"
 				),
 				result(hours + ":" + occurences)
 			)
-		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null)
+		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
 	then
 
 		int indictments = 0;
