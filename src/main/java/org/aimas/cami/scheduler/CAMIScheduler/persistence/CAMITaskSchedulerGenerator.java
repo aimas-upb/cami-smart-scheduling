@@ -781,6 +781,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		for (Activity activity : activitySchedule.getActivityList())
 			if (activity instanceof NormalActivity)
 				((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+			else
+				((NormalRelativeActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 	}
 
 	/**
