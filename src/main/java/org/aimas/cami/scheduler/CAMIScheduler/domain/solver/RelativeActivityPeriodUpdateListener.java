@@ -1,5 +1,6 @@
 package org.aimas.cami.scheduler.CAMIScheduler.domain.solver;
 
+import java.util.List;
 import java.util.Random;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
@@ -87,30 +88,26 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 
 									if (rap.getRelativeType().equals(RelativeType.BEFORE)) {
 
-										ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
-												relativeActivity,
-												AdjustActivityPeriod.getAdjustedPeriod(
+										List<ActivityPeriod> restrictedDomain = Utility
+												.getRetrictedDomainRangeForBeforeRelativeType(
 														activityEntity.getActivityPeriod(),
-														Math.abs(relativeActivity.getOffset()) * (-1)
-																- relativeActivity.getActivityType().getDuration()),
-												-5);
+														relativeActivity.getOffset(),
+														relativeActivity.getActivityDuration(), activitySchedule);
 
-										scoreDirector.beforeVariableChanged(relativeActivity, "activityPeriod");
-										relativeActivity.setActivityPeriod(period);
-										scoreDirector.afterVariableChanged(relativeActivity, "activityPeriod");
+										scoreDirector.beforeProblemPropertyChanged(relativeActivity);
+										relativeActivity.setPeriodDomainRangeList(restrictedDomain);
+										scoreDirector.afterProblemPropertyChanged(relativeActivity);
 
 									} else {
 
-										ActivityPeriod period = Utility.getRelativeActivityPeriod(activitySchedule,
-												relativeActivity,
-												AdjustActivityPeriod.getAdjustedPeriod(
+										List<ActivityPeriod> restrictedDomain = Utility
+												.getRetrictedDomainRangeForAfterRelativeType(
 														activityEntity.getActivityEndPeriod(),
-														relativeActivity.getOffset()),
-												5);
+														relativeActivity.getOffset(), activitySchedule);
 
-										scoreDirector.beforeVariableChanged(relativeActivity, "activityPeriod");
-										relativeActivity.setActivityPeriod(period);
-										scoreDirector.afterVariableChanged(relativeActivity, "activityPeriod");
+										scoreDirector.beforeProblemPropertyChanged(relativeActivity);
+										relativeActivity.setPeriodDomainRangeList(restrictedDomain);
+										scoreDirector.afterProblemPropertyChanged(relativeActivity);
 
 									}
 								}
@@ -150,13 +147,11 @@ public class RelativeActivityPeriodUpdateListener implements VariableListener<No
 	@Override
 	public void beforeVariableChanged(ScoreDirector scoreDirector, NormalActivity entity) {
 		updatePeriod(scoreDirector, entity);
-
 	}
 
 	@Override
 	public void afterVariableChanged(ScoreDirector scoreDirector, NormalActivity entity) {
 		updatePeriod(scoreDirector, entity);
-
 	}
 
 	@Override
