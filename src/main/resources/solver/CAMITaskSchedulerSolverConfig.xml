@@ -19,7 +19,28 @@
     <bestScoreLimit>0hard/0soft</bestScoreLimit>
   </termination>
   <constructionHeuristic>
-    <constructionHeuristicType>STRONGEST_FIT_DECREASING</constructionHeuristicType>
+    <queuedEntityPlacer>
+      <entitySelector id="placerEntitySelector">
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SHUFFLED</selectionOrder>
+      </entitySelector>
+      <changeMoveSelector>
+        <entitySelector mimicSelectorRef="placerEntitySelector"/>
+      </changeMoveSelector>
+    </queuedEntityPlacer>
+  </constructionHeuristic>
+  <constructionHeuristic>
+    <queuedEntityPlacer>
+      <entitySelector id="placerEntitySelector">
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SHUFFLED</selectionOrder>
+      </entitySelector>
+      <changeMoveSelector>
+        <entitySelector mimicSelectorRef="placerEntitySelector"/>
+      </changeMoveSelector>
+    </queuedEntityPlacer>
   </constructionHeuristic>
   <localSearch>
     <termination>
