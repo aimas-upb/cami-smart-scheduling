@@ -143,7 +143,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		setPreferredSize(PREFERRED_SCROLLABLE_VIEWPORT_SIZE);
 
 		createAddActivityButton();
-		createAddActivityFromXMLButton(new File("data" + File.separator + "activityschedule" + File.separator + "New Activity" + ".xml"));
+		createAddActivityFromXMLButton(
+				new File("data" + File.separator + "activityschedule" + File.separator + "New Activity" + ".xml"));
 
 		dropDownPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
@@ -254,7 +255,6 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		});
 		addActivityFromXMLPanel.add(addActivityFromXmlButton);
 	}
-
 
 	private Set<String> filterDropDownActivities(List<Activity> activityList) {
 
@@ -513,7 +513,6 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		});
 	}
 
-
 	private void defineGrid(ActivitySchedule activitySchedule) {
 		JButton footprint = SwingUtils.makeSmallButton(new JButton("LinLetGre1-0"));
 		int footprintWidth = footprint.getPreferredSize().width;
@@ -600,6 +599,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 	private JButton createButton(Activity activity, Color color, String toolTip) {
 		String plannedTime;
+		String relativeActivityPlanningPeriod = "-";
 		JButton button = SwingUtils.makeSmallButton(new JButton(new ActivityOptionAction(activity)));
 		button.setBackground(color);
 
@@ -613,9 +613,14 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			plannedTime = activity.getActivityPeriod().getLabel() + " - "
 					+ activity.getActivityEndPeriod().getTime().getLabel();
 
+		if (activity instanceof NormalRelativeActivity)
+			if (((NormalRelativeActivity) activity).getPlanningPeriod() != null)
+				relativeActivityPlanningPeriod = ((NormalRelativeActivity) activity).getPlanningPeriod().getLabel();
+
 		// text displayed when you hover the buton
 		button.setToolTipText("<html>" + activity.getActivityTypeCode() + ": " + activity.getId() + "<br/><br/>"
-				+ plannedTime + "<br/><br/>" + toolTip.substring(6));
+				+ plannedTime + "<br/><br/>Planning Period: " + relativeActivityPlanningPeriod + "<br/><br/>"
+				+ toolTip.substring(6));
 		return button;
 	}
 
@@ -706,7 +711,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 
 			JButton addNotificationButton = SwingUtils.makeSmallButton(new JButton(new ActivityNotification(activity)));
 			listFieldsPanel.add(addNotificationButton);
-			
+
 			JButton deleteActivityButton = SwingUtils.makeSmallButton(new JButton(new DeleteActivity(activity)));
 			listFieldsPanel.add(deleteActivityButton);
 
@@ -767,7 +772,7 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			doProblemFactChange(scoreDirector-> {
+			doProblemFactChange(scoreDirector -> {
 				ActivitySchedule activitySchedule = scoreDirector.getWorkingSolution();
 
 				// shallow clone the activityList
@@ -798,7 +803,8 @@ public class CAMITaskSchedulerPanel extends SolutionPanel<ActivitySchedule> {
 			JButton addNormalActivityButton = SwingUtils.makeSmallButton(new JButton(new AddActivityAction()));
 			listFieldsPanel.add(addNormalActivityButton);
 
-			JButton addNormalRelativeActivityButton = SwingUtils.makeSmallButton(new JButton(new AddRelativeActivityAction()));
+			JButton addNormalRelativeActivityButton = SwingUtils
+					.makeSmallButton(new JButton(new AddRelativeActivityAction()));
 			listFieldsPanel.add(addNormalRelativeActivityButton);
 
 			int result = JOptionPane.showConfirmDialog(CAMITaskSchedulerPanel.this.getRootPane(), listFieldsPanel,
