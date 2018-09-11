@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityCategory;
@@ -90,6 +91,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		predefinedScoreParametrization(activitySchedule);
 		setPeriodDomainRange(activitySchedule);
 		setUuid(activitySchedule);
+		assignRelativeActivities(activitySchedule);
 
 		return activitySchedule;
 	}
@@ -149,7 +151,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		}
 
 	}
-	
+
 	private void generateDeletedActivityExampleInput() {
 		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Delete Activity" + ".xml");
 
@@ -516,6 +518,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				relativeActivity.setActivityType(weightMeasurement);
 				relativeActivity.setOffset(15);
 				relativeActivity.setOnDropdown(true);
+				relativeActivity.setRelativeType(RelativeType.BEFORE);
 				relativeActivity.setId(id++);
 
 				activityList.add(relativeActivity);
@@ -572,6 +575,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				relativeActivity.setActivityType(heartMedication);
 				relativeActivity.setOffset(15);
 				relativeActivity.setOnDropdown(true);
+				relativeActivity.setRelativeType(RelativeType.AFTER);
 				relativeActivity.setId(id++);
 
 				activityList.add(relativeActivity);
@@ -604,6 +608,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				relativeActivity.setActivityType(antibiotic);
 				relativeActivity.setOffset(15);
 				relativeActivity.setOnDropdown(true);
+				relativeActivity.setRelativeType(RelativeType.AFTER);
 				relativeActivity.setId(id++);
 
 				activityList.add(relativeActivity);
@@ -736,7 +741,8 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	 */
 	private void setImposedActivities(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
-			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null) //&& !activity.isOnDropdown())
+			if (activity instanceof NormalActivity && activity.getImposedPeriod() != null) // &&
+																							// !activity.isOnDropdown())
 				((NormalActivity) activity).setActivityPeriod(activity.getImposedPeriod());
 	}
 
@@ -779,8 +785,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	 */
 	private void setPeriodDomainRange(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
-			if (activity instanceof NormalActivity)
-				((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+			activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
 	}
 
 	/**
@@ -791,6 +796,45 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	private void setUuid(ActivitySchedule activitySchedule) {
 		for (Activity activity : activitySchedule.getActivityList())
 			activity.setUuid(Utility.generateRandomUuid());
+	}
+
+	/**
+	 * Assign relative activities to normal activities.
+	 * 
+	 * @param activitySchedule
+	 */
+	private void assignRelativeActivities(ActivitySchedule activitySchedule) {
+		for (RelativeActivityPenalty rap : activitySchedule.getRelativeActivityPenaltyList()) {
+			for (Activity activity : activitySchedule.getActivityList()) {
+				if (activity instanceof NormalRelativeActivity) {
+					NormalRelativeActivity relativeActivity = (NormalRelativeActivity) activity;
+
+					if (relativeActivity.getActivityTypeCode().equals(rap.getRelativeActivityType())
+							&& !relativeActivity.isAssigned()) {
+
+						// find an activity to assign
+						if (rap.getNormalActivityType() != null)
+							Utility.activityRelativeToNormalActivity(activitySchedule, relativeActivity,
+									rap.getNormalActivityType());
+						else if (rap.getCategory() != null)
+							Utility.activityRelativeToCategory(activitySchedule, relativeActivity, rap.getCategory());
+					}
+
+				}
+			}
+		}
+		// check assignation
+		for (Activity activity : activitySchedule.getActivityList()) {
+			if (activity instanceof NormalActivity) {
+				Map<String, Long> myMap = ((NormalActivity) activity).getAssignedToRelativeActivityMap();
+				if (myMap != null)
+					for (String key : myMap.keySet()) {
+						System.out.println("Activity name: " + activity.getActivityTypeCode() + ". Id: "
+								+ activity.getId() + ". Relative activity name: " + key.toString() + ". R-Id: "
+								+ myMap.get(key).toString() + ".");
+					}
+			}
+		}
 	}
 
 	private void createTimeList(ActivitySchedule activitySchedule) {
