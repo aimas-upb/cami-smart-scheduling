@@ -274,7 +274,7 @@ rule "instancesPerDayNormalActivity"
 				),
 				result(hours + ":" + occurences)
 			)
-		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null)
+		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
 	then
 
 		int indictments = 0;
@@ -301,6 +301,7 @@ rule "instancesPerDayNormalActivity"
 end
 
 rule "instancesPerDayNormalRelativeActivity"
+salience 1
 	when
 		$scoreParametrization : ScoreParametrization(instancesPerDayPenalty != null)
 
@@ -328,6 +329,72 @@ rule "instancesPerDayNormalRelativeActivity"
 		if (occurences != $instancesPerDay)
 			scoreHolder.addHardConstraintMatch(kcontext, 
 				Math.abs(occurences - $instancesPerDay) * (-$scoreParametrization.getInstancesPerDayPenalty() + 1));
+end
+
+rule "relativeActivityPeriodPenaltyBefore"
+salience 2
+	when
+		$normalActivity : NormalActivity(
+			activityPeriod != null, 
+			$normalActivityPeriod : activityPeriod, 
+			assignedToRelativeActivityMap != null, 
+			assignedToRelativeActivityMap.isEmpty() == false, 
+			$relativeActivities : assignedToRelativeActivityMap
+		)
+
+		$relativeActivity: NormalRelativeActivity(
+			activityPeriod != null, 
+			relativeType == RelativeType.BEFORE, 
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : (-offset), 
+			$relativeActivities.containsKey(activityType.code), 
+			$relativeActivities.get(activityType.code) == id
+		)
+	then
+		ActivityPeriod relativeActivityEndPeriod = getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration());
+
+		if ($normalActivityPeriod.getWeekDayIndex() == $relativeActivityPeriod.getWeekDayIndex()) {
+			int minutesInInterval = getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), relativeActivityEndPeriod.getTime());
+
+			if (minutesInInterval > $offset)
+				scoreHolder.addHardConstraintMatch(kcontext, $offset - minutesInInterval);
+			else if (minutesInInterval < ($offset - 60))
+				scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - ($offset - 60));
+		} else
+			scoreHolder.addHardConstraintMatch(kcontext, (-1) * Math.abs($normalActivityPeriod.getWeekDayIndex() - $relativeActivityPeriod.getWeekDayIndex()));
+end
+
+rule "relativeActivityPeriodPenaltyAfter"
+salience 3
+	when
+		$normalActivity : NormalActivity(
+			activityPeriod != null, 
+			$normalActivityPeriod : activityPeriod, 
+			assignedToRelativeActivityMap != null, 
+			assignedToRelativeActivityMap.isEmpty() == false, 
+			$relativeActivities : assignedToRelativeActivityMap
+		)
+
+		$relativeActivity: NormalRelativeActivity(
+			activityPeriod != null, 
+			relativeType == RelativeType.AFTER, 
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : offset, 
+			$relativeActivities.containsKey(activityType.code), 
+			$relativeActivities.get(activityType.code) == id
+		)
+	then
+		ActivityPeriod normalActivityEndPeriod = getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration());
+
+		if ($normalActivityPeriod.getWeekDayIndex() == $relativeActivityPeriod.getWeekDayIndex()) {
+			int minutesInInterval = getNumberOfMinutesInInterval(normalActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
+
+			if (minutesInInterval < $offset)
+				scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - $offset);
+			else if (minutesInInterval > ($offset + 60))
+				scoreHolder.addHardConstraintMatch(kcontext, ($offset + 60) - minutesInInterval);
+		} else
+			scoreHolder.addHardConstraintMatch(kcontext, (-1) * Math.abs($normalActivityPeriod.getWeekDayIndex() - $relativeActivityPeriod.getWeekDayIndex()));
 end
 
 // SOFT CONSTRAINTS
@@ -366,19 +433,7 @@ rule "distanceBetweenExerciseAndMeal"
 			$mealPeriod.getWeekDayIndex() == $exercisePeriod.getWeekDayIndex()
 		)
 	then
-
-		/*if (after($exercisePeriod.getTime(), $mealPeriod.getTime())) {
-
-			if (Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $mealPeriod.getTime())) <= 
-				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
-
-				scoreHolder.addSoftConstraintMatch(kcontext, 
-					Math.abs(getNumberOfMinutesInInterval($exercise.getActivityEndPeriod().getTime(), $mealPeriod.getTime())) - 
-						$scoreParametrization.getDistanceBetweenExerciseAndMeal());
-
-			}
-
-		} else */if (after($mealPeriod.getTime(), $exercisePeriod.getTime())) {
+		if (after($mealPeriod.getTime(), $exercisePeriod.getTime())) {
 
 			if (Math.abs(getNumberOfMinutesInInterval($meal.getActivityEndPeriod().getTime(), $exercisePeriod.getTime())) <= 
 				$scoreParametrization.getDistanceBetweenExerciseAndMeal()) {
@@ -492,18 +547,4 @@ rule "postponeActivity"
 					scoreHolder.addHardConstraintMatch(kcontext, -$scoreParametrization.getPostponeLaterThisDayAndThisWeekPenalty());
 				}
 		}
-end
-
-// activities can now be "initialized" with null values to variables
-// when an activity(it's activityPeriod is null) from drop-down is selected by user, then it must be planned
-// it must be imposed a penalty so the solver can plan this activity
-// add a big negative score for every unplanned activities that have to be planned
-rule "wantToPlanAnActivity"
-	when
-		$activity : NormalActivity(
-			activityPeriod == null, 
-			wantedToBePlanned == true
-		)
-	then
-		scoreHolder.addHardConstraintMatch(kcontext, -9999);
 end

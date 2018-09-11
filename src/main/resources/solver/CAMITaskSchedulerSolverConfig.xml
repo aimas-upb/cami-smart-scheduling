@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
+  <moveThreadCount>AUTO</moveThreadCount>
   <!--<randomType>MERSENNE_TWISTER</randomType>-->
   <!--<environmentMode>FAST_ASSERT</environmentMode>-->
 
@@ -19,7 +20,30 @@
     <bestScoreLimit>0hard/0soft</bestScoreLimit>
   </termination>
   <constructionHeuristic>
-    <constructionHeuristicType>STRONGEST_FIT_DECREASING</constructionHeuristicType>
+    <queuedEntityPlacer>
+      <entitySelector id="placerEntitySelector">
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+      </entitySelector>
+      <changeMoveSelector>
+        <entitySelector mimicSelectorRef="placerEntitySelector"/>
+      </changeMoveSelector>
+    </queuedEntityPlacer>
+  </constructionHeuristic>
+  <constructionHeuristic>
+    <queuedEntityPlacer>
+      <entitySelector id="placerEntitySelector">
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+      </entitySelector>
+      <changeMoveSelector>
+        <entitySelector mimicSelectorRef="placerEntitySelector"/>
+      </changeMoveSelector>
+    </queuedEntityPlacer>
   </constructionHeuristic>
   <localSearch>
     <termination>
@@ -40,9 +64,9 @@
       <lateAcceptanceSize>100</lateAcceptanceSize>
     </acceptor>
     <forager>
-      <acceptedCountLimit>1</acceptedCountLimit>
-      <pickEarlyType>FIRST_BEST_SCORE_IMPROVING</pickEarlyType>
-      <!--<pickEarlyType>FIRST_LAST_STEP_SCORE_IMPROVING</pickEarlyType>-->
+      <acceptedCountLimit>4</acceptedCountLimit>
+      <!--<pickEarlyType>FIRST_BEST_SCORE_IMPROVING</pickEarlyType>-->
+      <pickEarlyType>FIRST_LAST_STEP_SCORE_IMPROVING</pickEarlyType>
     </forager>
   </localSearch>
 </solver>
