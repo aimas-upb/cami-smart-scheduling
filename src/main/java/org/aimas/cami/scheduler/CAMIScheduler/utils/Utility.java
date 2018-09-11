@@ -11,12 +11,15 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
@@ -420,6 +423,53 @@ public class Utility {
 
 	public static String generateRandomUuid() {
 		return UUID.randomUUID().toString().replace("-", "");
+	}
+
+	public static void activityRelativeToNormalActivity(ActivitySchedule activitySchedule,
+			NormalRelativeActivity relativeActivity, String activityName) {
+		for (Activity activity : activitySchedule.getActivityList()) {
+			if (activity instanceof NormalActivity) {
+				NormalActivity normalActivity = (NormalActivity) activity;
+				if (normalActivity.getActivityTypeCode().equals(activityName) && !normalActivity
+						.getAssignedToRelativeActivityMap().containsKey(relativeActivity.getActivityTypeCode())) {
+					// not using Score Director for now
+					relativeActivity.setAssigned(true);
+					normalActivity.getAssignedToRelativeActivityMap().put(relativeActivity.getActivityTypeCode(),
+							relativeActivity.getId());
+					break;
+				}
+			}
+		}
+	}
+
+	public static void activityRelativeToCategory(ActivitySchedule activitySchedule,
+			NormalRelativeActivity relativeActivity, String category) {
+		Random randomGenerator = new Random();
+		Activity activity = getRandomActivityFromCategory(activitySchedule.getActivityList(), category,
+				relativeActivity.getActivityTypeCode(), randomGenerator);
+
+		// not using Score Director for now
+		relativeActivity.setAssigned(true);
+		((NormalActivity) activity).getAssignedToRelativeActivityMap().put(relativeActivity.getActivityTypeCode(),
+				relativeActivity.getId());
+
+	}
+
+	private static Activity getRandomActivityFromCategory(List<Activity> activityList, String category,
+			String relativeActivityName, Random randomGenerator) {
+		List<Activity> selectedActivities = new ArrayList<>();
+
+		for (Activity activity : activityList) {
+			if (activity instanceof NormalActivity) {
+				NormalActivity normalActivity = (NormalActivity) activity;
+				if (normalActivity.getActivityCategory().getCode().equals(category)
+						&& !normalActivity.getAssignedToRelativeActivityMap().containsKey(relativeActivityName))
+					selectedActivities.add(normalActivity);
+			}
+
+		}
+
+		return selectedActivities.get(randomGenerator.nextInt(selectedActivities.size()));
 	}
 
 }
