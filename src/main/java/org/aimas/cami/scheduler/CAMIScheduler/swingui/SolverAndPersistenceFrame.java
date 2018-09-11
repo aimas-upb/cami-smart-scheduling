@@ -509,36 +509,34 @@ public class SolverAndPersistenceFrame<Solution_> extends JFrame {
 
 		solutionPanel.doProblemFactChange(scoreDirector -> {
 			for (Activity activity : activitySchedule.getActivityList()) {
-				if (activity instanceof NormalActivity) {
-					if (activity.getActivityType().getPermittedIntervals() != null) {
+				if (activity.getActivityType().getPermittedIntervals() != null) {
 
-						List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
+					List<ActivityPeriod> restrictedPeriodDomain = new ArrayList<>();
 
-						for (TimeInterval permittedInterval : activity.getActivityType().getPermittedIntervals()) {
+					for (TimeInterval permittedInterval : activity.getActivityType().getPermittedIntervals()) {
 
-							int offset = 1;
+						int offset = 1;
 
-							TimeInterval relaxedPermittedInterval = new TimeInterval(
-									new Time(permittedInterval.getMinStart().getHour() - offset,
-											permittedInterval.getMinStart().getMinutes()),
-									new Time(permittedInterval.getMaxEnd().getHour() + offset,
-											permittedInterval.getMaxEnd().getMinutes()));
+						TimeInterval relaxedPermittedInterval = new TimeInterval(
+								new Time(permittedInterval.getMinStart().getHour() - offset,
+										permittedInterval.getMinStart().getMinutes()),
+								new Time(permittedInterval.getMaxEnd().getHour() + offset,
+										permittedInterval.getMaxEnd().getMinutes()));
 
-							for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
-								if (Utility.fullOverlap(period.getTime(), period.getTime(),
-										relaxedPermittedInterval.getMinStart(), relaxedPermittedInterval.getMaxEnd()))
-									restrictedPeriodDomain.add(period);
-							}
+						for (ActivityPeriod period : activitySchedule.getActivityPeriodList()) {
+							if (Utility.fullOverlap(period.getTime(), period.getTime(),
+									relaxedPermittedInterval.getMinStart(), relaxedPermittedInterval.getMaxEnd()))
+								restrictedPeriodDomain.add(period);
 						}
-
-						scoreDirector.beforeProblemPropertyChanged(activity);
-						((NormalActivity) activity).setPeriodDomainRangeList(restrictedPeriodDomain);
-						scoreDirector.afterProblemPropertyChanged(activity);
-					} else {
-						scoreDirector.beforeProblemPropertyChanged(activity);
-						((NormalActivity) activity).setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
-						scoreDirector.afterProblemPropertyChanged(activity);
 					}
+
+					scoreDirector.beforeProblemPropertyChanged(activity);
+					activity.setPeriodDomainRangeList(restrictedPeriodDomain);
+					scoreDirector.afterProblemPropertyChanged(activity);
+				} else {
+					scoreDirector.beforeProblemPropertyChanged(activity);
+					activity.setPeriodDomainRangeList(activitySchedule.getActivityPeriodList());
+					scoreDirector.afterProblemPropertyChanged(activity);
 				}
 			}
 		});

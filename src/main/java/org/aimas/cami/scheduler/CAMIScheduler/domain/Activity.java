@@ -7,6 +7,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamInclude;
 
@@ -28,6 +29,9 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 
 	// if an activity is immovable or not
 	private boolean immovable;
+
+	// custom value range for the planning variable
+	List<ActivityPeriod> periodDomainRangeList;
 
 	private boolean wantedToBePlanned;
 	private boolean onDropdown;
@@ -57,7 +61,9 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 		this.immovable = immovable;
 	}
 
-	// other useful methods
+	public void setPeriodDomainRangeList(List<ActivityPeriod> periodDomainRangeList) {
+		this.periodDomainRangeList = periodDomainRangeList;
+	}
 
 	public boolean isWantedToBePlanned() {
 		return wantedToBePlanned;
@@ -82,6 +88,8 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
 	}
+
+	// other useful methods
 
 	public abstract ActivityPeriod getActivityPeriod();
 
