@@ -267,6 +267,7 @@ rule "instancesPerDayNormalActivity"
 				),
 				action(
 					occurences++;
+			
 
 					// add the activity hour to the list
 					if ($activityPeriod != null)
@@ -328,11 +329,32 @@ salience 1
 
 		if (occurences != $instancesPerDay)
 			scoreHolder.addHardConstraintMatch(kcontext, 
-				Math.abs(occurences - $instancesPerDay) * (-$scoreParametrization.getInstancesPerDayPenalty() + 1));
+				Math.abs(occurences - $instancesPerDay) * (-1000));
+end
+
+rule "relativeActivityPeriodPenaltyDifferentDay"
+	when
+		$normalActivity : NormalActivity(
+			activityPeriod != null, 
+			$normalActivityPeriod : activityPeriod, 
+			assignedToRelativeActivityMap != null, 
+			assignedToRelativeActivityMap.isEmpty() == false, 
+			$relativeActivities : assignedToRelativeActivityMap
+		)
+
+		$relativeActivity: NormalRelativeActivity(
+			activityPeriod != null,  
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : offset, 
+			$relativeActivities.containsKey(activityType.code), 
+			$relativeActivities.get(activityType.code) == id, 
+			$normalActivityPeriod.getWeekDayIndex() != $relativeActivityPeriod.getWeekDayIndex()
+		)
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, (-1) * Math.abs($normalActivityPeriod.getWeekDayIndex() - $relativeActivityPeriod.getWeekDayIndex()));
 end
 
 rule "relativeActivityPeriodPenaltyBefore"
-salience 2
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -353,19 +375,15 @@ salience 2
 	then
 		ActivityPeriod relativeActivityEndPeriod = getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration());
 
-		if ($normalActivityPeriod.getWeekDayIndex() == $relativeActivityPeriod.getWeekDayIndex()) {
-			int minutesInInterval = getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), relativeActivityEndPeriod.getTime());
+		int minutesInInterval = getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), relativeActivityEndPeriod.getTime());
 
-			if (minutesInInterval > $offset)
-				scoreHolder.addHardConstraintMatch(kcontext, $offset - minutesInInterval);
-			else if (minutesInInterval < ($offset - 60))
-				scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - ($offset - 60));
-		} else
-			scoreHolder.addHardConstraintMatch(kcontext, (-1) * Math.abs($normalActivityPeriod.getWeekDayIndex() - $relativeActivityPeriod.getWeekDayIndex()));
+		if (minutesInInterval > $offset)
+			scoreHolder.addHardConstraintMatch(kcontext, $offset - minutesInInterval);
+		else if (minutesInInterval < ($offset - 60))
+			scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - ($offset - 60));
 end
 
 rule "relativeActivityPeriodPenaltyAfter"
-salience 3
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -386,15 +404,12 @@ salience 3
 	then
 		ActivityPeriod normalActivityEndPeriod = getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration());
 
-		if ($normalActivityPeriod.getWeekDayIndex() == $relativeActivityPeriod.getWeekDayIndex()) {
-			int minutesInInterval = getNumberOfMinutesInInterval(normalActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
+		int minutesInInterval = getNumberOfMinutesInInterval(normalActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
 
-			if (minutesInInterval < $offset)
-				scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - $offset);
-			else if (minutesInInterval > ($offset + 60))
-				scoreHolder.addHardConstraintMatch(kcontext, ($offset + 60) - minutesInInterval);
-		} else
-			scoreHolder.addHardConstraintMatch(kcontext, (-1) * Math.abs($normalActivityPeriod.getWeekDayIndex() - $relativeActivityPeriod.getWeekDayIndex()));
+		if (minutesInInterval < $offset)
+			scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - $offset);
+		else if (minutesInInterval > ($offset + 60))
+			scoreHolder.addHardConstraintMatch(kcontext, ($offset + 60) - minutesInInterval);
 end
 
 // SOFT CONSTRAINTS
