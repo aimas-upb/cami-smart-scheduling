@@ -7,7 +7,6 @@ import org.aimas.cami.scheduler.CAMIScheduler.swingui.Labeled;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AbstractPersistable;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.AdjustActivityPeriod;
 
-
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamInclude;
 
@@ -92,6 +91,8 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 	// other useful methods
 
 	public abstract ActivityPeriod getActivityPeriod();
+
+	public abstract void setActivityPeriod(ActivityPeriod activityPeriod);
 
 	public ActivityPeriod getActivityEndPeriod() {
 		ActivityPeriod activityPeriod = getActivityPeriod();

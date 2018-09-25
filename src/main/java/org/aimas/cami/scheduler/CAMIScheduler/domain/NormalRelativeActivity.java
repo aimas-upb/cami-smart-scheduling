@@ -39,6 +39,7 @@ public class NormalRelativeActivity extends Activity {
 		return activityPeriod;
 	}
 
+	@Override
 	public void setActivityPeriod(ActivityPeriod activityPeriod) {
 		this.activityPeriod = activityPeriod;
 	}
