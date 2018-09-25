@@ -3,6 +3,7 @@ package org.aimas.cami.scheduler.CAMIScheduler.domain.solver;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ExcludedTimePeriodsPenalty;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeActivityPenalty;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.optaplanner.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
@@ -18,6 +19,9 @@ public class ActivityDifficultyWeightFactory implements SelectionSorterWeightFac
 
 		if (activity.getActivityType().getPermittedIntervals() != null)
 			priority++;
+		
+		/*if (activity instanceof NormalRelativeActivity)
+			priority++;*/
 
 		for (ExcludedTimePeriodsPenalty etp : solution.getExcludedTimePeriodsList()) {
 			if (etp.getActivityType().getCode().equals(activity.getActivityTypeCode()))
@@ -27,7 +31,8 @@ public class ActivityDifficultyWeightFactory implements SelectionSorterWeightFac
 		for (RelativeActivityPenalty rap : solution.getRelativeActivityPenaltyList()) {
 			if ((rap.getNormalActivityType() != null
 					&& rap.getNormalActivityType().equals(activity.getActivityTypeCode()))
-					|| (rap.getCategory() != null && rap.getCategory().equals(activity.getActivityCategory().getCode())))
+					|| (rap.getCategory() != null
+							&& rap.getCategory().equals(activity.getActivityCategory().getCode())))
 				priority++;
 		}
 
