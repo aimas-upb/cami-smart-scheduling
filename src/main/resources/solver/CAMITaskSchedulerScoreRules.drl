@@ -76,11 +76,59 @@ end
 // an activity must be planned in the permitted interval
 rule "overlapPermittedInterval"
 	when
-		$activity : Activity(
+		$activity : NormalActivity(
 			activityType.permittedIntervals != null && activityType.permittedIntervals.size != 0, 
 			$activityType : activityType, 
 			$activityPeriod : activityPeriod, 
 			$activityPeriod != null
+		)
+	then
+		int minDiff = Integer.MAX_VALUE;
+
+		for (TimeInterval permittedInterval : $activityType.getPermittedIntervals()) {
+
+			if (!fullOverlap($activityPeriod.getTime(), $activity.getActivityEndPeriod().getTime(), 
+					permittedInterval.getMinStart(), permittedInterval.getMaxEnd())) {
+
+				if (exclusiveBefore($activityPeriod.getTime(), permittedInterval.getMinStart())) {
+
+					int diffToPermittedMinStart = getNumberOfMinutesInInterval($activityPeriod.getTime(), permittedInterval.getMinStart());
+					minDiff = diffToPermittedMinStart < minDiff ? diffToPermittedMinStart : minDiff;
+
+				} else if (exclusiveAfter(permittedInterval.getMaxEnd(), $activity.getActivityEndPeriod().getTime())) {
+
+					int diffToPermitedMaxEnd = getNumberOfMinutesInInterval(permittedInterval.getMaxEnd(), $activity.getActivityEndPeriod().getTime());
+					minDiff = diffToPermitedMaxEnd < minDiff ? diffToPermitedMaxEnd : minDiff;
+
+				}
+
+			} else {
+				minDiff = 0;
+				break;
+			}
+
+		}
+
+		scoreHolder.addHardConstraintMatch(kcontext, -minDiff);
+end
+
+rule "overlapPermittedIntervalRelativeActivity"
+	when
+		$normalActivity : NormalActivity(
+			activityPeriod != null, 
+			$normalActivityPeriod : activityPeriod, 
+			assignedToRelativeActivityMap != null, 
+			assignedToRelativeActivityMap.isEmpty() == false, 
+			$relativeActivities : assignedToRelativeActivityMap
+		)
+
+		$activity : NormalRelativeActivity(
+			activityType.permittedIntervals != null && activityType.permittedIntervals.size != 0, 
+			$activityType : activityType, 
+			activityPeriod != null, 
+			$activityPeriod : activityPeriod, 
+			$relativeActivities.containsKey(activityType.code), 
+			$relativeActivities.get(activityType.code) == id
 		)
 	then
 		int minDiff = Integer.MAX_VALUE;
@@ -240,9 +288,8 @@ rule "instancesPerWeekAssigned"
 			if (Integer.valueOf(weekSpreadArray[i + 1]) - Integer.valueOf(weekSpreadArray[i]) < gap)
 				indictments++;
 
-		if (occurences != $instancesPerWeek || indictments != 0)
-			scoreHolder.addHardConstraintMatch(kcontext, 
-					(Math.abs(occurences - $instancesPerWeek) + (indictments * gap)) * (-$scoreParametrization.getInstancesPerWeekPenalty()));
+		scoreHolder.addHardConstraintMatch(kcontext, 
+			(Math.abs(occurences - $instancesPerWeek) + (indictments * gap)) * (-$scoreParametrization.getInstancesPerWeekPenalty()));
 end
 
 // plan an activity every day, "instancesPerDay" instances in a day
@@ -277,32 +324,32 @@ rule "instancesPerDayNormalActivity"
 			)
 		exists NormalActivity(activityType.code == $activityType.code, activityPeriod != null, activityPeriod.weekDay.dayIndex == $weekDay.dayIndex)
 	then
-
 		int indictments = 0;
 		String[] resultSplit = $result.split(":");
 		int occurences = Integer.valueOf(resultSplit[1]);
 		String[] hours = resultSplit[0].split(" ");
 
-		// sort the hours
-		Arrays.sort(hours, new Comparator<String>() {
-			public int compare(String s1, String s2) {
-				return Integer.valueOf(s1).compareTo(Integer.valueOf(s2));
-			}
-		});
-
-		// check if the activities "respect" the gap
 		int gap = $instancesPerDay > 1 ? (24 / $instancesPerDay) : 0;
-		for (int i = 0; i < hours.length - 1; i++)
-			if (Integer.valueOf(hours[i + 1]) - Integer.valueOf(hours[i]) < gap)
-				indictments++;
 
-		if (occurences != $instancesPerDay || indictments != 0)
-			scoreHolder.addHardConstraintMatch(kcontext, 
-				(Math.abs(occurences - $instancesPerDay) + (indictments * gap)) * (-$scoreParametrization.getInstancesPerDayPenalty()));
+		if (gap > 0) {
+			// sort the hours
+			Arrays.sort(hours, new Comparator<String>() {
+				public int compare(String s1, String s2) {
+					return Integer.valueOf(s1).compareTo(Integer.valueOf(s2));
+				}
+			});
+
+			// check if the activities "respect" the gap
+			for (int i = 0; i < hours.length - 1; i++)
+				if (Integer.valueOf(hours[i + 1]) - Integer.valueOf(hours[i]) < gap)
+					indictments++;
+		}
+
+		scoreHolder.addHardConstraintMatch(kcontext, 
+			(Math.abs(occurences - $instancesPerDay) + (indictments * gap)) * (-$scoreParametrization.getInstancesPerDayPenalty()));
 end
 
 rule "instancesPerDayNormalRelativeActivity"
-salience 1
 	when
 		$scoreParametrization : ScoreParametrization(instancesPerDayPenalty != null)
 
@@ -327,9 +374,7 @@ salience 1
 	then
 		int occurences = $result.intValue();
 
-		if (occurences != $instancesPerDay)
-			scoreHolder.addHardConstraintMatch(kcontext, 
-				Math.abs(occurences - $instancesPerDay) * (-1000));
+		scoreHolder.addHardConstraintMatch(kcontext, Math.abs(occurences - $instancesPerDay) * (-$scoreParametrization.getInstancesPerDayPenalty() + 1));
 end
 
 rule "relativeActivityPeriodPenaltyDifferentDay"
