@@ -141,4 +141,89 @@ public class ActivitySchedule extends AbstractPersistable {
 		this.scoreParametrization = scoreParametrization;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((activityCategoryList == null) ? 0 : activityCategoryList.hashCode());
+		result = prime * result + ((activityDomainList == null) ? 0 : activityDomainList.hashCode());
+		result = prime * result + ((activityList == null) ? 0 : activityList.hashCode());
+		result = prime * result + ((activityPeriodList == null) ? 0 : activityPeriodList.hashCode());
+		result = prime * result + ((activityTypeList == null) ? 0 : activityTypeList.hashCode());
+		result = prime * result + ((excludedTimePeriodsList == null) ? 0 : excludedTimePeriodsList.hashCode());
+		result = prime * result + ((relativeActivityPenaltyList == null) ? 0 : relativeActivityPenaltyList.hashCode());
+		result = prime * result + ((score == null) ? 0 : score.hashCode());
+		result = prime * result + ((scoreParametrization == null) ? 0 : scoreParametrization.hashCode());
+		result = prime * result + ((timeList == null) ? 0 : timeList.hashCode());
+		result = prime * result + ((weekdayList == null) ? 0 : weekdayList.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof ActivitySchedule))
+			return false;
+		ActivitySchedule other = (ActivitySchedule) obj;
+		if (activityCategoryList == null) {
+			if (other.activityCategoryList != null)
+				return false;
+		} else if (!activityCategoryList.equals(other.activityCategoryList))
+			return false;
+		if (activityDomainList == null) {
+			if (other.activityDomainList != null)
+				return false;
+		} else if (!activityDomainList.equals(other.activityDomainList))
+			return false;
+		if (activityList == null) {
+			if (other.activityList != null)
+				return false;
+		} else if (!activityList.equals(other.activityList))
+			return false;
+		if (activityPeriodList == null) {
+			if (other.activityPeriodList != null)
+				return false;
+		} else if (!activityPeriodList.equals(other.activityPeriodList))
+			return false;
+		if (activityTypeList == null) {
+			if (other.activityTypeList != null)
+				return false;
+		} else if (!activityTypeList.equals(other.activityTypeList))
+			return false;
+		if (excludedTimePeriodsList == null) {
+			if (other.excludedTimePeriodsList != null)
+				return false;
+		} else if (!excludedTimePeriodsList.equals(other.excludedTimePeriodsList))
+			return false;
+		if (relativeActivityPenaltyList == null) {
+			if (other.relativeActivityPenaltyList != null)
+				return false;
+		} else if (!relativeActivityPenaltyList.equals(other.relativeActivityPenaltyList))
+			return false;
+		if (score == null) {
+			if (other.score != null)
+				return false;
+		} else if (!score.equals(other.score))
+			return false;
+		if (scoreParametrization == null) {
+			if (other.scoreParametrization != null)
+				return false;
+		} else if (!scoreParametrization.equals(other.scoreParametrization))
+			return false;
+		if (timeList == null) {
+			if (other.timeList != null)
+				return false;
+		} else if (!timeList.equals(other.timeList))
+			return false;
+		if (weekdayList == null) {
+			if (other.weekdayList != null)
+				return false;
+		} else if (!weekdayList.equals(other.weekdayList))
+			return false;
+		return true;
+	}
+
 }
