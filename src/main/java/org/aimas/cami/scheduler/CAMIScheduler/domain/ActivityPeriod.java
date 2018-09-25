@@ -28,6 +28,12 @@ public class ActivityPeriod extends AbstractPersistable implements Labeled {
 		this.weekDay = weekDay;
 	}
 
+	public ActivityPeriod(long id, Time time, WeekDay weekDay) {
+		super(id);
+		this.time = time;
+		this.weekDay = weekDay;
+	}
+
 	public WeekDay getWeekDay() {
 		return weekDay;
 	}
