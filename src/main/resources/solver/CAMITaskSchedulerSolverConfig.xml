@@ -56,24 +56,32 @@
           <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
         </entitySelector>
       </changeMoveSelector>
-      <!--<swapMoveSelector>-->
-      	<!--<filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.SameActivitySwapMoveSelector</filterClass>-->
-      <!--</swapMoveSelector>-->
+      <swapMoveSelector>
+        <entitySelector>
+          <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
+        </entitySelector>
+      </swapMoveSelector>
+      <!--swapMoveSelector>
+      	<filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.SameActivitySwapMoveSelector</filterClass>
+      </swapMoveSelector-->
+      <!--moveListFactory>
+        <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.NormalActivityPeriodMoveFactory</moveListFactoryClass>
+      </moveListFactory>
       <moveListFactory>
         <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.RelativeActivityPeriodMoveFactory</moveListFactoryClass>
       </moveListFactory>
       <moveListFactory>
         <moveListFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.ActivitySwapMoveFactory</moveListFactoryClass>
-      </moveListFactory>
+      </moveListFactory-->
     </unionMoveSelector>
     <acceptor>
-      <!--<simulatedAnnealingStartingTemperature>2hard/100soft</simulatedAnnealingStartingTemperature>-->
-      <lateAcceptanceSize>50</lateAcceptanceSize>
+      <!--simulatedAnnealingStartingTemperature>2hard/100soft</simulatedAnnealingStartingTemperature-->
+      <lateAcceptanceSize>25</lateAcceptanceSize>
       <entityTabuSize>5</entityTabuSize>
-      <!--<valueTabuSize>3</valueTabuSize>-->
+      <!--valueTabuSize>3</valueTabuSize>
       <moveTabuSize>7</moveTabuSize>
-      <!--<undoMoveTabuSize>7</undoMoveTabuSize>-->
-      <!--<solutionTabuSize>1000</solutionTabuSize>-->
+      <undoMoveTabuSize>7</undoMoveTabuSize>
+      <solutionTabuSize>1000</solutionTabuSize-->
     </acceptor>
     <forager>
       <acceptedCountLimit>1</acceptedCountLimit>
