@@ -296,7 +296,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activityList.add(activity);
 		}
 
-		/*{
+		{
 			ActivityType stretches = new ActivityType();
 			stretches.setActivityCategory(activitySchedule.getActivityCategoryList().get(0));
 			stretches.setCode("Stretches");
@@ -496,7 +496,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			activity.setImmovable(true);
 			activity.setOnDropdown(true);
 			activityList.add(activity);
-		}*/
+		}
 
 		// ---------------------------------------------------//
 
@@ -535,7 +535,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		// ---------------------------------------------------//
 
-		/*{
+		{
 			ActivityType bloodPressurehMeasurement = new ActivityType();
 			bloodPressurehMeasurement.setActivityCategory(activitySchedule.getActivityCategoryList().get(2));
 			bloodPressurehMeasurement.setCode("Blood pressure measurement");
@@ -553,7 +553,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 				activity.setOnDropdown(true);
 				activityList.add(activity);
 			}
-		}*/
+		}
 
 		// ---------------------------------------------------//
 
@@ -623,7 +623,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 			relativeActivityPenaltyList.add(relativeActivityPenalty);
 
-			/*ExcludedTimePeriodsPenalty etpp = new ExcludedTimePeriodsPenalty();
+			ExcludedTimePeriodsPenalty etpp = new ExcludedTimePeriodsPenalty();
 			etpp.setActivityType(antibiotic);
 
 			etpp.setId(exccludedId++);
@@ -641,11 +641,11 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			excludedActivityPeriods.add(pi2);
 			etpp.setExcludedActivityPeriods(excludedActivityPeriods);
 
-			excludedTimePeriodsPenaltyList.add(etpp);*/
+			excludedTimePeriodsPenaltyList.add(etpp);
 		}
 
 		// ---------------------------------------------------//
-		/*{
+		{
 			ActivityType tvSeries = new ActivityType();
 			tvSeries.setActivityCategory(activitySchedule.getActivityCategoryList().get(4));
 			tvSeries.setCode("Favorite TV Series 1");
@@ -707,7 +707,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			// activity.setWantedToBePlanned(true);
 			activity.setOnDropdown(true);
 			activityList.add(activity);
-		}*/
+		}
 
 		activitySchedule.setActivityTypeList(activityTypeList);
 		activitySchedule.setActivityList(activityList);
@@ -754,9 +754,9 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Score parametrization" + ".xml");
 
-		scoreParametrization.setInstancesPerDayPenalty(2);
-		scoreParametrization.setInstancesPerWeekPenalty(1);
-		scoreParametrization.setPeriodConflictPenalty(3);
+		scoreParametrization.setInstancesPerDayPenalty(7);
+		scoreParametrization.setInstancesPerWeekPenalty(2);
+		scoreParametrization.setPeriodConflictPenalty(1);
 		scoreParametrization.setPostponeLaterThisDayAndThisWeekPenalty(30);
 		scoreParametrization.setEarlyHour(6);
 		scoreParametrization.setDistanceBetweenExerciseAndMeal(120);
