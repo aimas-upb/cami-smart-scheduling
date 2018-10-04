@@ -76,59 +76,11 @@ end
 // an activity must be planned in the permitted interval
 rule "overlapPermittedInterval"
 	when
-		$activity : NormalActivity(
+		$activity : Activity(
 			activityType.permittedIntervals != null && activityType.permittedIntervals.size != 0, 
 			$activityType : activityType, 
 			$activityPeriod : activityPeriod, 
 			$activityPeriod != null
-		)
-	then
-		int minDiff = Integer.MAX_VALUE;
-
-		for (TimeInterval permittedInterval : $activityType.getPermittedIntervals()) {
-
-			if (!fullOverlap($activityPeriod.getTime(), $activity.getActivityEndPeriod().getTime(), 
-					permittedInterval.getMinStart(), permittedInterval.getMaxEnd())) {
-
-				if (exclusiveBefore($activityPeriod.getTime(), permittedInterval.getMinStart())) {
-
-					int diffToPermittedMinStart = getNumberOfMinutesInInterval($activityPeriod.getTime(), permittedInterval.getMinStart());
-					minDiff = diffToPermittedMinStart < minDiff ? diffToPermittedMinStart : minDiff;
-
-				} else if (exclusiveAfter(permittedInterval.getMaxEnd(), $activity.getActivityEndPeriod().getTime())) {
-
-					int diffToPermitedMaxEnd = getNumberOfMinutesInInterval(permittedInterval.getMaxEnd(), $activity.getActivityEndPeriod().getTime());
-					minDiff = diffToPermitedMaxEnd < minDiff ? diffToPermitedMaxEnd : minDiff;
-
-				}
-
-			} else {
-				minDiff = 0;
-				break;
-			}
-
-		}
-
-		scoreHolder.addHardConstraintMatch(kcontext, -minDiff);
-end
-
-rule "overlapPermittedIntervalRelativeActivity"
-	when
-		$normalActivity : NormalActivity(
-			activityPeriod != null, 
-			$normalActivityPeriod : activityPeriod, 
-			assignedToRelativeActivityMap != null, 
-			assignedToRelativeActivityMap.isEmpty() == false, 
-			$relativeActivities : assignedToRelativeActivityMap
-		)
-
-		$activity : NormalRelativeActivity(
-			activityType.permittedIntervals != null && activityType.permittedIntervals.size != 0, 
-			$activityType : activityType, 
-			activityPeriod != null, 
-			$activityPeriod : activityPeriod, 
-			$relativeActivities.containsKey(activityType.code), 
-			$relativeActivities.get(activityType.code) == id
 		)
 	then
 		int minDiff = Integer.MAX_VALUE;
@@ -374,10 +326,11 @@ rule "instancesPerDayNormalRelativeActivity"
 	then
 		int occurences = $result.intValue();
 
-		scoreHolder.addHardConstraintMatch(kcontext, Math.abs(occurences - $instancesPerDay) * (-$scoreParametrization.getInstancesPerDayPenalty() + 1));
+		scoreHolder.addHardConstraintMatch(kcontext, Math.abs(occurences - $instancesPerDay) * (-$scoreParametrization.getInstancesPerDayPenalty()));
 end
 
 rule "relativeActivityPeriodPenaltyDifferentDay"
+salience 1
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -424,8 +377,8 @@ rule "relativeActivityPeriodPenaltyBefore"
 
 		if (minutesInInterval > $offset)
 			scoreHolder.addHardConstraintMatch(kcontext, $offset - minutesInInterval);
-		else if (minutesInInterval < ($offset - 60))
-			scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - ($offset - 60));
+		else
+			scoreHolder.addHardConstraintMatch(kcontext, 0);
 end
 
 rule "relativeActivityPeriodPenaltyAfter"
@@ -453,8 +406,8 @@ rule "relativeActivityPeriodPenaltyAfter"
 
 		if (minutesInInterval < $offset)
 			scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - $offset);
-		else if (minutesInInterval > ($offset + 60))
-			scoreHolder.addHardConstraintMatch(kcontext, ($offset + 60) - minutesInInterval);
+		else
+			scoreHolder.addHardConstraintMatch(kcontext, 0);
 end
 
 // SOFT CONSTRAINTS
@@ -565,6 +518,66 @@ rule "hardExerciseNotTooLateInDay"
 		)
 	then
 		scoreHolder.addSoftConstraintMatch(kcontext, $scoreParametrization.getHardExerciseLateHour() - $exercisePeriod.getPeriodHour());
+end
+
+rule "relativeActivityBeforeASAP"
+	when
+		$normalActivity : NormalActivity(
+			activityPeriod != null, 
+			$normalActivityPeriod : activityPeriod, 
+			assignedToRelativeActivityMap != null, 
+			assignedToRelativeActivityMap.isEmpty() == false, 
+			$relativeActivities : assignedToRelativeActivityMap
+		)
+
+		$relativeActivity: NormalRelativeActivity(
+			activityPeriod != null, 
+			relativeType == RelativeType.BEFORE, 
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : (-offset), 
+			$relativeActivities.containsKey(activityType.code), 
+			$relativeActivities.get(activityType.code) == id
+		)
+	then
+		ActivityPeriod relativeActivityEndPeriod = getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration());
+
+		int minutesInInterval = getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), relativeActivityEndPeriod.getTime());
+		int maxPos = 60;
+
+		if (minutesInInterval < ($offset - maxPos))
+			scoreHolder.addSoftConstraintMatch(kcontext, -1);
+		else
+			scoreHolder.addSoftConstraintMatch(kcontext, 0);
+end
+
+rule "relativeActivityAfterASAP"
+	when
+		$normalActivity : NormalActivity(
+			activityPeriod != null, 
+			$normalActivityPeriod : activityPeriod, 
+			assignedToRelativeActivityMap != null, 
+			assignedToRelativeActivityMap.isEmpty() == false, 
+			$relativeActivities : assignedToRelativeActivityMap
+		)
+
+		$relativeActivity: NormalRelativeActivity(
+			activityPeriod != null, 
+			relativeType == RelativeType.AFTER, 
+			$relativeActivityPeriod : activityPeriod, 
+			$offset : offset, 
+			$relativeActivities.containsKey(activityType.code), 
+			$relativeActivities.get(activityType.code) == id
+		)
+	then
+		ActivityPeriod normalActivityEndPeriod = getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration());
+
+		int minutesInInterval = getNumberOfMinutesInInterval(normalActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
+		int maxPos = 60;
+
+		if (minutesInInterval > ($offset + maxPos))
+			scoreHolder.addSoftConstraintMatch(kcontext, -2);
+		else
+			scoreHolder.addSoftConstraintMatch(kcontext, 0);
 end
 
 // postpone a normal relative activity(relative activities don't have value range on their variable)
