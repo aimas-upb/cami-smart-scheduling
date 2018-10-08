@@ -13,41 +13,41 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("Time")
 public class Time extends AbstractPersistable {
 
-	private int hour;
-	private int minutes;
+	private int time;
+
+	public Time(int time) {
+		super();
+		this.time = time;
+	}
 
 	public Time(int hour, int minutes) {
 		super();
-		this.hour = hour;
-		this.minutes = minutes;
+		this.time = hour * 60 + minutes;
+	}
+
+	public int getTime() {
+		return time;
+	}
+
+	public void setTime(int time) {
+		this.time = time;
 	}
 
 	public int getHour() {
-		return hour;
-	}
-
-	public void setHour(int hour) {
-		this.hour = hour;
+		return time / 60;
 	}
 
 	public int getMinutes() {
-		return minutes;
-	}
-
-	public void setMinutes(int minutes) {
-		this.minutes = minutes;
-	}
-
-	@Override
-	public String toString() {
-		return "Time [hour=" + hour + ", minutes=" + minutes + "]";
+		return time % 60;
 	}
 
 	public String getLabel() {
 		String hour = "";
 		String minutes = "";
-		hour = this.hour < 10 ? ("0" + this.hour) : (this.hour + "");
-		minutes = this.minutes < 10 ? ("0" + this.minutes) : (this.minutes + "");
+		int hourTime = getHour();
+		int minutesTime = getMinutes();
+		hour = hourTime < 10 ? ("0" + hourTime) : (hourTime + "");
+		minutes = minutesTime < 10 ? ("0" + minutesTime) : (minutesTime + "");
 		return hour + ":" + minutes;
 	}
 
