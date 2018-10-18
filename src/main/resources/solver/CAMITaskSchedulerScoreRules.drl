@@ -330,7 +330,6 @@ rule "instancesPerDayNormalRelativeActivity"
 end
 
 rule "relativeActivityPeriodPenaltyDifferentDay"
-salience 1
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -520,7 +519,7 @@ rule "hardExerciseNotTooLateInDay"
 		scoreHolder.addSoftConstraintMatch(kcontext, $scoreParametrization.getHardExerciseLateHour() - $exercisePeriod.getPeriodHour());
 end
 
-rule "relativeActivityBeforeASAP"
+rule "relativeActivitySoonBefore"
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -545,12 +544,12 @@ rule "relativeActivityBeforeASAP"
 		int maxPos = 60;
 
 		if (minutesInInterval < ($offset - maxPos))
-			scoreHolder.addSoftConstraintMatch(kcontext, -1);
+			scoreHolder.addSoftConstraintMatch(kcontext, minutesInInterval - ($offset - maxPos));
 		else
 			scoreHolder.addSoftConstraintMatch(kcontext, 0);
 end
 
-rule "relativeActivityAfterASAP"
+rule "relativeActivitySoonAfter"
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -575,7 +574,7 @@ rule "relativeActivityAfterASAP"
 		int maxPos = 60;
 
 		if (minutesInInterval > ($offset + maxPos))
-			scoreHolder.addSoftConstraintMatch(kcontext, -2);
+			scoreHolder.addSoftConstraintMatch(kcontext, ($offset + maxPos) - minutesInInterval);
 		else
 			scoreHolder.addSoftConstraintMatch(kcontext, 0);
 end
