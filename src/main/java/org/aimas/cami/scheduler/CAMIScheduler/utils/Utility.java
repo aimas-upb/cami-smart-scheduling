@@ -54,8 +54,7 @@ public class Utility {
 	 * Distance between two {@link Time} values.
 	 */
 	public static Integer getNumberOfMinutesInInterval(Time left, Time right) {
-
-		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
+		return right.getTime() - left.getTime();
 	}
 
 	/**
@@ -63,9 +62,7 @@ public class Utility {
 	 */
 	public static Integer getNumberOfMinutesInPeriodInterval(int dayIndexLeft, int dayIndexRight, Time left,
 			Time right) {
-
-		return ((dayIndexRight - dayIndexLeft) * 24 + (right.getHour() - left.getHour())) * 60 + right.getMinutes()
-				- left.getMinutes();
+		return (dayIndexRight - dayIndexLeft) * 24 * 60 + right.getTime() - left.getTime();
 	}
 
 	public static Set<Character> stringToCharacterSet(String s) {
@@ -86,12 +83,7 @@ public class Utility {
 	 * @return true if start A is before end B, else false.
 	 */
 	public static boolean before(Time startA, Time endB) {
-		if (startA.getHour() < endB.getHour())
-			return true;
-		else if (startA.getHour() == endB.getHour())
-			if (startA.getMinutes() <= endB.getMinutes())
-				return true;
-		return false;
+		return startA.getTime() <= endB.getTime() ? true : false;
 	}
 
 	/**
@@ -104,36 +96,21 @@ public class Utility {
 	 * @return true if end A is after start B, else false.
 	 */
 	public static boolean after(Time startB, Time endA) {
-		if (startB.getHour() < endA.getHour())
-			return true;
-		else if (startB.getHour() == endA.getHour())
-			if (startB.getMinutes() <= endA.getMinutes())
-				return true;
-		return false;
+		return startB.getTime() <= endA.getTime() ? true : false;
 	}
 
 	/**
 	 * like {@link #before}, but strict less
 	 */
-	public static boolean exclusiveBefore(Time timeA, Time timeB) {
-		if (timeA.getHour() < timeB.getHour())
-			return true;
-		else if (timeA.getHour() == timeB.getHour())
-			if (timeA.getMinutes() < timeB.getMinutes())
-				return true;
-		return false;
+	public static boolean exclusiveBefore(Time startA, Time endB) {
+		return startA.getTime() < endB.getTime() ? true : false;
 	}
 
 	/**
 	 * like {@link #after}, but strict less
 	 */
-	public static boolean exclusiveAfter(Time timeA, Time timeB) {
-		if (timeA.getHour() < timeB.getHour())
-			return true;
-		else if (timeA.getHour() == timeB.getHour())
-			if (timeA.getMinutes() < timeB.getMinutes())
-				return true;
-		return false;
+	public static boolean exclusiveAfter(Time startB, Time endA) {
+		return startB.getTime() < endA.getTime() ? true : false;
 	}
 
 	/**
