@@ -193,6 +193,7 @@ end
 
 // plan an activity "instancesPerWeek" instances in a week
 rule "instancesPerWeekAssigned"
+salience 30
 	when
 		$scoreParametrization : ScoreParametrization(instancesPerWeekPenalty != null)
 
@@ -247,6 +248,7 @@ end
 // plan an activity every day, "instancesPerDay" instances in a day
 // it's important that penalty to this constraint to be slight bigger than instancesPerDayNormalRelativeActivity
 rule "instancesPerDayNormalActivity"
+salience 30
 	when
 		$scoreParametrization : ScoreParametrization(instancesPerDayPenalty != null)
 
@@ -302,6 +304,7 @@ rule "instancesPerDayNormalActivity"
 end
 
 rule "instancesPerDayNormalRelativeActivity"
+salience 20
 	when
 		$scoreParametrization : ScoreParametrization(instancesPerDayPenalty != null)
 
@@ -330,6 +333,7 @@ rule "instancesPerDayNormalRelativeActivity"
 end
 
 rule "relativeActivityPeriodPenaltyDifferentDay"
+salience 10
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -348,10 +352,11 @@ rule "relativeActivityPeriodPenaltyDifferentDay"
 			$normalActivityPeriod.getWeekDayIndex() != $relativeActivityPeriod.getWeekDayIndex()
 		)
 	then
-		scoreHolder.addHardConstraintMatch(kcontext, (-1) * Math.abs($normalActivityPeriod.getWeekDayIndex() - $relativeActivityPeriod.getWeekDayIndex()));
+		scoreHolder.addHardConstraintMatch(kcontext, (-1));
 end
 
 rule "relativeActivityPeriodPenaltyBefore"
+salience -10
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -367,20 +372,15 @@ rule "relativeActivityPeriodPenaltyBefore"
 			$relativeActivityPeriod : activityPeriod, 
 			$offset : (-offset), 
 			$relativeActivities.containsKey(activityType.code), 
-			$relativeActivities.get(activityType.code) == id
+			$relativeActivities.get(activityType.code) == id, 
+			getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration()).getTime()) > $offset
 		)
 	then
-		ActivityPeriod relativeActivityEndPeriod = getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration());
-
-		int minutesInInterval = getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), relativeActivityEndPeriod.getTime());
-
-		if (minutesInInterval > $offset)
-			scoreHolder.addHardConstraintMatch(kcontext, $offset - minutesInInterval);
-		else
-			scoreHolder.addHardConstraintMatch(kcontext, 0);
+		scoreHolder.addSoftConstraintMatch(kcontext, $offset - getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration()).getTime()));
 end
 
 rule "relativeActivityPeriodPenaltyAfter"
+salience -10
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -396,17 +396,11 @@ rule "relativeActivityPeriodPenaltyAfter"
 			$relativeActivityPeriod : activityPeriod, 
 			$offset : offset, 
 			$relativeActivities.containsKey(activityType.code), 
-			$relativeActivities.get(activityType.code) == id
+			$relativeActivities.get(activityType.code) == id, 
+			getNumberOfMinutesInInterval(getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration()).getTime(), $relativeActivityPeriod.getTime()) < $offset
 		)
 	then
-		ActivityPeriod normalActivityEndPeriod = getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration());
-
-		int minutesInInterval = getNumberOfMinutesInInterval(normalActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
-
-		if (minutesInInterval < $offset)
-			scoreHolder.addHardConstraintMatch(kcontext, minutesInInterval - $offset);
-		else
-			scoreHolder.addHardConstraintMatch(kcontext, 0);
+		scoreHolder.addSoftConstraintMatch(kcontext, getNumberOfMinutesInInterval(getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration()).getTime(), $relativeActivityPeriod.getTime()) - $offset);
 end
 
 // SOFT CONSTRAINTS
@@ -520,6 +514,7 @@ rule "hardExerciseNotTooLateInDay"
 end
 
 rule "relativeActivitySoonBefore"
+salience -100
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -535,21 +530,15 @@ rule "relativeActivitySoonBefore"
 			$relativeActivityPeriod : activityPeriod, 
 			$offset : (-offset), 
 			$relativeActivities.containsKey(activityType.code), 
-			$relativeActivities.get(activityType.code) == id
+			$relativeActivities.get(activityType.code) == id, 
+			getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration()).getTime()) < ($offset - 60)
 		)
 	then
-		ActivityPeriod relativeActivityEndPeriod = getAdjustedPeriod($relativeActivityPeriod, $relativeActivity.getActivityDuration());
-
-		int minutesInInterval = getNumberOfMinutesInInterval($normalActivityPeriod.getTime(), relativeActivityEndPeriod.getTime());
-		int maxPos = 60;
-
-		if (minutesInInterval < ($offset - maxPos))
-			scoreHolder.addSoftConstraintMatch(kcontext, minutesInInterval - ($offset - maxPos));
-		else
-			scoreHolder.addSoftConstraintMatch(kcontext, 0);
+		scoreHolder.addSoftConstraintMatch(kcontext, -1);
 end
 
 rule "relativeActivitySoonAfter"
+salience -100
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -565,18 +554,11 @@ rule "relativeActivitySoonAfter"
 			$relativeActivityPeriod : activityPeriod, 
 			$offset : offset, 
 			$relativeActivities.containsKey(activityType.code), 
-			$relativeActivities.get(activityType.code) == id
+			$relativeActivities.get(activityType.code) == id, 
+			getNumberOfMinutesInInterval(getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration()).getTime(), $relativeActivityPeriod.getTime()) > $offset + 60
 		)
 	then
-		ActivityPeriod normalActivityEndPeriod = getAdjustedPeriod($normalActivityPeriod, $normalActivity.getActivityDuration());
-
-		int minutesInInterval = getNumberOfMinutesInInterval(normalActivityEndPeriod.getTime(), $relativeActivityPeriod.getTime());
-		int maxPos = 60;
-
-		if (minutesInInterval > ($offset + maxPos))
-			scoreHolder.addSoftConstraintMatch(kcontext, ($offset + maxPos) - minutesInInterval);
-		else
-			scoreHolder.addSoftConstraintMatch(kcontext, 0);
+		scoreHolder.addSoftConstraintMatch(kcontext, -1);
 end
 
 // postpone a normal relative activity(relative activities don't have value range on their variable)
