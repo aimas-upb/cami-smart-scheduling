@@ -333,7 +333,7 @@ salience 20
 end
 
 rule "relativeActivityPeriodPenaltyDifferentDay"
-salience 10
+salience 15
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -356,7 +356,7 @@ salience 10
 end
 
 rule "relativeActivityPeriodPenaltyBefore"
-salience -10
+salience 10
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
@@ -380,7 +380,7 @@ salience -10
 end
 
 rule "relativeActivityPeriodPenaltyAfter"
-salience -10
+salience 10
 	when
 		$normalActivity : NormalActivity(
 			activityPeriod != null, 
