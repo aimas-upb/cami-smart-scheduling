@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
+  <moveThreadCount>AUTO</moveThreadCount>
   <!--<randomType>MERSENNE_TWISTER</randomType>-->
   <!--<environmentMode>FAST_ASSERT</environmentMode>-->
 
   <!-- uncomment this if you want random seed, unless, the solution generated will be the same every time(useful for debugging) -->
-  <!--<environmentMode>NON_REPRODUCIBLE</environmentMode>-->
+  <environmentMode>NON_REPRODUCIBLE</environmentMode>
   <solutionClass>org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule</solutionClass>
   <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
   <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
@@ -19,30 +20,54 @@
     <bestScoreLimit>0hard/0soft</bestScoreLimit>
   </termination>
   <constructionHeuristic>
-    <constructionHeuristicType>STRONGEST_FIT_DECREASING</constructionHeuristicType>
+    <queuedEntityPlacer>
+      <entitySelector id="placerEntitySelector">
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity</entityClass>
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterWeightFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.domain.solver.ActivityDifficultyWeightFactory</sorterWeightFactoryClass>
+        <!-- <sorterManner>DECREASING_DIFFICULTY</sorterManner> -->
+      </entitySelector>
+      <changeMoveSelector>
+        <entitySelector mimicSelectorRef="placerEntitySelector"/>
+      </changeMoveSelector>
+    </queuedEntityPlacer>
+  </constructionHeuristic>
+  <constructionHeuristic>
+    <queuedEntityPlacer>
+      <entitySelector id="placerEntitySelector">
+        <entityClass>org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity</entityClass>
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterWeightFactoryClass>org.aimas.cami.scheduler.CAMIScheduler.domain.solver.ActivityDifficultyWeightFactory</sorterWeightFactoryClass>
+        <!-- <sorterManner>DECREASING_DIFFICULTY</sorterManner> -->
+      </entitySelector>
+      <changeMoveSelector>
+        <entitySelector mimicSelectorRef="placerEntitySelector"/>
+      </changeMoveSelector>
+    </queuedEntityPlacer>
   </constructionHeuristic>
   <localSearch>
-    <termination>
-      <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
-    </termination>
     <unionMoveSelector>
 	  <changeMoveSelector>
 	    <cacheType>PHASE</cacheType>
 	    <selectionOrder>RANDOM</selectionOrder>
-        <entitySelector>
-          <filterClass>org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter</filterClass>
-        </entitySelector>
       </changeMoveSelector>
       <swapMoveSelector/>
     </unionMoveSelector>
     <acceptor>
-      <simulatedAnnealingStartingTemperature>2hard/200soft</simulatedAnnealingStartingTemperature>
+      <simulatedAnnealingStartingTemperature>2hard/100soft</simulatedAnnealingStartingTemperature>
       <lateAcceptanceSize>100</lateAcceptanceSize>
+      <entityTabuSize>10</entityTabuSize>
+      <valueTabuSize>3</valueTabuSize>
+      <moveTabuSize>7</moveTabuSize>
+      <undoMoveTabuSize>7</undoMoveTabuSize>
+      <solutionTabuSize>1000</solutionTabuSize>
     </acceptor>
     <forager>
       <acceptedCountLimit>1</acceptedCountLimit>
-      <pickEarlyType>FIRST_BEST_SCORE_IMPROVING</pickEarlyType>
       <!--<pickEarlyType>FIRST_LAST_STEP_SCORE_IMPROVING</pickEarlyType>-->
+      <!--<pickEarlyType>FIRST_BEST_SCORE_IMPROVING</pickEarlyType>-->
     </forager>
   </localSearch>
 </solver>

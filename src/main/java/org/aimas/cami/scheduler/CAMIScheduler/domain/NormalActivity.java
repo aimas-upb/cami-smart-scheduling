@@ -4,10 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.ActivityDifficultyWeightFactory;
-import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.ActivityDifficultyWeightFactory.ActivityDifficultyWeight;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.solver.TimeWeightFactory;
 import org.aimas.cami.scheduler.CAMIScheduler.solver.move.MovableActivitySelectionFilter;
-import org.aimas.cami.scheduler.CAMIScheduler.solver.move.ReinitializeActivityFilter;
 import org.optaplanner.core.api.domain.entity.PlanningEntity;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
@@ -27,34 +25,19 @@ public class NormalActivity extends Activity {
 	// planning variable, changes during planning
 	protected ActivityPeriod activityPeriod;
 
-	// map that keeps count of the assigned (relative) activities to this
-	// activity
+	// map of the relative activities assigned to this activity
 	Map<String, Long> assignedToRelativeActivityMap;
-
-	// custom value range for the planning variable
-	List<ActivityPeriod> periodDomainRangeList;
 
 	@Override
 	@PlanningVariable(valueRangeProviderRefs = {
-			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class) // , nullable = true,
-																							// reinitializeVariableEntityFilter
-																							// =
-																							// ReinitializeActivityFilter.class)
+			"activityPeriodRange" }, strengthWeightFactoryClass = TimeWeightFactory.class)
 	public ActivityPeriod getActivityPeriod() {
 		return activityPeriod;
 	}
 
+	@Override
 	public void setActivityPeriod(ActivityPeriod activityPeriod) {
 		this.activityPeriod = activityPeriod;
-	}
-
-	@ValueRangeProvider(id = "activityPeriodRange")
-	public List<ActivityPeriod> getPeriodDomainRangeList() {
-		return periodDomainRangeList;
-	}
-
-	public void setPeriodDomainRangeList(List<ActivityPeriod> periodDomainRangeList) {
-		this.periodDomainRangeList = periodDomainRangeList;
 	}
 
 	public Map<String, Long> getAssignedToRelativeActivityMap() {
@@ -63,6 +46,11 @@ public class NormalActivity extends Activity {
 
 	public void setAssignedToRelativeActivityMap(Map<String, Long> assignedRelativeActivityList) {
 		this.assignedToRelativeActivityMap = assignedRelativeActivityList;
+	}
+
+	@ValueRangeProvider(id = "activityPeriodRange")
+	public List<ActivityPeriod> getPeriodDomainRangeList() {
+		return periodDomainRangeList;
 	}
 
 	@Override

@@ -13,12 +13,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivityPeriod;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ActivitySchedule;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.PeriodInterval;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
@@ -61,8 +64,7 @@ public class Utility {
 	 * Distance between two {@link Time} values.
 	 */
 	public static Integer getNumberOfMinutesInInterval(Time left, Time right) {
-
-		return (right.getHour() - left.getHour()) * 60 + right.getMinutes() - left.getMinutes();
+		return right.getTime() - left.getTime();
 	}
 
 	/**
@@ -70,9 +72,7 @@ public class Utility {
 	 */
 	public static Integer getNumberOfMinutesInPeriodInterval(int dayIndexLeft, int dayIndexRight, Time left,
 			Time right) {
-
-		return ((dayIndexRight - dayIndexLeft) * 24 + (right.getHour() - left.getHour())) * 60 + right.getMinutes()
-				- left.getMinutes();
+		return (dayIndexRight - dayIndexLeft) * 24 * 60 + right.getTime() - left.getTime();
 	}
 
 	public static Set<Character> stringToCharacterSet(String s) {
@@ -93,12 +93,7 @@ public class Utility {
 	 * @return true if start A is before end B, else false.
 	 */
 	public static boolean before(Time startA, Time endB) {
-		if (startA.getHour() < endB.getHour())
-			return true;
-		else if (startA.getHour() == endB.getHour())
-			if (startA.getMinutes() <= endB.getMinutes())
-				return true;
-		return false;
+		return startA.getTime() <= endB.getTime() ? true : false;
 	}
 
 	/**
@@ -111,36 +106,21 @@ public class Utility {
 	 * @return true if end A is after start B, else false.
 	 */
 	public static boolean after(Time startB, Time endA) {
-		if (startB.getHour() < endA.getHour())
-			return true;
-		else if (startB.getHour() == endA.getHour())
-			if (startB.getMinutes() <= endA.getMinutes())
-				return true;
-		return false;
+		return startB.getTime() <= endA.getTime() ? true : false;
 	}
 
 	/**
 	 * like {@link #before}, but strict less
 	 */
-	public static boolean exclusiveBefore(Time timeA, Time timeB) {
-		if (timeA.getHour() < timeB.getHour())
-			return true;
-		else if (timeA.getHour() == timeB.getHour())
-			if (timeA.getMinutes() < timeB.getMinutes())
-				return true;
-		return false;
+	public static boolean exclusiveBefore(Time startA, Time endB) {
+		return startA.getTime() < endB.getTime() ? true : false;
 	}
 
 	/**
 	 * like {@link #after}, but strict less
 	 */
-	public static boolean exclusiveAfter(Time timeA, Time timeB) {
-		if (timeA.getHour() < timeB.getHour())
-			return true;
-		else if (timeA.getHour() == timeB.getHour())
-			if (timeA.getMinutes() < timeB.getMinutes())
-				return true;
-		return false;
+	public static boolean exclusiveAfter(Time startB, Time endA) {
+		return startB.getTime() < endA.getTime() ? true : false;
 	}
 
 	/**
@@ -270,8 +250,8 @@ public class Utility {
 	}
 
 	/**
-	 * Checks if the specified time interval (activityPeriod, activityEndPeriod)
-	 * is free.
+	 * Checks if the specified time interval (activityPeriod, activityEndPeriod) is
+	 * free.
 	 * 
 	 */
 	private static boolean findOverlap(ActivitySchedule activitySchedule, ActivityPeriod activityPeriod,
@@ -478,6 +458,53 @@ public class Utility {
 				activityPeriod.getPeriodHour(), activityPeriod.getPeriodMinutes());
 
 		return activityDate.getTime() / 1000L;
+	}
+
+	public static void activityRelativeToNormalActivity(ActivitySchedule activitySchedule,
+			NormalRelativeActivity relativeActivity, String activityName) {
+		for (Activity activity : activitySchedule.getActivityList()) {
+			if (activity instanceof NormalActivity) {
+				NormalActivity normalActivity = (NormalActivity) activity;
+				if (normalActivity.getActivityTypeCode().equals(activityName) && !normalActivity
+						.getAssignedToRelativeActivityMap().containsKey(relativeActivity.getActivityTypeCode())) {
+					// not using Score Director for now
+					relativeActivity.setAssigned(true);
+					normalActivity.getAssignedToRelativeActivityMap().put(relativeActivity.getActivityTypeCode(),
+							relativeActivity.getId());
+					break;
+				}
+			}
+		}
+	}
+
+	public static void activityRelativeToCategory(ActivitySchedule activitySchedule,
+			NormalRelativeActivity relativeActivity, String category) {
+		Random randomGenerator = new Random();
+		Activity activity = getRandomActivityFromCategory(activitySchedule.getActivityList(), category,
+				relativeActivity.getActivityTypeCode(), randomGenerator);
+
+		// not using Score Director for now
+		relativeActivity.setAssigned(true);
+		((NormalActivity) activity).getAssignedToRelativeActivityMap().put(relativeActivity.getActivityTypeCode(),
+				relativeActivity.getId());
+
+	}
+
+	private static Activity getRandomActivityFromCategory(List<Activity> activityList, String category,
+			String relativeActivityName, Random randomGenerator) {
+		List<Activity> selectedActivities = new ArrayList<>();
+
+		for (Activity activity : activityList) {
+			if (activity instanceof NormalActivity) {
+				NormalActivity normalActivity = (NormalActivity) activity;
+				if (normalActivity.getActivityCategory().getCode().equals(category)
+						&& !normalActivity.getAssignedToRelativeActivityMap().containsKey(relativeActivityName))
+					selectedActivities.add(normalActivity);
+			}
+
+		}
+
+		return selectedActivities.get(randomGenerator.nextInt(selectedActivities.size()));
 	}
 
 }

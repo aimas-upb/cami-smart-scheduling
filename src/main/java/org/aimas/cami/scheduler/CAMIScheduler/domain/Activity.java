@@ -29,6 +29,9 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 	// if an activity is immovable or not
 	private boolean immovable;
 
+	// custom value range for the planning variable
+	List<ActivityPeriod> periodDomainRangeList;
+
 	private boolean wantedToBePlanned;
 	private boolean onDropdown;
 	private String uuid;
@@ -57,7 +60,9 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 		this.immovable = immovable;
 	}
 
-	// other useful methods
+	public void setPeriodDomainRangeList(List<ActivityPeriod> periodDomainRangeList) {
+		this.periodDomainRangeList = periodDomainRangeList;
+	}
 
 	public boolean isWantedToBePlanned() {
 		return wantedToBePlanned;
@@ -83,7 +88,11 @@ public abstract class Activity extends AbstractPersistable implements Labeled {
 		this.uuid = uuid;
 	}
 
+	// other useful methods
+
 	public abstract ActivityPeriod getActivityPeriod();
+
+	public abstract void setActivityPeriod(ActivityPeriod activityPeriod);
 
 	public ActivityPeriod getActivityEndPeriod() {
 		ActivityPeriod activityPeriod = getActivityPeriod();
