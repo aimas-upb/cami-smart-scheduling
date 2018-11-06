@@ -21,9 +21,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("NormalRelativeActivity")
 public class NormalRelativeActivity extends Activity {
 
-	// shadow variable (it depends on a planning variable)
-	// if the planning variable changes, then the shadow variable adjusts
-	// according to it
+	// planning variable, changes during planning
 	private ActivityPeriod activityPeriod;
 
 	private int offset; // offset (in minutes) - distance between an activity and an activity relative
