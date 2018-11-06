@@ -202,10 +202,10 @@ public class ProblemSolver<Solution_> {
 	}
 
 	/**
-	 * When a new schedule is opened from file, reset all the activity domain
-	 * value ranges. In real time rescheduling, activities after the current
-	 * time will have a more restricted value range, and activities before the
-	 * current time will be immovable.
+	 * When a new schedule is opened from file, reset all the activity domain value
+	 * ranges. In real time rescheduling, activities after the current time will
+	 * have a more restricted value range, and activities before the current time
+	 * will be immovable.
 	 */
 	protected void resetValueRange() {
 
@@ -213,15 +213,13 @@ public class ProblemSolver<Solution_> {
 
 		solutionBusiness.doProblemFactChange(scoreDirector -> {
 			for (Activity activity : activitySchedule.getActivityList()) {
-				if (activity instanceof NormalActivity) {
-					Activity workingActivity = scoreDirector.lookUpWorkingObject(activity);
+				Activity workingActivity = scoreDirector.lookUpWorkingObject(activity);
 
-					List<ActivityPeriod> periodDomainRange = Utility.determineValueRange(activitySchedule, workingActivity);
+				List<ActivityPeriod> periodDomainRange = Utility.determineValueRange(activitySchedule, workingActivity);
 
-					scoreDirector.beforeProblemPropertyChanged(workingActivity);
-					((NormalActivity) workingActivity).setPeriodDomainRangeList(periodDomainRange);
-					scoreDirector.afterProblemPropertyChanged(workingActivity);
-				}
+				scoreDirector.beforeProblemPropertyChanged(workingActivity);
+				workingActivity.setPeriodDomainRangeList(periodDomainRange);
+				scoreDirector.afterProblemPropertyChanged(workingActivity);
 			}
 		});
 	}
