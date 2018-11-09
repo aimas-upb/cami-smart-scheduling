@@ -41,6 +41,11 @@ public class Time extends AbstractPersistable {
 		return time % 60;
 	}
 
+	@Override
+	public String toString() {
+		return "Time [time=" + time + "]";
+	}
+
 	public String getLabel() {
 		String hour = "";
 		String minutes = "";
