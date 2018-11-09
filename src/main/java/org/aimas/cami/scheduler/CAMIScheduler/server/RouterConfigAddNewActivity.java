@@ -1,10 +1,13 @@
 package org.aimas.cami.scheduler.CAMIScheduler.server;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.aimas.cami.scheduler.CAMIScheduler.app.CAMITaskSchedulerApp;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.domain.NormalRelativeActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivities;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionUtils;
@@ -52,8 +55,13 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 		if (camiTaskSchedulerApp.getSolutionBusiness().getSolution() == null)
 			camiTaskSchedulerApp.getProblemSolver().openSolution(solvedSchedule);
 
-		List<Activity> beforeAddActivityList = camiTaskSchedulerApp.getSolutionBusiness().getSolution()
-				.getActivityList();
+		// make a deepcopy of the activity list
+		List<Activity> beforeAddActivityList = new ArrayList<>();
+		for (Activity activity : camiTaskSchedulerApp.getSolutionBusiness().getSolution().getActivityList())
+			if (activity instanceof NormalActivity)
+				beforeAddActivityList.add(((NormalActivity) activity).getNewCopy());
+			else
+				beforeAddActivityList.add(((NormalRelativeActivity) activity).getNewCopy());
 
 		vertx.executeBlocking(future -> {
 
