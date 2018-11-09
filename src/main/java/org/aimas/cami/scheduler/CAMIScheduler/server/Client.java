@@ -28,9 +28,10 @@ public class Client extends AbstractVerticle {
 		HttpClient client = vertx.createHttpClient(options);
 
 		// send requests to the server
-		postNewActivity(client);
-		// deleteActivity(client);
-		getActivitySchedule(client);
+		//postNewActivity(client);
+		//deleteActivity(client);
+		//getActivitySchedule(client);
+		postPostponeActivity(client);
 
 		// send multiple requests to analyze the concurrency
 		/*
@@ -108,5 +109,32 @@ public class Client extends AbstractVerticle {
 				}
 			});
 		}).end(deletedActivity);
+	}
+
+	private void postPostponeActivity(HttpClient client) {
+
+		String newActivityFilePath = "data" + File.separator + "activityschedule" + File.separator
+				+ "Postponed Activity.json";
+		String postponedActivity = null;
+		try {
+			postponedActivity = new String(Files.readAllBytes(Paths.get(newActivityFilePath)));
+			// System.out.println(newActivity);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		client.post(SERVER_PORT, SERVER_HOST, RoutePaths.API_ROUTE + RoutePaths.POSTPONE_ACTIVITY_ROUTE, response -> {
+
+			System.out.println("Received response with status code " + response.statusCode());
+
+			response.bodyHandler(new Handler<Buffer>() {
+
+				@Override
+				public void handle(Buffer event) {
+					System.out.println("Got the event: " + event);
+				}
+			});
+		}).end(postponedActivity);
+
 	}
 }
