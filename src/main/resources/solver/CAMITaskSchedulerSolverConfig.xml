@@ -48,6 +48,9 @@
     </queuedEntityPlacer>
   </constructionHeuristic>
   <localSearch>
+    <termination>
+      <unimprovedSecondsSpentLimit>5</unimprovedSecondsSpentLimit>
+    </termination>
     <unionMoveSelector>
 	  <changeMoveSelector>
 	    <cacheType>PHASE</cacheType>
