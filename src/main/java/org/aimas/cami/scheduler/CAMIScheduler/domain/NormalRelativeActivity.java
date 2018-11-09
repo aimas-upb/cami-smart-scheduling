@@ -82,4 +82,15 @@ public class NormalRelativeActivity extends Activity {
 		return getActivityTypeCode();
 	}
 
+	public Activity getNewCopy() {
+		NormalRelativeActivity normalRelativeActivityCopy = new NormalRelativeActivity();
+
+		normalRelativeActivityCopy.setId(this.getId());
+		normalRelativeActivityCopy.setUuid(this.getUuid());
+		normalRelativeActivityCopy.setActivityType(this.getActivityType());
+		normalRelativeActivityCopy.setActivityPeriod(this.getActivityPeriod());
+
+		return normalRelativeActivityCopy;
+	}
+
 }

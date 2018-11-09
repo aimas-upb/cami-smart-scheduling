@@ -63,4 +63,15 @@ public class NormalActivity extends Activity {
 		return getActivityTypeCode();
 	}
 
+	public Activity getNewCopy() {
+		NormalActivity normalActivityCopy = new NormalActivity();
+
+		normalActivityCopy.setId(this.getId());
+		normalActivityCopy.setUuid(this.getUuid());
+		normalActivityCopy.setActivityType(this.getActivityType());
+		normalActivityCopy.setActivityPeriod(this.getActivityPeriod());
+
+		return normalActivityCopy;
+	}
+
 }
