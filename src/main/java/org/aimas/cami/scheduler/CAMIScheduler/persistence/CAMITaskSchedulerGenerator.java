@@ -32,6 +32,8 @@ import org.aimas.cami.scheduler.CAMIScheduler.marshal.DeletedActivities;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.DeletedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivities;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.NewActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.PostponedActivity;
+import org.aimas.cami.scheduler.CAMIScheduler.postpone.PostponeType;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.LoggingMain;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionDao;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
@@ -57,6 +59,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		camiTSG.writeActivitySchedule();
 		camiTSG.generateNewActivityExampleInput();
 		camiTSG.generateDeletedActivityExampleInput();
+		camiTSG.generatePostponedActivityExampleInput();
 	}
 
 	protected final SolutionDao solutionDao;
@@ -117,7 +120,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		return activitySchedule;
 	}
-	
+
 	/**
 	 * Create an empty schedule.
 	 * 
@@ -142,7 +145,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 	 */
 	private void generateNewActivityExampleInput() {
 		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "New Activities" + ".json");
-		
+
 		List<NewActivity> newActivitiesList = new ArrayList<>();
 
 		NewActivity na = new NewActivity();
@@ -203,14 +206,14 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 	private void generateDeletedActivityExampleInput() {
 		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Deleted Activities" + ".json");
-		
+
 		List<DeletedActivity> deletedActivitiesList = new ArrayList<>();
 
 		DeletedActivity deletedActivity = new DeletedActivity();
 		deletedActivity.setId(0L);
 		deletedActivity.setName("Yoga");
 		deletedActivity.setUuid("5035e83bbefb4ae48ce427b2613e153a");
-		
+
 		deletedActivitiesList.add(deletedActivity);
 		DeletedActivities deletedActivities = new DeletedActivities(deletedActivitiesList);
 
@@ -226,6 +229,28 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 			throw new IllegalArgumentException("Failed writing to file (" + outputFile + ").", e);
 		}
 
+	}
+
+	private void generatePostponedActivityExampleInput() {
+		File outputFile = new File(new File(solutionDao.getDataDir(), ""), "Postponed Activity" + ".json");
+
+		PostponedActivity postponedActivity = new PostponedActivity();
+		postponedActivity.setId(0L);
+		postponedActivity.setName("Yoga");
+		postponedActivity.setUuid("5035e83bbefb4ae48ce427b2613e153a");
+		postponedActivity.setPostponeType(PostponeType.POSTPONE_LATER_THIS_DAY);
+
+		// serialize the object
+		XStream xStream = new XStream(new JettisonMappedXmlDriver());
+		xStream.alias("PostponedActivity", PostponedActivity.class);
+		xStream.setMode(XStream.NO_REFERENCES);
+		xStream.autodetectAnnotations(true);
+
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8")) {
+			xStream.toXML(postponedActivity, writer);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Failed writing to file (" + outputFile + ").", e);
+		}
 	}
 
 	private void createActivityDomainList(ActivitySchedule activitySchedule) {
@@ -259,7 +284,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 
 		activitySchedule.setActivityDomainList(activityDomainList);
 	}
-	
+
 	/**
 	 * Create empty lists for the solution.
 	 * 
@@ -271,7 +296,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		List<RelativeActivityPenalty> relativeActivityPenaltyList = new ArrayList<>();
 		List<ActivityType> activityTypeList = new ArrayList<>();
 		List<Activity> activityList = new ArrayList<>();
-		
+
 		activitySchedule.setActivityTypeList(activityTypeList);
 		activitySchedule.setActivityList(activityList);
 		activitySchedule.setExcludedTimePeriodsList(excludedTimePeriodsPenaltyList);
@@ -832,7 +857,7 @@ public class CAMITaskSchedulerGenerator extends LoggingMain {
 		scoreParametrization.setHardExerciseLateHour(20);
 
 		scoreParametrization.setId(0L);
-		
+
 		activitySchedule.setScoreParametrization(scoreParametrization);
 
 		XStream xStream = new XStream(new JettisonMappedXmlDriver());
