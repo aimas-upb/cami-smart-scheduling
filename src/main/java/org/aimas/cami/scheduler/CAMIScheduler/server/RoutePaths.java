@@ -5,4 +5,5 @@ public class RoutePaths {
 	public static final String NEW_ACTIVITY_ROUTE = "/new_activity";
 	public static final String ACTIVITY_SCHEDULE_ROUTE = "/activity_schedule";
 	public static final String DELETE_ACTIVITY_ROUTE = "/delete_activity";
+	public static final String POSTPONE_ACTIVITY_ROUTE = "/postpone_activity";
 }

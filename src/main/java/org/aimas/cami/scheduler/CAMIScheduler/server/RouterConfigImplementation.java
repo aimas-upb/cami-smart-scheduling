@@ -10,6 +10,7 @@ public class RouterConfigImplementation extends RouterConfig {
 	@Override
 	public Router createRoutes(Vertx vertx, CAMITaskSchedulerApp camiTaskSchedulerApp) {
 		Router router = this.createRouter(vertx);
+
 		RouterConfigAddNewActivity addNewActivityRoute = new RouterConfigAddNewActivity(vertx, camiTaskSchedulerApp);
 		// add a 'add a new activity' route to the router
 		router.post(RoutePaths.API_ROUTE + RoutePaths.NEW_ACTIVITY_ROUTE).handler(addNewActivityRoute::putNewActivity);
@@ -23,6 +24,12 @@ public class RouterConfigImplementation extends RouterConfig {
 		// add a "delete activity" route to the router
 		router.delete(RoutePaths.API_ROUTE + RoutePaths.DELETE_ACTIVITY_ROUTE)
 				.handler(deleteActivityRoute::deleteActivity);
+
+		RouterConfigPostponeActivity postponeActivityRoute = new RouterConfigPostponeActivity(camiTaskSchedulerApp,
+				vertx);
+		// add a 'postpone an activity' route to the router
+		router.post(RoutePaths.API_ROUTE + RoutePaths.POSTPONE_ACTIVITY_ROUTE)
+				.handler(postponeActivityRoute::postponeActivity);
 
 		return router;
 	}
