@@ -8,6 +8,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.Activity;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivities;
 import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivity;
 import org.aimas.cami.scheduler.CAMIScheduler.utils.SolutionUtils;
+import org.aimas.cami.scheduler.CAMIScheduler.utils.Utility;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
@@ -78,7 +79,7 @@ public class RouterConfigAddNewActivity extends RouterConfigImplementation {
 					.getActivityList();
 
 			// get the modified activities(activity names)
-			List<ChangedActivity> changedActivities = solutionUtils.getChangedActivites(beforeAddActivityList,
+			List<ChangedActivity> changedActivities = Utility.getChangedActivites(beforeAddActivityList,
 					afterAddActivityList);
 
 			System.out

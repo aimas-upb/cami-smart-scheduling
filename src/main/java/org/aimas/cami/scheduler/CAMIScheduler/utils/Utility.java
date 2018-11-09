@@ -27,6 +27,7 @@ import org.aimas.cami.scheduler.CAMIScheduler.domain.RelativeType;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.ScoreParametrization;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.Time;
 import org.aimas.cami.scheduler.CAMIScheduler.domain.TimeInterval;
+import org.aimas.cami.scheduler.CAMIScheduler.marshal.ChangedActivity;
 import org.drools.core.spi.KnowledgeHelper;
 
 import com.thoughtworks.xstream.XStream;
@@ -46,7 +47,7 @@ public class Utility {
 		System.out.println(date.getDay());
 
 		Calendar calendar = Calendar.getInstance();
-		calendar.setTimeInMillis(1531832400000L);
+		calendar.setTimeInMillis(1541566800 * 1000L);
 
 		System.out.println(calendar.getTime());
 	}
@@ -505,6 +506,31 @@ public class Utility {
 		}
 
 		return selectedActivities.get(randomGenerator.nextInt(selectedActivities.size()));
+	}
+
+	public static List<ChangedActivity> getChangedActivites(List<Activity> beforeAddActivityList,
+			List<Activity> afterAddActivityList) {
+
+		List<ChangedActivity> changedActivities = new ArrayList<>();
+
+		for (Activity activity1 : beforeAddActivityList) {
+			for (Activity activity2 : afterAddActivityList) {
+
+				if (activity1.getActivityTypeCode() == activity2.getActivityTypeCode()
+						&& activity1.getId() == activity2.getId() && activity1.getUuid().equals(activity2.getUuid())) {
+
+					if (Utility.compareActivityPeriods(activity1, activity2)) {
+						changedActivities.add(new ChangedActivity(activity1.getActivityTypeCode(), activity1.getUuid(),
+								Utility.convertActivityPeriodToTimestamp(activity1.getActivityPeriod()),
+								Utility.convertActivityPeriodToTimestamp(activity2.getActivityPeriod()),
+								activity1.getActivityDuration()));
+						break;
+					}
+				}
+			}
+		}
+
+		return changedActivities;
 	}
 
 }

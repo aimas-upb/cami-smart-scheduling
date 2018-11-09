@@ -395,30 +395,4 @@ public class SolutionUtils<Solution_> {
 			scoreDirector.triggerVariableListeners();
 		});
 	}
-
-	public List<ChangedActivity> getChangedActivites(List<Activity> beforeAddActivityList,
-			List<Activity> afterAddActivityList) {
-
-		List<ChangedActivity> changedActivities = new ArrayList<>();
-
-		for (Activity activity1 : beforeAddActivityList) {
-			for (Activity activity2 : afterAddActivityList) {
-
-				if (activity1.getActivityTypeCode() == activity2.getActivityTypeCode()
-						&& activity1.getId() == activity2.getId()) {
-
-					if (Utility.compareActivityPeriods(activity1, activity2)) {
-						changedActivities.add(new ChangedActivity(activity1.getActivityTypeCode(),
-								Utility.convertActivityPeriodToTimestamp(activity1.getActivityPeriod()),
-								Utility.convertActivityPeriodToTimestamp(activity2.getActivityPeriod()),
-								activity1.getActivityDuration()));
-						break;
-					}
-				}
-			}
-		}
-
-		return changedActivities;
-	}
-
 }
